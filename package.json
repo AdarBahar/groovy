@@ -7,7 +7,9 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "build:prod": "NODE_ENV=production npm run build",
     "preview": "vite preview",
+    "preview:prod": "NODE_ENV=production vite preview --port 4173",
     "lint": "eslint .",
     "type-check": "tsc --noEmit"
   },
