@@ -31,7 +31,16 @@ export class DrumSynth {
       await Promise.all(
         voices.map(async (voice) => {
           const fileName = this.sampleFiles[voice];
-          const response = await fetch(`/sounds/${fileName}`);
+          // Use relative path with import.meta.env.BASE_URL for correct base path
+          const basePath = import.meta.env.BASE_URL || '/';
+          const soundPath = `${basePath}sounds/${fileName}`;
+          console.log(`Loading sound: ${soundPath}`);
+          const response = await fetch(soundPath);
+
+          if (!response.ok) {
+            throw new Error(`Failed to fetch ${soundPath}: ${response.status} ${response.statusText}`);
+          }
+
           const arrayBuffer = await response.arrayBuffer();
           const audioBuffer = await this.audioContext.decodeAudioData(arrayBuffer);
           this.samples.set(voice, audioBuffer);
