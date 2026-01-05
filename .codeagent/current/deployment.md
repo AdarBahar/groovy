@@ -69,7 +69,35 @@ No environment variables required for local development.
 
 ## Production Deployment
 
-### Option 1: Static Hosting (Recommended)
+### Current Deployment: www.bahar.co.il/scribe2/
+
+**Method**: Manual upload to Apache server
+**Base Path**: `/scribe2/`
+**Documentation**: See `DEPLOYMENT.md` in project root
+
+#### Quick Deploy
+```bash
+# 1. Build for production
+npm run build:prod
+
+# 2. Test locally
+npm run preview:prod
+# Visit http://localhost:4173/scribe2/
+
+# 3. Upload dist/ contents to server
+# Upload all files from dist/ to /scribe2/ directory
+# Include .htaccess file for Apache configuration
+```
+
+**Build Output**:
+- Total size: ~480KB (excluding sounds)
+- Sounds: 28 MP3 files
+- Assets: Minified JS and CSS with content hashes
+- Manual chunks: React vendor code separated for better caching
+
+---
+
+### Option 1: Static Hosting (Alternative)
 
 **Platforms**: Vercel, Netlify, GitHub Pages, Cloudflare Pages
 
