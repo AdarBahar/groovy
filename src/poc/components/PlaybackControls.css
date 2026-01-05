@@ -1,0 +1,42 @@
+.playback-controls {
+  display: flex;
+  gap: 10px;
+}
+
+.play-button {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 16px 32px;
+  font-size: 1.1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  min-width: 140px;
+}
+
+.play-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+}
+
+.play-button:active {
+  transform: translateY(0);
+}
+
+.play-button.playing {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  animation: playing-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes playing-pulse {
+  0%, 100% {
+    box-shadow: 0 4px 12px rgba(245, 87, 108, 0.3);
+  }
+  50% {
+    box-shadow: 0 6px 20px rgba(245, 87, 108, 0.6);
+  }
+}
+
