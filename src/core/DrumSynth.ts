@@ -11,9 +11,32 @@ export class DrumSynth {
 
   // Map drum voices to sample file names
   private sampleFiles: Record<DrumVoice, string> = {
-    kick: 'Kick.mp3',
-    snare: 'Snare Normal.mp3',
-    hihat: 'Hi Hat Normal.mp3',
+    // Hi-Hat variations
+    'hihat-closed': 'Hi Hat Normal.mp3',
+    'hihat-open': 'Hi Hat Open.mp3',
+    'hihat-accent': 'Hi Hat Accent.mp3',
+    'hihat-foot': 'Hi Hat Foot.mp3',
+    // Snare variations
+    'snare-normal': 'Snare Normal.mp3',
+    'snare-accent': 'Snare Accent.mp3',
+    'snare-ghost': 'Snare Ghost.mp3',
+    'snare-cross-stick': 'Snare Cross Stick.mp3',
+    'snare-flam': 'Snare Flam.mp3',
+    'snare-rim': 'Rim.mp3',
+    // Kick
+    'kick': 'Kick.mp3',
+    // Toms
+    'tom-rack': 'Rack Tom.mp3',
+    'tom-floor': 'Floor Tom.mp3',
+    'tom-10': '10 Tom.mp3',
+    'tom-16': '16 Tom.mp3',
+    // Cymbals
+    'crash': 'Crash.mp3',
+    'ride': 'Ride.mp3',
+    'ride-bell': 'Bell.mp3',
+    // Percussion
+    'cowbell': 'Cowbell.mp3',
+    'stacker': 'Stacker.mp3',
   };
 
   constructor() {
@@ -25,7 +48,7 @@ export class DrumSynth {
    * Load all drum samples
    */
   private async loadSamples() {
-    const voices: DrumVoice[] = ['kick', 'snare', 'hihat'];
+    const voices: DrumVoice[] = Object.keys(this.sampleFiles) as DrumVoice[];
 
     try {
       await Promise.all(

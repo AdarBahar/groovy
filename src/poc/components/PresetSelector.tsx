@@ -1,115 +1,107 @@
-import { GrooveData } from '../../types';
+import { GrooveData, DEFAULT_GROOVE, DrumVoice } from '../../types';
 import './PresetSelector.css';
 
 interface PresetSelectorProps {
   onPresetChange: (preset: GrooveData) => void;
 }
 
+// Helper to create a preset with only specific voices filled
+const createPreset = (
+  tempo: number,
+  swing: number,
+  voices: Partial<Record<DrumVoice, boolean[]>>
+): GrooveData => ({
+  timeSignature: { beats: 4, noteValue: 4 },
+  division: 16,
+  tempo,
+  swing,
+  notes: {
+    ...DEFAULT_GROOVE.notes,
+    ...voices,
+  },
+});
+
 const PRESETS: Record<string, GrooveData> = {
-  'Basic Rock': {
-    timeSignature: { beats: 4, noteValue: 4 },
-    division: 16,
-    tempo: 120,
-    swing: 0,
-    notes: {
-      hihat: [
-        true, false, true, false,
-        true, false, true, false,
-        true, false, true, false,
-        true, false, true, false,
-      ],
-      snare: [
-        false, false, false, false,
-        true, false, false, false,
-        false, false, false, false,
-        true, false, false, false,
-      ],
-      kick: [
-        true, false, false, false,
-        false, false, false, false,
-        true, false, false, false,
-        false, false, false, false,
-      ],
-    },
-  },
-  'Four on Floor': {
-    timeSignature: { beats: 4, noteValue: 4 },
-    division: 16,
-    tempo: 128,
-    swing: 0,
-    notes: {
-      hihat: [
-        true, false, true, false,
-        true, false, true, false,
-        true, false, true, false,
-        true, false, true, false,
-      ],
-      snare: [
-        false, false, false, false,
-        true, false, false, false,
-        false, false, false, false,
-        true, false, false, false,
-      ],
-      kick: [
-        true, false, false, false,
-        true, false, false, false,
-        true, false, false, false,
-        true, false, false, false,
-      ],
-    },
-  },
-  'Shuffle': {
-    timeSignature: { beats: 4, noteValue: 4 },
-    division: 16,
-    tempo: 100,
-    swing: 66,
-    notes: {
-      hihat: [
-        true, false, true, false,
-        true, false, true, false,
-        true, false, true, false,
-        true, false, true, false,
-      ],
-      snare: [
-        false, false, false, false,
-        true, false, false, false,
-        false, false, false, false,
-        true, false, false, false,
-      ],
-      kick: [
-        true, false, false, false,
-        false, false, true, false,
-        false, false, true, false,
-        false, false, false, false,
-      ],
-    },
-  },
-  'Motown': {
-    timeSignature: { beats: 4, noteValue: 4 },
-    division: 16,
-    tempo: 110,
-    swing: 0,
-    notes: {
-      hihat: [
-        true, false, true, false,
-        true, false, true, false,
-        true, false, true, false,
-        true, false, true, false,
-      ],
-      snare: [
-        false, false, false, false,
-        true, false, false, true,
-        false, false, false, false,
-        true, false, false, true,
-      ],
-      kick: [
-        true, false, false, false,
-        false, false, true, false,
-        false, true, false, false,
-        false, false, true, false,
-      ],
-    },
-  },
+  'Basic Rock': createPreset(120, 0, {
+    'hihat-closed': [
+      true, false, true, false,
+      true, false, true, false,
+      true, false, true, false,
+      true, false, true, false,
+    ],
+    'snare-normal': [
+      false, false, false, false,
+      true, false, false, false,
+      false, false, false, false,
+      true, false, false, false,
+    ],
+    'kick': [
+      true, false, false, false,
+      false, false, false, false,
+      true, false, false, false,
+      false, false, false, false,
+    ],
+  }),
+  'Four on Floor': createPreset(128, 0, {
+    'hihat-closed': [
+      true, false, true, false,
+      true, false, true, false,
+      true, false, true, false,
+      true, false, true, false,
+    ],
+    'snare-normal': [
+      false, false, false, false,
+      true, false, false, false,
+      false, false, false, false,
+      true, false, false, false,
+    ],
+    'kick': [
+      true, false, false, false,
+      true, false, false, false,
+      true, false, false, false,
+      true, false, false, false,
+    ],
+  }),
+  'Shuffle': createPreset(100, 66, {
+    'hihat-closed': [
+      true, false, true, false,
+      true, false, true, false,
+      true, false, true, false,
+      true, false, true, false,
+    ],
+    'snare-normal': [
+      false, false, false, false,
+      true, false, false, false,
+      false, false, false, false,
+      true, false, false, false,
+    ],
+    'kick': [
+      true, false, false, false,
+      false, false, true, false,
+      false, false, true, false,
+      false, false, false, false,
+    ],
+  }),
+  'Motown': createPreset(110, 0, {
+    'hihat-closed': [
+      true, false, true, false,
+      true, false, true, false,
+      true, false, true, false,
+      true, false, true, false,
+    ],
+    'snare-normal': [
+      false, false, false, false,
+      true, false, false, true,
+      false, false, false, false,
+      true, false, false, true,
+    ],
+    'kick': [
+      true, false, false, false,
+      false, false, true, false,
+      false, true, false, false,
+      false, false, true, false,
+    ],
+  }),
 };
 
 function PresetSelector({ onPresetChange }: PresetSelectorProps) {

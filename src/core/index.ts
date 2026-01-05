@@ -15,4 +15,5 @@
 export { GrooveEngine } from './GrooveEngine';
 export type { GrooveEngineEvents, SyncMode } from './GrooveEngine';
 export { DrumSynth } from './DrumSynth';
+export { GrooveUtils } from './GrooveUtils';
 

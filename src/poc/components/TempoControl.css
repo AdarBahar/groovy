@@ -28,6 +28,18 @@
   -webkit-appearance: none;
 }
 
+.control-group input[type='range'].disabled,
+.control-group input[type='range']:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.swing-disabled-note {
+  font-size: 0.8rem;
+  color: #999;
+  font-weight: normal;
+}
+
 .control-group input[type='range']::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;

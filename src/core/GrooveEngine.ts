@@ -1,5 +1,6 @@
 import { GrooveData, DrumVoice } from '../types';
 import { DrumSynth } from './DrumSynth';
+import { GrooveUtils } from './GrooveUtils';
 
 export type SyncMode = 'start' | 'middle' | 'end';
 
@@ -104,8 +105,33 @@ export class GrooveEngine {
   /**
    * Update the groove during playback
    * Changes will take effect on the next loop
+   * Validates division compatibility and auto-corrects if needed
    */
   updateGroove(groove: GrooveData): void {
+    // Validate division compatibility with time signature
+    if (!GrooveUtils.isDivisionCompatible(
+      groove.division,
+      groove.timeSignature.beats,
+      groove.timeSignature.noteValue
+    )) {
+      console.warn(
+        `Division ${groove.division} is incompatible with ${groove.timeSignature.beats}/${groove.timeSignature.noteValue} time. ` +
+        `Auto-correcting to compatible division.`
+      );
+      groove.division = GrooveUtils.getDefaultDivision(
+        groove.timeSignature.beats,
+        groove.timeSignature.noteValue
+      );
+    }
+
+    // Auto-disable swing for triplets and quarter notes
+    if (!GrooveUtils.doesDivisionSupportSwing(groove.division)) {
+      if (groove.swing > 0) {
+        console.info(`Swing disabled for division ${groove.division} (triplets/quarter notes don't support swing)`);
+        groove.swing = 0;
+      }
+    }
+
     if (this.isPlaying) {
       this.pendingGroove = groove;
     } else {
@@ -189,9 +215,9 @@ export class GrooveEngine {
       const playTime = noteTime + (swingOffset * noteDuration);
 
       // Schedule notes for each voice
-      const voices: DrumVoice[] = ['kick', 'snare', 'hihat'];
+      const voices = Object.keys(activeGroove.notes) as DrumVoice[];
       voices.forEach((voice) => {
-        if (activeGroove.notes[voice][positionInMeasure]) {
+        if (activeGroove.notes[voice]?.[positionInMeasure]) {
           this.synth.playDrum(voice, playTime - currentTime, 100);
         }
       });

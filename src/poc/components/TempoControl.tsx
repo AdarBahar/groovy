@@ -1,13 +1,21 @@
+import { Division } from '../../types';
+import { GrooveUtils } from '../../core';
 import './TempoControl.css';
 
 interface TempoControlProps {
   tempo: number;
   swing: number;
+  division: Division;
   onTempoChange: (tempo: number) => void;
   onSwingChange: (swing: number) => void;
 }
 
-function TempoControl({ tempo, swing, onTempoChange, onSwingChange }: TempoControlProps) {
+function TempoControl({ tempo, swing, division, onTempoChange, onSwingChange }: TempoControlProps) {
+  const swingSupported = GrooveUtils.doesDivisionSupportSwing(division);
+  const swingDisabledReason = GrooveUtils.isTripletDivision(division)
+    ? 'Triplet divisions already have a triplet feel'
+    : 'Quarter notes are too coarse for swing';
+
   return (
     <div className="tempo-control">
       <div className="control-group">
@@ -26,19 +34,26 @@ function TempoControl({ tempo, swing, onTempoChange, onSwingChange }: TempoContr
 
       <div className="control-group">
         <label htmlFor="swing">
-          Swing: <strong>{swing}%</strong>
+          Swing: <strong>{swingSupported ? `${swing}%` : 'N/A'}</strong>
+          {!swingSupported && (
+            <span className="swing-disabled-note" title={swingDisabledReason}>
+              {' '}(Not available)
+            </span>
+          )}
         </label>
         <input
           id="swing"
           type="range"
           min="0"
-          max="100"
+          max="60"
           value={swing}
           onChange={(e) => onSwingChange(Number(e.target.value))}
+          disabled={!swingSupported}
+          className={!swingSupported ? 'disabled' : ''}
         />
         <div className="swing-labels">
           <span>Straight</span>
-          <span>Triplet</span>
+          <span>Shuffle</span>
         </div>
       </div>
     </div>

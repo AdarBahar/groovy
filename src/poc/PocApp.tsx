@@ -1,28 +1,36 @@
-import { useState } from 'react';
-import { GrooveData, DEFAULT_GROOVE, DrumVoice } from '../types';
-import { SyncMode } from '../core';
+import { useState, useEffect } from 'react';
+import { GrooveData, DEFAULT_GROOVE, DrumVoice, TimeSignature, Division } from '../types';
+import { SyncMode, GrooveUtils } from '../core';
 import { useGrooveEngine } from '../hooks/useGrooveEngine';
 import DrumGrid from './components/DrumGrid';
 import PlaybackControls from './components/PlaybackControls';
 import TempoControl from './components/TempoControl';
 import PresetSelector from './components/PresetSelector';
 import SyncControl from './components/SyncControl';
+import TimeSignatureSelector from './components/TimeSignatureSelector';
+import DivisionSelector from './components/DivisionSelector';
 import './PocApp.css';
 
 function App() {
   const [groove, setGroove] = useState<GrooveData>(DEFAULT_GROOVE);
-  const [syncMode, setSyncMode] = useState<SyncMode>('middle');
+  const [syncMode, setSyncMode] = useState<SyncMode>('start');
 
   // Use the GrooveEngine hook (this is the ONLY React-specific integration)
   const {
     isPlaying,
     currentPosition,
-    hasPendingChanges,
     togglePlayback,
     updateGroove,
     setSyncMode: setEngineSyncMode,
     playPreview,
+    play,
+    stop,
   } = useGrooveEngine();
+
+  // Initialize sync mode to 'start' on mount
+  useEffect(() => {
+    setEngineSyncMode('start');
+  }, [setEngineSyncMode]);
 
   const handleNoteToggle = (voice: DrumVoice, position: number) => {
     const newGroove = {
@@ -66,6 +74,107 @@ function App() {
     setEngineSyncMode(mode);
   };
 
+  const handleTimeSignatureChange = async (timeSignature: TimeSignature) => {
+    const wasPlaying = isPlaying;
+
+    // Stop playback if playing
+    if (wasPlaying) {
+      stop();
+    }
+
+    const oldDivision = groove.division;
+    const oldNotesPerMeasure = GrooveUtils.calcNotesPerMeasure(
+      oldDivision,
+      groove.timeSignature.beats,
+      groove.timeSignature.noteValue
+    );
+
+    // Check if current division is compatible with new time signature
+    let newDivision = oldDivision;
+    if (!GrooveUtils.isDivisionCompatible(oldDivision, timeSignature.beats, timeSignature.noteValue)) {
+      newDivision = GrooveUtils.getDefaultDivision(timeSignature.beats, timeSignature.noteValue);
+      console.info(`Division ${oldDivision} incompatible with ${timeSignature.beats}/${timeSignature.noteValue}, switching to ${newDivision}`);
+    }
+
+    const newNotesPerMeasure = GrooveUtils.calcNotesPerMeasure(
+      newDivision,
+      timeSignature.beats,
+      timeSignature.noteValue
+    );
+
+    // Resize all note arrays
+    const newNotes: Record<DrumVoice, boolean[]> = {} as any;
+    Object.keys(groove.notes).forEach(voice => {
+      newNotes[voice as DrumVoice] = GrooveUtils.resizeNotesArray(
+        groove.notes[voice as DrumVoice],
+        oldNotesPerMeasure,
+        newNotesPerMeasure
+      );
+    });
+
+    const newGroove: GrooveData = {
+      ...groove,
+      timeSignature,
+      division: newDivision,
+      notes: newNotes,
+      swing: GrooveUtils.doesDivisionSupportSwing(newDivision) ? groove.swing : 0,
+    };
+
+    setGroove(newGroove);
+    updateGroove(newGroove);
+
+    // Restart playback from the beginning if it was playing
+    if (wasPlaying) {
+      await play(newGroove);
+    }
+  };
+
+  const handleDivisionChange = async (division: Division) => {
+    const wasPlaying = isPlaying;
+
+    // Stop playback if playing
+    if (wasPlaying) {
+      stop();
+    }
+
+    const oldNotesPerMeasure = GrooveUtils.calcNotesPerMeasure(
+      groove.division,
+      groove.timeSignature.beats,
+      groove.timeSignature.noteValue
+    );
+
+    const newNotesPerMeasure = GrooveUtils.calcNotesPerMeasure(
+      division,
+      groove.timeSignature.beats,
+      groove.timeSignature.noteValue
+    );
+
+    // Resize all note arrays
+    const newNotes: Record<DrumVoice, boolean[]> = {} as any;
+    Object.keys(groove.notes).forEach(voice => {
+      newNotes[voice as DrumVoice] = GrooveUtils.resizeNotesArray(
+        groove.notes[voice as DrumVoice],
+        oldNotesPerMeasure,
+        newNotesPerMeasure
+      );
+    });
+
+    const newGroove: GrooveData = {
+      ...groove,
+      division,
+      notes: newNotes,
+      swing: GrooveUtils.doesDivisionSupportSwing(division) ? groove.swing : 0,
+    };
+
+    setGroove(newGroove);
+    updateGroove(newGroove);
+
+    // Restart playback from the beginning if it was playing
+    if (wasPlaying) {
+      await play(newGroove);
+    }
+  };
+
   return (
     <div className="app">
       <header className="header">
@@ -75,24 +184,42 @@ function App() {
 
       <main className="main">
         <section className="controls-section">
-          <PresetSelector onPresetChange={handlePresetChange} />
+          <div className="controls-row">
+            <TimeSignatureSelector
+              timeSignature={groove.timeSignature}
+              onTimeSignatureChange={handleTimeSignatureChange}
+            />
 
-          <TempoControl
-            tempo={groove.tempo}
-            swing={groove.swing}
-            onTempoChange={handleTempoChange}
-            onSwingChange={handleSwingChange}
-          />
+            <PresetSelector onPresetChange={handlePresetChange} />
 
-          <SyncControl
-            syncMode={syncMode}
-            onSyncModeChange={handleSyncModeChange}
-          />
+            <PlaybackControls
+              isPlaying={isPlaying}
+              onPlay={handlePlay}
+            />
+          </div>
 
-          <PlaybackControls
-            isPlaying={isPlaying}
-            onPlay={handlePlay}
-          />
+          <div className="controls-row">
+            <DivisionSelector
+              division={groove.division}
+              timeSignature={groove.timeSignature}
+              onDivisionChange={handleDivisionChange}
+            />
+          </div>
+
+          <div className="controls-row">
+            <TempoControl
+              tempo={groove.tempo}
+              swing={groove.swing}
+              division={groove.division}
+              onTempoChange={handleTempoChange}
+              onSwingChange={handleSwingChange}
+            />
+
+            <SyncControl
+              syncMode={syncMode}
+              onSyncModeChange={handleSyncModeChange}
+            />
+          </div>
         </section>
 
         <section className="grid-section">
@@ -102,46 +229,6 @@ function App() {
             onNoteToggle={handleNoteToggle}
             onPreview={handlePreview}
           />
-        </section>
-
-        <section className="info-section">
-          <div className="info-card">
-            <h3>Test Objectives</h3>
-            <ul>
-              <li>✓ Verify drum timing accuracy at different BPMs</li>
-              <li>✓ Test swing feel (0% = straight, 100% = triplet)</li>
-              <li>✓ Confirm drum sounds are distinct and clear</li>
-              <li>✓ Check synchronization between voices</li>
-            </ul>
-          </div>
-
-          <div className="info-card">
-            <h3>Current Settings</h3>
-            <ul>
-              <li><strong>Tempo:</strong> {groove.tempo} BPM</li>
-              <li><strong>Swing:</strong> {groove.swing}%</li>
-              <li><strong>Division:</strong> {groove.division}th notes</li>
-              <li><strong>Time Signature:</strong> {groove.timeSignature.beats}/{groove.timeSignature.noteValue}</li>
-            </ul>
-          </div>
-
-          <div className="info-card">
-            <h3>Instructions</h3>
-            <ul>
-              <li>Click cells to toggle drum hits</li>
-              <li>Click voice labels to preview sounds</li>
-              <li>Use presets to test different patterns</li>
-              <li>Adjust tempo and swing to test timing</li>
-              <li><strong>New:</strong> Changes during playback apply on next loop! 🔄</li>
-            </ul>
-          </div>
-
-          {isPlaying && hasPendingChanges && (
-            <div className="info-card" style={{ background: '#fff3cd', borderColor: '#ffc107' }}>
-              <h3>⏳ Changes Pending</h3>
-              <p>Your changes will take effect at the start of the next loop.</p>
-            </div>
-          )}
         </section>
       </main>
     </div>
