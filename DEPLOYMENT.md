@@ -4,6 +4,8 @@
 
 This guide covers deploying Groovy to a subdirectory on your web server.
 
+**Note:** To deploy to a different subdirectory, see `CHANGE_BASE_PATH.md`
+
 ---
 
 ## Quick Start

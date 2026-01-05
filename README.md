@@ -58,14 +58,55 @@ Open [http://localhost:5173](http://localhost:5173) in your browser.
 ### Build
 
 ```bash
+# Development build
 npm run build
+
+# Production build (for deployment)
+npm run build:prod
 ```
+
+### Preview Production Build
+
+```bash
+npm run preview:prod
+```
+
+Open [http://localhost:4173/scribe2/](http://localhost:4173/scribe2/) in your browser.
 
 ### Type Check
 
 ```bash
 npm run type-check
 ```
+
+## Deployment
+
+The app is configured to deploy to `/scribe2/` subdirectory by default.
+
+### Quick Deploy
+
+```bash
+# 1. Build for production
+npm run build:prod
+
+# 2. Upload dist/ contents to server
+# See DEPLOYMENT.md for detailed instructions
+```
+
+### Change Deployment Path
+
+To deploy to a different subdirectory or root:
+
+1. Edit `vite.config.ts`
+2. Change `PRODUCTION_BASE_PATH` constant
+3. Rebuild with `npm run build:prod`
+
+See `CHANGE_BASE_PATH.md` for detailed instructions.
+
+**Documentation:**
+- `DEPLOYMENT.md` - Full deployment guide
+- `CHANGE_BASE_PATH.md` - How to change deployment path
+- `ROUTER_FIX_UPDATE.md` - Latest deployment update
 
 ## Core Engine API
 

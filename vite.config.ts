@@ -1,13 +1,28 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
+// ============================================================================
+// DEPLOYMENT CONFIGURATION
+// ============================================================================
+// Change this to deploy to a different subdirectory
+// Examples:
+//   - Root deployment: '/'
+//   - Subdirectory: '/scribe2/'
+//   - Different subdirectory: '/my-app/'
+// Note: Must start and end with '/'
+const PRODUCTION_BASE_PATH = '/scribe2/';
+
+// ============================================================================
+// VITE CONFIGURATION
+// ============================================================================
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
 
-  // Base path for deployment to www.bahar.co.il/scribe2/
-  // Use '/' for root deployment, '/scribe2/' for subdirectory
-  base: process.env.NODE_ENV === 'production' ? '/scribe2/' : '/',
+  // Set base path for production deployment
+  // Development always uses '/' (root) for simplicity
+  // Production uses PRODUCTION_BASE_PATH defined above
+  base: process.env.NODE_ENV === 'production' ? PRODUCTION_BASE_PATH : '/',
 
   build: {
     // Output directory
