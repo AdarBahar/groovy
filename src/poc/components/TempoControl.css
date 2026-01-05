@@ -1,0 +1,71 @@
+.tempo-control {
+  flex: 1;
+  min-width: 250px;
+}
+
+.control-group {
+  margin-bottom: 20px;
+}
+
+.control-group label {
+  display: block;
+  margin-bottom: 8px;
+  color: #333;
+  font-size: 0.95rem;
+}
+
+.control-group strong {
+  color: #667eea;
+  font-size: 1.1rem;
+}
+
+.control-group input[type='range'] {
+  width: 100%;
+  height: 8px;
+  border-radius: 4px;
+  background: #e0e0e0;
+  outline: none;
+  -webkit-appearance: none;
+}
+
+.control-group input[type='range']::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s;
+}
+
+.control-group input[type='range']::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+  box-shadow: 0 3px 10px rgba(102, 126, 234, 0.4);
+}
+
+.control-group input[type='range']::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s;
+}
+
+.control-group input[type='range']::-moz-range-thumb:hover {
+  transform: scale(1.2);
+  box-shadow: 0 3px 10px rgba(102, 126, 234, 0.4);
+}
+
+.swing-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 4px;
+  font-size: 0.85rem;
+  color: #999;
+}
+

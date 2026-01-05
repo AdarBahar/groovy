@@ -1,0 +1,40 @@
+.navigation {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 1000;
+}
+
+.nav-link {
+  display: inline-block;
+  padding: 0.75rem 1.5rem;
+  background: rgba(255, 255, 255, 0.9);
+  color: #333;
+  text-decoration: none;
+  border-radius: 50px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+}
+
+.nav-link:hover {
+  background: white;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+  border-color: #667eea;
+}
+
+@media (max-width: 768px) {
+  .navigation {
+    top: 0.5rem;
+    right: 0.5rem;
+  }
+
+  .nav-link {
+    padding: 0.5rem 1rem;
+    font-size: 0.8rem;
+  }
+}
+

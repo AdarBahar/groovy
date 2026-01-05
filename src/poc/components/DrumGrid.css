@@ -1,0 +1,144 @@
+.drum-grid {
+  background: #fff;
+  border-radius: 8px;
+  padding: 10px;
+  min-width: 800px;
+}
+
+.grid-header {
+  display: grid;
+  grid-template-columns: 120px repeat(16, 1fr);
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.voice-label-header {
+  font-weight: bold;
+  color: #666;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+}
+
+.beat-label {
+  text-align: center;
+  font-size: 0.85rem;
+  color: #999;
+  padding: 4px;
+  font-weight: 500;
+}
+
+.beat-label.downbeat {
+  color: #667eea;
+  font-weight: bold;
+  font-size: 1rem;
+}
+
+.drum-row {
+  display: grid;
+  grid-template-columns: 120px repeat(16, 1fr);
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.voice-label {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 12px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.voice-label:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.voice-label:active {
+  transform: translateY(0);
+}
+
+.note-cell {
+  aspect-ratio: 1;
+  border: 2px solid #e0e0e0;
+  border-radius: 6px;
+  background: white;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  position: relative;
+}
+
+.note-cell:hover {
+  border-color: #667eea;
+  transform: scale(1.1);
+}
+
+.note-cell.downbeat {
+  border-color: #bbb;
+  background: #fafafa;
+}
+
+.note-cell.active {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-color: #667eea;
+  color: white;
+}
+
+.note-cell.active:hover {
+  background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+}
+
+.note-cell.current {
+  animation: pulse 0.3s ease-in-out;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.5);
+}
+
+.note-dot {
+  font-size: 1.8rem;
+  line-height: 1;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@media (max-width: 768px) {
+  .drum-grid {
+    min-width: 600px;
+  }
+
+  .grid-header,
+  .drum-row {
+    grid-template-columns: 100px repeat(16, 1fr);
+  }
+
+  .voice-label {
+    font-size: 0.8rem;
+    padding: 8px;
+  }
+
+  .note-dot {
+    font-size: 1.2rem;
+  }
+}
+

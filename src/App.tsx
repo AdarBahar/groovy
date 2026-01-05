@@ -1,25 +1,19 @@
-import { useState } from 'react'
-import './App.css'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import ProductionPage from './pages/ProductionPage';
+import PocPage from './pages/PocPage';
+import './App.css';
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <>
-      <h1>Groovy 🥁</h1>
-      <div className="card">
-        <p>Modern drum notation editor with clean architecture</p>
-        <p>Core logic is completely separated from UI</p>
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-      </div>
-      <p className="read-the-docs">
-        Ready to build something awesome!
-      </p>
-    </>
-  )
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<ProductionPage />} />
+        <Route path="/poc" element={<PocPage />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </BrowserRouter>
+  );
 }
 
-export default App
+export default App;
 
