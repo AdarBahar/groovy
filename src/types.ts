@@ -59,60 +59,142 @@ export interface Note {
   velocity: number; // 0-127
 }
 
-export interface GrooveData {
-  timeSignature: TimeSignature;
-  division: Division;
-  tempo: number; // BPM
-  swing: number; // 0-100 (percentage)
+/** Maximum number of measures allowed */
+export const MAX_MEASURES = 16;
 
-  // Notes for each voice (boolean array: true = hit, false = rest)
+/** All drum voices for iteration */
+export const ALL_DRUM_VOICES: DrumVoice[] = [
+  'hihat-closed', 'hihat-open', 'hihat-accent', 'hihat-foot',
+  'hihat-metronome-normal', 'hihat-metronome-accent', 'hihat-cross',
+  'snare-normal', 'snare-accent', 'snare-ghost', 'snare-cross-stick',
+  'snare-flam', 'snare-rim', 'snare-drag', 'snare-buzz',
+  'kick',
+  'tom-rack', 'tom-floor', 'tom-10', 'tom-16',
+  'crash', 'ride', 'ride-bell',
+  'cowbell', 'stacker',
+];
+
+/**
+ * Configuration for a single measure
+ * Each measure can have its own time signature (override) and notes
+ */
+export interface MeasureConfig {
+  /** Time signature for this measure (if different from global) */
+  timeSignature?: TimeSignature;
+  /** Notes for each voice in this measure */
   notes: Record<DrumVoice, boolean[]>;
 }
 
-// Helper to create empty notes array
-const createEmptyNotes = (division: number = 16): boolean[] =>
-  Array(division).fill(false);
+/**
+ * Main groove data structure
+ * Supports multiple measures with optional per-measure time signature overrides
+ */
+export interface GrooveData {
+  /** Default time signature (used when measure doesn't override) */
+  timeSignature: TimeSignature;
+  /** Division (note density) - shared across all measures */
+  division: Division;
+  /** Tempo in BPM */
+  tempo: number;
+  /** Swing percentage (0-100) */
+  swing: number;
+  /** Array of measures (1 to MAX_MEASURES) */
+  measures: MeasureConfig[];
+  /** Groove title (optional, for sharing/saving) */
+  title?: string;
+  /** Author name (optional, for sharing/saving) */
+  author?: string;
+  /** Comments/notes about the groove (optional) */
+  comments?: string;
+}
+
+/** Create empty notes record for all voices */
+export function createEmptyNotesRecord(length: number): Record<DrumVoice, boolean[]> {
+  const notes: Partial<Record<DrumVoice, boolean[]>> = {};
+  for (const voice of ALL_DRUM_VOICES) {
+    notes[voice] = Array(length).fill(false);
+  }
+  return notes as Record<DrumVoice, boolean[]>;
+}
+
+/** Create an empty measure with given time signature and division */
+export function createEmptyMeasure(
+  division: Division,
+  timeSignature: TimeSignature,
+  overrideTimeSignature?: TimeSignature
+): MeasureConfig {
+  const ts = overrideTimeSignature || timeSignature;
+  const notesPerMeasure = (division / ts.noteValue) * ts.beats;
+  return {
+    timeSignature: overrideTimeSignature,
+    notes: createEmptyNotesRecord(notesPerMeasure),
+  };
+}
+
+/** Create default notes for a measure (basic rock pattern) */
+function createDefaultMeasureNotes(): Record<DrumVoice, boolean[]> {
+  const notes = createEmptyNotesRecord(8);
+  // Hi-hat on all 8th notes
+  notes['hihat-closed'] = [true, true, true, true, true, true, true, true];
+  // Snare on beats 2 and 4
+  notes['snare-normal'] = [false, false, true, false, false, false, true, false];
+  // Kick on beats 1 and 3
+  notes['kick'] = [true, false, false, false, true, false, false, false];
+  return notes;
+}
 
 export const DEFAULT_GROOVE: GrooveData = {
   timeSignature: { beats: 4, noteValue: 4 },
-  division: 16,
+  division: 8,
   tempo: 120,
   swing: 0,
-  notes: {
-    // Hi-Hat variations
-    'hihat-closed': [true, false, true, false, true, false, true, false,
-                     true, false, true, false, true, false, true, false],
-    'hihat-open': createEmptyNotes(16),
-    'hihat-accent': createEmptyNotes(16),
-    'hihat-foot': createEmptyNotes(16),
-    'hihat-metronome-normal': createEmptyNotes(16),
-    'hihat-metronome-accent': createEmptyNotes(16),
-    'hihat-cross': createEmptyNotes(16),
-    // Snare variations
-    'snare-normal': [false, false, false, false, true, false, false, false,
-                     false, false, false, false, true, false, false, false],
-    'snare-accent': createEmptyNotes(16),
-    'snare-ghost': createEmptyNotes(16),
-    'snare-cross-stick': createEmptyNotes(16),
-    'snare-flam': createEmptyNotes(16),
-    'snare-rim': createEmptyNotes(16),
-    'snare-drag': createEmptyNotes(16),
-    'snare-buzz': createEmptyNotes(16),
-    // Kick
-    'kick': [true, false, false, false, false, false, false, false,
-             true, false, false, false, false, false, false, false],
-    // Toms
-    'tom-rack': createEmptyNotes(16),
-    'tom-floor': createEmptyNotes(16),
-    'tom-10': createEmptyNotes(16),
-    'tom-16': createEmptyNotes(16),
-    // Cymbals
-    'crash': createEmptyNotes(16),
-    'ride': createEmptyNotes(16),
-    'ride-bell': createEmptyNotes(16),
-    // Percussion
-    'cowbell': createEmptyNotes(16),
-    'stacker': createEmptyNotes(16),
-  }
+  measures: [
+    {
+      // First measure uses default time signature (no override)
+      notes: createDefaultMeasureNotes(),
+    },
+  ],
 };
+
+/**
+ * Get flattened notes across all measures for backward compatibility
+ * Concatenates notes from all measures into a single array per voice
+ */
+export function getFlattenedNotes(groove: GrooveData): Record<DrumVoice, boolean[]> {
+  const result: Partial<Record<DrumVoice, boolean[]>> = {};
+
+  for (const voice of ALL_DRUM_VOICES) {
+    const allNotes: boolean[] = [];
+    for (const measure of groove.measures) {
+      const measureNotes = measure.notes[voice] || [];
+      allNotes.push(...measureNotes);
+    }
+    result[voice] = allNotes;
+  }
+
+  return result as Record<DrumVoice, boolean[]>;
+}
+
+/**
+ * Get notes for a specific measure (convenience accessor)
+ */
+export function getMeasureNotes(
+  groove: GrooveData,
+  measureIndex: number
+): Record<DrumVoice, boolean[]> | undefined {
+  return groove.measures[measureIndex]?.notes;
+}
+
+/**
+ * Create a measure config from a notes record
+ */
+export function createMeasureFromNotes(
+  notes: Record<DrumVoice, boolean[]>,
+  timeSignature?: TimeSignature
+): MeasureConfig {
+  return {
+    timeSignature,
+    notes,
+  };
+}
 

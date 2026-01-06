@@ -25,7 +25,8 @@ function BulkOperationsDialog({
 }: BulkOperationsDialogProps) {
   const dialogRef = useRef<HTMLDivElement>(null);
   const [customPatterns, setCustomPatterns] = useState<CustomPattern[]>([]);
-  const [showSaveDialog, setShowSaveDialog] = useState(false);
+  const [_showSaveDialog, _setShowSaveDialog] = useState(false);
+  void _showSaveDialog; void _setShowSaveDialog; // TODO: implement save custom pattern feature
 
   // Load custom patterns for this category
   useEffect(() => {
@@ -69,7 +70,8 @@ function BulkOperationsDialog({
 
   if (!visible) return null;
 
-  const allPatterns = [...patterns, ...customPatterns];
+  const _allPatterns = [...patterns, ...customPatterns];
+  void _allPatterns; // TODO: use when custom patterns UI is added
 
   return (
     <div className="bulk-operations-overlay">
@@ -89,7 +91,7 @@ function BulkOperationsDialog({
           {onSaveCurrentPattern && (
             <button
               className="save-pattern-button"
-              onClick={() => setShowSaveDialog(true)}
+              onClick={() => _setShowSaveDialog(true)}
             >
               <i className="fa fa-save" aria-hidden="true"></i>
               Save Current Pattern

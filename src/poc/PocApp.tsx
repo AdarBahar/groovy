@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react';
-import { GrooveData, DEFAULT_GROOVE, DrumVoice, TimeSignature, Division } from '../types';
+import { useState, useEffect, useCallback } from 'react';
+import { GrooveData, DEFAULT_GROOVE, DrumVoice, TimeSignature, Division, ALL_DRUM_VOICES, createEmptyNotesRecord, MAX_MEASURES } from '../types';
 import { SyncMode, GrooveUtils } from '../core';
 import { useGrooveEngine } from '../hooks/useGrooveEngine';
 import { useHistory } from '../hooks/useHistory';
+import { useURLSync } from '../hooks/useURLSync';
 import DrumGrid from './components/DrumGrid';
 import PlaybackControls from './components/PlaybackControls';
 import TempoControl from './components/TempoControl';
@@ -12,11 +13,15 @@ import TimeSignatureSelector from './components/TimeSignatureSelector';
 import DivisionSelector from './components/DivisionSelector';
 import EditModeToggle from './components/EditModeToggle';
 import UndoRedoControls from './components/UndoRedoControls';
+import SheetMusicDisplay from './components/SheetMusicDisplay';
+import ShareButton from './components/ShareButton';
+import MetadataEditor from './components/MetadataEditor';
 import './PocApp.css';
 
 function App() {
   const [syncMode, setSyncMode] = useState<SyncMode>('start');
   const [advancedEditMode, setAdvancedEditMode] = useState(false);
+  const [showSheetMusic, setShowSheetMusic] = useState(true);
 
   // Use history hook for undo/redo
   const {
@@ -39,6 +44,9 @@ function App() {
     play,
     stop,
   } = useGrooveEngine();
+
+  // URL sync: load groove from URL on init, update URL on changes
+  const { copyURLToClipboard } = useURLSync(groove, setGroove);
 
   // Initialize sync mode to 'start' on mount
   useEffect(() => {
@@ -75,17 +83,81 @@ function App() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [canUndo, canRedo, undo, redo, updateGroove, groove]);
 
-  const handleNoteToggle = (voice: DrumVoice, position: number) => {
-    const newGroove = {
-      ...groove,
-      notes: {
-        ...groove.notes,
-        [voice]: groove.notes[voice].map((note, i) => (i === position ? !note : note)),
-      },
-    };
+  const handleNoteToggle = (voice: DrumVoice, position: number, measureIndex: number) => {
+    const newMeasures = groove.measures.map((measure, idx) => {
+      if (idx !== measureIndex) return measure;
+      return {
+        ...measure,
+        notes: {
+          ...measure.notes,
+          [voice]: measure.notes[voice].map((note, i) => (i === position ? !note : note)),
+        },
+      };
+    });
+    const newGroove = { ...groove, measures: newMeasures };
     setGroove(newGroove);
     updateGroove(newGroove);
   };
+
+  // Measure manipulation handlers
+  const handleMeasureDuplicate = useCallback((measureIndex: number) => {
+    if (groove.measures.length >= MAX_MEASURES) return;
+    const measureToCopy = groove.measures[measureIndex];
+    // Deep copy the notes
+    const copiedNotes = Object.fromEntries(
+      Object.entries(measureToCopy.notes).map(([voice, notes]) => [voice, [...notes]])
+    ) as typeof measureToCopy.notes;
+    const newMeasure = { ...measureToCopy, notes: copiedNotes };
+    const newMeasures = [
+      ...groove.measures.slice(0, measureIndex + 1),
+      newMeasure,
+      ...groove.measures.slice(measureIndex + 1),
+    ];
+    const newGroove = { ...groove, measures: newMeasures };
+    setGroove(newGroove);
+    updateGroove(newGroove);
+  }, [groove, setGroove, updateGroove]);
+
+  const handleMeasureAdd = useCallback((afterIndex: number) => {
+    if (groove.measures.length >= MAX_MEASURES) return;
+    const notesPerMeasure = GrooveUtils.calcNotesPerMeasure(
+      groove.division,
+      groove.timeSignature.beats,
+      groove.timeSignature.noteValue
+    );
+    const newMeasure = { notes: createEmptyNotesRecord(notesPerMeasure) };
+    const newMeasures = [
+      ...groove.measures.slice(0, afterIndex + 1),
+      newMeasure,
+      ...groove.measures.slice(afterIndex + 1),
+    ];
+    const newGroove = { ...groove, measures: newMeasures };
+    setGroove(newGroove);
+    updateGroove(newGroove);
+  }, [groove, setGroove, updateGroove]);
+
+  const handleMeasureRemove = useCallback((measureIndex: number) => {
+    if (groove.measures.length <= 1) return;
+    const newMeasures = groove.measures.filter((_, idx) => idx !== measureIndex);
+    const newGroove = { ...groove, measures: newMeasures };
+    setGroove(newGroove);
+    updateGroove(newGroove);
+  }, [groove, setGroove, updateGroove]);
+
+  const handleMeasureClear = useCallback((measureIndex: number) => {
+    const notesPerMeasure = GrooveUtils.calcNotesPerMeasure(
+      groove.division,
+      groove.timeSignature.beats,
+      groove.timeSignature.noteValue
+    );
+    const newMeasures = groove.measures.map((measure, idx) => {
+      if (idx !== measureIndex) return measure;
+      return { ...measure, notes: createEmptyNotesRecord(notesPerMeasure) };
+    });
+    const newGroove = { ...groove, measures: newMeasures };
+    setGroove(newGroove);
+    updateGroove(newGroove);
+  }, [groove, setGroove, updateGroove]);
 
   const handlePlay = async () => {
     await togglePlayback(groove);
@@ -102,6 +174,23 @@ function App() {
     setGroove(newGroove);
     updateGroove(newGroove);
   };
+
+  // Metadata handlers
+  const handleTitleChange = useCallback((title: string) => {
+    const newGroove = { ...groove, title: title || undefined };
+    setGroove(newGroove);
+    // Don't call updateGroove for metadata-only changes (no audio impact)
+  }, [groove, setGroove]);
+
+  const handleAuthorChange = useCallback((author: string) => {
+    const newGroove = { ...groove, author: author || undefined };
+    setGroove(newGroove);
+  }, [groove, setGroove]);
+
+  const handleCommentsChange = useCallback((comments: string) => {
+    const newGroove = { ...groove, comments: comments || undefined };
+    setGroove(newGroove);
+  }, [groove, setGroove]);
 
   const handlePresetChange = (preset: GrooveData) => {
     setGroove(preset);
@@ -126,11 +215,6 @@ function App() {
     }
 
     const oldDivision = groove.division;
-    const oldNotesPerMeasure = GrooveUtils.calcNotesPerMeasure(
-      oldDivision,
-      groove.timeSignature.beats,
-      groove.timeSignature.noteValue
-    );
 
     // Check if current division is compatible with new time signature
     let newDivision = oldDivision;
@@ -145,21 +229,31 @@ function App() {
       timeSignature.noteValue
     );
 
-    // Resize all note arrays
-    const newNotes: Record<DrumVoice, boolean[]> = {} as any;
-    Object.keys(groove.notes).forEach(voice => {
-      newNotes[voice as DrumVoice] = GrooveUtils.resizeNotesArray(
-        groove.notes[voice as DrumVoice],
-        oldNotesPerMeasure,
-        newNotesPerMeasure
-      );
+    // Resize notes in each measure
+    const newMeasures = groove.measures.map((measure) => {
+      const oldTs = measure.timeSignature || groove.timeSignature;
+      const oldNotesPerMeasure = GrooveUtils.calcNotesPerMeasure(oldDivision, oldTs.beats, oldTs.noteValue);
+
+      const newNotes: Record<DrumVoice, boolean[]> = {} as Record<DrumVoice, boolean[]>;
+      for (const voice of ALL_DRUM_VOICES) {
+        newNotes[voice] = GrooveUtils.resizeNotesArray(
+          measure.notes[voice],
+          oldNotesPerMeasure,
+          newNotesPerMeasure
+        );
+      }
+      return {
+        ...measure,
+        timeSignature: undefined, // Clear per-measure overrides when global changes
+        notes: newNotes,
+      };
     });
 
     const newGroove: GrooveData = {
       ...groove,
       timeSignature,
       division: newDivision,
-      notes: newNotes,
+      measures: newMeasures,
       swing: GrooveUtils.doesDivisionSupportSwing(newDivision) ? groove.swing : 0,
     };
 
@@ -180,32 +274,27 @@ function App() {
       stop();
     }
 
-    const oldNotesPerMeasure = GrooveUtils.calcNotesPerMeasure(
-      groove.division,
-      groove.timeSignature.beats,
-      groove.timeSignature.noteValue
-    );
+    // Resize notes in each measure
+    const newMeasures = groove.measures.map((measure) => {
+      const ts = measure.timeSignature || groove.timeSignature;
+      const oldNotesPerMeasure = GrooveUtils.calcNotesPerMeasure(groove.division, ts.beats, ts.noteValue);
+      const newNotesPerMeasure = GrooveUtils.calcNotesPerMeasure(division, ts.beats, ts.noteValue);
 
-    const newNotesPerMeasure = GrooveUtils.calcNotesPerMeasure(
-      division,
-      groove.timeSignature.beats,
-      groove.timeSignature.noteValue
-    );
-
-    // Resize all note arrays
-    const newNotes: Record<DrumVoice, boolean[]> = {} as any;
-    Object.keys(groove.notes).forEach(voice => {
-      newNotes[voice as DrumVoice] = GrooveUtils.resizeNotesArray(
-        groove.notes[voice as DrumVoice],
-        oldNotesPerMeasure,
-        newNotesPerMeasure
-      );
+      const newNotes: Record<DrumVoice, boolean[]> = {} as Record<DrumVoice, boolean[]>;
+      for (const voice of ALL_DRUM_VOICES) {
+        newNotes[voice] = GrooveUtils.resizeNotesArray(
+          measure.notes[voice],
+          oldNotesPerMeasure,
+          newNotesPerMeasure
+        );
+      }
+      return { ...measure, notes: newNotes };
     });
 
     const newGroove: GrooveData = {
       ...groove,
       division,
-      notes: newNotes,
+      measures: newMeasures,
       swing: GrooveUtils.doesDivisionSupportSwing(division) ? groove.swing : 0,
     };
 
@@ -278,7 +367,34 @@ function App() {
               onUndo={undo}
               onRedo={redo}
             />
+
+            <button
+              className={`toggle-button ${showSheetMusic ? 'active' : ''}`}
+              onClick={() => setShowSheetMusic(!showSheetMusic)}
+              title={showSheetMusic ? 'Hide sheet music' : 'Show sheet music'}
+            >
+              🎼 {showSheetMusic ? 'Hide' : 'Show'} Notation
+            </button>
+
+            <ShareButton onCopyURL={copyURLToClipboard} />
           </div>
+
+          <MetadataEditor
+            title={groove.title || ''}
+            author={groove.author || ''}
+            comments={groove.comments || ''}
+            onTitleChange={handleTitleChange}
+            onAuthorChange={handleAuthorChange}
+            onCommentsChange={handleCommentsChange}
+          />
+
+          {/* Sheet music above editor for visual alignment */}
+          <SheetMusicDisplay
+            groove={groove}
+            visible={showSheetMusic}
+            currentPosition={currentPosition}
+            isPlaying={isPlaying}
+          />
 
           <DrumGrid
             groove={groove}
@@ -286,6 +402,10 @@ function App() {
             onNoteToggle={handleNoteToggle}
             onPreview={handlePreview}
             advancedEditMode={advancedEditMode}
+            onMeasureDuplicate={handleMeasureDuplicate}
+            onMeasureAdd={handleMeasureAdd}
+            onMeasureRemove={handleMeasureRemove}
+            onMeasureClear={handleMeasureClear}
           />
         </section>
 

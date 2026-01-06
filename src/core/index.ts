@@ -23,3 +23,24 @@ export type { BulkPattern } from './BulkPatterns';
 export { PatternManager } from './PatternManager';
 export type { CustomPattern } from './PatternManager';
 
+// ABC Notation
+export { ABCTranscoder, grooveToABC, hasHandsNotes, hasFeetNotes } from './ABCTranscoder';
+export type { ABCTranscoderOptions } from './ABCTranscoder';
+export {
+  ABC_SYMBOLS,
+  URL_TAB_CHARS,
+  HANDS_VOICES,
+  FEET_VOICES,
+  ABC_BOILERPLATE,
+  ABC_REST,
+  generateABCHeader,
+  getNoteDurationSuffix,
+  isTripletDivision,
+} from './ABCConstants';
+
+// ABC Rendering
+export { ABCRenderer, renderABC, renderABCToString, clearRenderedABC } from './ABCRenderer';
+export type { ABCRenderOptions, ABCRenderResult } from './ABCRenderer';
+
+// URL Encoding
+export { GrooveURLCodec, encodeGrooveToURL, decodeURLToGroove, getShareableURL, hasGrooveParams } from './GrooveURLCodec';
