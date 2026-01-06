@@ -1,6 +1,8 @@
 import { GrooveData, DrumVoice } from '../../types';
-import { GrooveUtils } from '../../core';
+import { GrooveUtils, HI_HAT_PATTERNS, SNARE_PATTERNS, KICK_PATTERNS, BulkPattern } from '../../core';
 import { useState, useRef, useEffect } from 'react';
+import BulkOperationsDialog from './BulkOperationsDialog';
+import NoteIcon from './NoteIcon';
 import './DrumGrid.css';
 
 interface DrumGridProps {
@@ -8,6 +10,7 @@ interface DrumGridProps {
   currentPosition: number;
   onNoteToggle: (voice: DrumVoice, position: number) => void;
   onPreview: (voice: DrumVoice) => void;
+  advancedEditMode?: boolean;
 }
 
 // Define drum rows with their variations
@@ -30,6 +33,9 @@ const DRUM_ROWS: DrumRow[] = [
       { voices: ['ride-bell'], label: 'Ride Bell', shortcut: '6' },
       { voices: ['cowbell'], label: 'Cowbell', shortcut: '7' },
       { voices: ['stacker'], label: 'Stacker', shortcut: '8' },
+      { voices: ['hihat-metronome-normal'], label: 'Metronome', shortcut: '9' },
+      { voices: ['hihat-metronome-accent'], label: 'Metronome Accent', shortcut: '0' },
+      { voices: ['hihat-cross'], label: 'Cross' },
     ],
   },
   {
@@ -42,6 +48,8 @@ const DRUM_ROWS: DrumRow[] = [
       { voices: ['snare-cross-stick'], label: 'Cross Stick', shortcut: '4' },
       { voices: ['snare-flam'], label: 'Flam', shortcut: '5' },
       { voices: ['snare-rim'], label: 'Rimshot', shortcut: '6' },
+      { voices: ['snare-drag'], label: 'Drag', shortcut: '7' },
+      { voices: ['snare-buzz'], label: 'Buzz', shortcut: '8' },
     ],
   },
   {
@@ -76,7 +84,7 @@ const DRUM_ROWS: DrumRow[] = [
   },
 ];
 
-function DrumGrid({ groove, currentPosition, onNoteToggle, onPreview }: DrumGridProps) {
+function DrumGrid({ groove, currentPosition, onNoteToggle, onPreview, advancedEditMode = false }: DrumGridProps) {
   const positions = Array.from({ length: groove.division }, (_, i) => i);
 
   // Track which voices are selected for each row at each position
@@ -98,6 +106,21 @@ function DrumGrid({ groove, currentPosition, onNoteToggle, onPreview }: DrumGrid
     y: number;
     rowIndex: number;
     position: number;
+  } | null>(null);
+
+  // Drag-to-paint state
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragMode, setDragMode] = useState<'paint' | 'erase' | null>(null);
+
+  // Touch support state
+  const [touchStartTime, setTouchStartTime] = useState<number>(0);
+  const [touchMoved, setTouchMoved] = useState(false);
+
+  // Bulk operations dialog state
+  const [bulkDialog, setBulkDialog] = useState<{
+    visible: boolean;
+    rowIndex: number;
+    measureIndex: number;
   } | null>(null);
 
   const contextMenuRef = useRef<HTMLDivElement>(null);
@@ -133,6 +156,21 @@ function DrumGrid({ groove, currentPosition, onNoteToggle, onPreview }: DrumGrid
       };
     }
   }, [contextMenu]);
+
+  // Handle global mouseup to end drag operations
+  useEffect(() => {
+    const handleMouseUp = () => {
+      if (isDragging) {
+        setIsDragging(false);
+        setDragMode(null);
+      }
+    };
+
+    document.addEventListener('mouseup', handleMouseUp);
+    return () => {
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isDragging]);
 
   // Determine if a position is a downbeat based on time signature
   // Downbeats occur at the start of each beat
@@ -175,8 +213,131 @@ function DrumGrid({ groove, currentPosition, onNoteToggle, onPreview }: DrumGrid
     return variation?.label || row.variations[0].label;
   };
 
-  // Handle left click - toggle notes with selected voices
-  const handleLeftClick = (rowIndex: number, position: number) => {
+  // Get the active voices at a position (voices that are actually turned on)
+  const getActiveVoices = (rowIndex: number, position: number): DrumVoice[] => {
+    const row = DRUM_ROWS[rowIndex];
+    const activeVoices: DrumVoice[] = [];
+    row.variations.forEach(v => {
+      v.voices.forEach(voice => {
+        if (groove.notes[voice]?.[position] && !activeVoices.includes(voice)) {
+          activeVoices.push(voice);
+        }
+      });
+    });
+    return activeVoices;
+  };
+
+  // Handle mouse down - start drag operation if Ctrl/Alt/Shift is pressed
+  const handleMouseDown = (event: React.MouseEvent, rowIndex: number, position: number) => {
+    // Check for drag modifiers:
+    // - Ctrl/Cmd for paint
+    // - Alt/Option or Shift for erase (Shift is more reliable on Mac)
+    if (event.ctrlKey || event.metaKey) {
+      event.preventDefault();
+      setIsDragging(true);
+      setDragMode('paint');
+      // Apply paint action to current cell
+      applyDragAction('paint', rowIndex, position);
+    } else if (event.altKey || event.shiftKey) {
+      event.preventDefault();
+      setIsDragging(true);
+      setDragMode('erase');
+      // Apply erase action to current cell
+      applyDragAction('erase', rowIndex, position);
+    }
+  };
+
+  // Handle mouse enter - continue drag operation
+  const handleMouseEnter = (rowIndex: number, position: number) => {
+    if (isDragging && dragMode) {
+      applyDragAction(dragMode, rowIndex, position);
+    }
+  };
+
+  // Apply drag action (paint or erase)
+  const applyDragAction = (mode: 'paint' | 'erase', rowIndex: number, position: number) => {
+    const voices = getVoicesForPosition(rowIndex, position);
+    const isActive = isPositionActive(rowIndex, position);
+
+    if (mode === 'paint' && !isActive) {
+      // Paint: turn on selected voices
+      voices.forEach(voice => {
+        onNoteToggle(voice, position);
+      });
+    } else if (mode === 'erase' && isActive) {
+      // Erase: turn off all voices for this row at this position
+      const row = DRUM_ROWS[rowIndex];
+      row.variations.forEach(v => {
+        v.voices.forEach(voice => {
+          if (groove.notes[voice]?.[position]) {
+            onNoteToggle(voice, position);
+          }
+        });
+      });
+    }
+  };
+
+  // Touch event handlers for mobile support
+  const handleTouchStart = (event: React.TouchEvent, rowIndex: number, position: number) => {
+    setTouchStartTime(Date.now());
+    setTouchMoved(false);
+
+    // Start drag mode (paint by default on touch)
+    setIsDragging(true);
+    setDragMode('paint');
+    applyDragAction('paint', rowIndex, position);
+  };
+
+  const handleTouchMove = (event: React.TouchEvent) => {
+    setTouchMoved(true);
+
+    if (!isDragging) return;
+
+    // Get the element under the touch point
+    const touch = event.touches[0];
+    const element = document.elementFromPoint(touch.clientX, touch.clientY);
+
+    if (element && element.classList.contains('note-cell')) {
+      // Extract row and position from data attributes
+      const cellButton = element as HTMLButtonElement;
+      const rowIndex = parseInt(cellButton.dataset.rowIndex || '-1');
+      const position = parseInt(cellButton.dataset.position || '-1');
+
+      if (rowIndex >= 0 && position >= 0 && dragMode) {
+        applyDragAction(dragMode, rowIndex, position);
+      }
+    }
+  };
+
+  const handleTouchEnd = (event: React.TouchEvent, rowIndex: number, position: number) => {
+    const touchDuration = Date.now() - touchStartTime;
+
+    // If touch was held for > 500ms and didn't move much, treat as long-press (context menu)
+    if (touchDuration > 500 && !touchMoved) {
+      event.preventDefault();
+      handleRightClick(event as unknown as React.MouseEvent, rowIndex, position);
+    }
+
+    // End drag mode
+    setIsDragging(false);
+    setDragMode(null);
+    setTouchMoved(false);
+  };
+
+  // Handle left click - toggle notes with selected voices (or open menu in advanced mode)
+  const handleLeftClick = (event: React.MouseEvent, rowIndex: number, position: number) => {
+    // Don't handle click if we're dragging
+    if (isDragging) {
+      return;
+    }
+
+    // In advanced mode, left-click delegates to right-click behavior
+    if (advancedEditMode) {
+      handleRightClick(event, rowIndex, position);
+      return;
+    }
+
+    // Simple mode: toggle notes with selected voices
     const voices = getVoicesForPosition(rowIndex, position);
     const isActive = isPositionActive(rowIndex, position);
 
@@ -252,8 +413,57 @@ function DrumGrid({ groove, currentPosition, onNoteToggle, onPreview }: DrumGrid
     setContextMenu(null);
   };
 
+  // Handle voice label click - open bulk operations dialog
+  const handleVoiceLabelClick = (rowIndex: number, measureIndex: number) => {
+    setBulkDialog({ visible: true, rowIndex, measureIndex });
+  };
+
+  // Get bulk patterns for a row
+  const getBulkPatternsForRow = (rowIndex: number): BulkPattern[] => {
+    const rowName = DRUM_ROWS[rowIndex].name;
+    if (rowName === 'Hi-Hat') return HI_HAT_PATTERNS;
+    if (rowName === 'Snare') return SNARE_PATTERNS;
+    if (rowName === 'Kick') return KICK_PATTERNS;
+    return []; // Toms don't have bulk patterns yet
+  };
+
+  // Apply bulk pattern to a measure
+  const handleBulkPatternSelect = (pattern: BulkPattern) => {
+    if (!bulkDialog) return;
+
+    const { rowIndex, measureIndex } = bulkDialog;
+    const measure = measures[measureIndex];
+    const row = DRUM_ROWS[rowIndex];
+
+    // First, clear all voices for this row in this measure
+    measure.forEach(pos => {
+      row.variations.forEach(v => {
+        v.voices.forEach(voice => {
+          if (groove.notes[voice]?.[pos]) {
+            onNoteToggle(voice, pos);
+          }
+        });
+      });
+    });
+
+    // Then, apply the pattern
+    measure.forEach(pos => {
+      const shouldBeOn = pattern.pattern(pos % notesPerMeasure, notesPerMeasure);
+      if (shouldBeOn && pattern.voices.length > 0) {
+        pattern.voices.forEach(voice => {
+          onNoteToggle(voice, pos);
+        });
+      }
+    });
+
+    // Preview the first voice if pattern has voices
+    if (pattern.voices.length > 0) {
+      onPreview(pattern.voices[0]);
+    }
+  };
+
   return (
-    <div className="drum-grid">
+    <div className={`drum-grid ${isDragging ? 'dragging' : ''}`}>
       <div className="measures-container">
         {measures.map((measure, measureIndex) => (
           <div key={measureIndex} className="measure">
@@ -284,8 +494,12 @@ function DrumGrid({ groove, currentPosition, onNoteToggle, onPreview }: DrumGrid
               <div key={rowIndex} className="drum-row">
                 <button
                   className="voice-label"
-                  onClick={() => onPreview(row.defaultVoices[0])}
-                  title={`Click to preview ${row.name}`}
+                  onClick={() => handleVoiceLabelClick(rowIndex, measureIndex)}
+                  onContextMenu={(e) => {
+                    e.preventDefault();
+                    onPreview(row.defaultVoices[0]);
+                  }}
+                  title={`Click for bulk operations, right-click to preview ${row.name}`}
                 >
                   {row.name}
                 </button>
@@ -297,18 +511,26 @@ function DrumGrid({ groove, currentPosition, onNoteToggle, onPreview }: DrumGrid
                   const variationLabel = getVariationLabel(rowIndex, pos);
                   const hasVariations = row.variations.length > 1;
                   const isNonDefault = variationLabel !== row.variations[0].label;
+                  const activeVoices = getActiveVoices(rowIndex, pos);
 
                   return (
                     <button
                       key={pos}
                       className={`note-cell ${isActive ? 'active' : ''} ${
                         isCurrent ? 'current' : ''
-                      } ${isDown ? 'downbeat' : ''} ${hasVariations ? 'has-variations' : ''} ${isNonDefault ? 'non-default' : ''}`}
-                      onClick={() => handleLeftClick(rowIndex, pos)}
+                      } ${isDown ? 'downbeat' : ''} ${hasVariations ? 'has-variations' : ''} ${isNonDefault ? 'non-default' : ''} ${advancedEditMode ? 'advanced-mode' : ''} ${isDragging ? (dragMode === 'paint' ? 'drag-paint' : 'drag-erase') : ''}`}
+                      data-row-index={rowIndex}
+                      data-position={pos}
+                      onClick={(e) => handleLeftClick(e, rowIndex, pos)}
+                      onMouseDown={(e) => handleMouseDown(e, rowIndex, pos)}
+                      onMouseEnter={() => handleMouseEnter(rowIndex, pos)}
                       onContextMenu={(e) => handleRightClick(e, rowIndex, pos)}
-                      title={`${row.name} - ${variationLabel} at position ${pos + 1}${hasVariations ? ' (right-click for options)' : ''}`}
+                      onTouchStart={(e) => handleTouchStart(e, rowIndex, pos)}
+                      onTouchMove={handleTouchMove}
+                      onTouchEnd={(e) => handleTouchEnd(e, rowIndex, pos)}
+                      title={`${row.name} - ${variationLabel} at position ${pos + 1}${hasVariations ? (advancedEditMode ? ' (click for options)' : ' (right-click for options)') : ''}`}
                     >
-                      {isActive && <span className="note-dot">●</span>}
+                      <NoteIcon voices={activeVoices} isActive={isActive} />
                       {isActive && isNonDefault && hasVariations && (
                         <span className="variation-indicator">*</span>
                       )}
@@ -355,6 +577,17 @@ function DrumGrid({ groove, currentPosition, onNoteToggle, onPreview }: DrumGrid
             );
           })}
         </div>
+      )}
+
+      {/* Bulk Operations Dialog */}
+      {bulkDialog?.visible && (
+        <BulkOperationsDialog
+          visible={bulkDialog.visible}
+          rowName={DRUM_ROWS[bulkDialog.rowIndex].name}
+          patterns={getBulkPatternsForRow(bulkDialog.rowIndex)}
+          onPatternSelect={handleBulkPatternSelect}
+          onClose={() => setBulkDialog(null)}
+        />
       )}
     </div>
   );

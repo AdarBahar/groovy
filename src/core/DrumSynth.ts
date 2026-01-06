@@ -16,6 +16,9 @@ export class DrumSynth {
     'hihat-open': 'Hi Hat Open.mp3',
     'hihat-accent': 'Hi Hat Accent.mp3',
     'hihat-foot': 'Hi Hat Foot.mp3',
+    'hihat-metronome-normal': 'metronomeClick.mp3',
+    'hihat-metronome-accent': 'metronome1Count.mp3',
+    'hihat-cross': 'Hi Hat Normal.mp3', // Use normal hi-hat for cross stick pattern
     // Snare variations
     'snare-normal': 'Snare Normal.mp3',
     'snare-accent': 'Snare Accent.mp3',
@@ -23,6 +26,8 @@ export class DrumSynth {
     'snare-cross-stick': 'Snare Cross Stick.mp3',
     'snare-flam': 'Snare Flam.mp3',
     'snare-rim': 'Rim.mp3',
+    'snare-drag': 'Drag.mp3',
+    'snare-buzz': 'Buzz.mp3',
     // Kick
     'kick': 'Kick.mp3',
     // Toms

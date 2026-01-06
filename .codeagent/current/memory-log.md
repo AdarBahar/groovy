@@ -4,6 +4,212 @@ Durable knowledge: decisions, patterns, "how we do things here", gotchas.
 
 ---
 
+## Note Creation & Editing Patterns
+
+### Undo/Redo Implementation (2026-01-05)
+**Decision**: Use custom `useHistory` hook with configurable history limit (default 50 actions).
+
+**Reasoning**:
+- Generic, reusable hook for any state management
+- Prevents memory bloat with configurable limit
+- Simple API: `undo()`, `redo()`, `canUndo`, `canRedo`
+- Works seamlessly with React state
+
+**Pattern**:
+```typescript
+const { state, setState, undo, redo, canUndo, canRedo } = useHistory<T>(initialState, limit);
+```
+
+**Gotcha**: When undoing/redoing, must manually sync with engine:
+```typescript
+undo();
+setTimeout(() => updateGroove(groove), 0);  // Sync after state updates
+```
+
+---
+
+### Touch Support for Mobile (2026-01-05)
+**Decision**: Implement touch events alongside mouse events for full mobile support.
+
+**Reasoning**:
+- Mobile users need drag-to-paint functionality
+- Long-press provides context menu access
+- Touch targets must be 44x44px minimum for accessibility
+- Prevent default behaviors to avoid text selection and callouts
+
+**Pattern**:
+```typescript
+// Touch start
+onTouchStart={(e) => {
+  e.preventDefault();
+  longPressTimer = setTimeout(() => openContextMenu(), 500);
+}}
+
+// Touch move
+onTouchMove={(e) => {
+  e.preventDefault();
+  clearTimeout(longPressTimer);
+  // Paint notes as user drags
+}}
+
+// Touch end
+onTouchEnd={(e) => {
+  e.preventDefault();
+  clearTimeout(longPressTimer);
+}}
+```
+
+**Gotcha**:
+- Must call `e.preventDefault()` to prevent default touch behaviors
+- Long-press timer must be cleared on move/end to avoid false triggers
+- Touch coordinates are in `e.touches[0]`, not `e.clientX/Y`
+- Use `document.elementFromPoint()` to find cell under touch
+
+---
+
+### Custom Pattern Saving (2026-01-05)
+**Decision**: Use localStorage for custom pattern persistence with category organization.
+
+**Reasoning**:
+- No backend required for POC
+- Patterns persist across page reloads
+- Category organization (hi-hat, snare, kick, tom) keeps patterns organized
+- JSON export/import allows sharing patterns
+
+**Pattern**:
+```typescript
+// Save pattern
+PatternManager.savePattern({
+  id: 'my-pattern',
+  label: 'My Groove',
+  description: 'Custom pattern',
+  category: 'hihat',
+  pattern: (notes) => { /* transform notes */ },
+  createdAt: Date.now()
+});
+
+// Load patterns by category
+const patterns = PatternManager.loadPatternsByCategory('hihat');
+```
+
+**Gotcha**:
+- localStorage has ~5-10MB limit (varies by browser)
+- Pattern functions can't be serialized - must reconstruct on load
+- Must validate imported JSON to prevent malicious code
+- Consider adding pattern count limit to prevent storage overflow
+
+---
+
+### Bulk Pattern Operations (2026-01-05)
+**Decision**: Centralize bulk patterns in `BulkPatterns.ts` with metadata and pattern functions.
+
+**Reasoning**:
+- Single source of truth for all patterns
+- Easy to add new patterns
+- Testable (each pattern is a pure function)
+- Metadata (label, description) improves UX
+
+**Pattern**:
+```typescript
+export const HI_HAT_PATTERNS: BulkPattern[] = [
+  {
+    id: 'hihat-all-on',
+    label: 'All On',
+    description: 'Fill every position',
+    pattern: (notes) => notes.map(() => true)
+  },
+  // ... more patterns
+];
+```
+
+**Gotcha**: Pattern functions receive current notes array and return new array - must not mutate original.
+
+---
+
+### Articulation Icons (2026-01-05)
+**Decision**: Use Font Awesome icons with custom mappings for each articulation.
+
+**Reasoning**:
+- Visual distinction between articulations
+- No need for custom SVG assets
+- Accessible with ARIA labels
+- Consistent sizing and styling
+
+**Pattern**:
+```typescript
+const iconMap: Record<string, string> = {
+  'normal': 'fa-circle',
+  'accent': 'fa-circle-exclamation',
+  'ghost': 'fa-circle-o',
+  // ... more mappings
+};
+```
+
+**Gotcha**: Font Awesome must be loaded in `index.html` - icons won't show without CDN link.
+
+---
+
+### Advanced Edit Mode (2026-01-05)
+**Decision**: Toggle between simple mode (click to toggle) and advanced mode (click to open menu).
+
+**Reasoning**:
+- Simple mode is faster for basic editing
+- Advanced mode is better when frequently changing articulations
+- Toggle with 'E' key for quick switching
+- Visual indicator shows current mode
+
+**Pattern**:
+```typescript
+const [advancedEditMode, setAdvancedEditMode] = useState(false);
+
+const handleCellClick = (voice, position) => {
+  if (advancedEditMode) {
+    openArticulationMenu(voice, position);
+  } else {
+    toggleNote(voice, position);
+  }
+};
+```
+
+**Gotcha**: Must handle both left-click and right-click in advanced mode - right-click always opens menu.
+
+---
+
+## Testing Patterns
+
+### Unit Testing with Vitest (2026-01-05)
+**Decision**: Use Vitest for unit testing core logic (bulk patterns, utilities, etc.).
+
+**Reasoning**:
+- Fast, modern test runner built on Vite
+- Compatible with Vite build setup
+- Supports TypeScript out of the box
+- UI mode for interactive testing
+
+**Pattern**:
+```typescript
+import { describe, it, expect } from 'vitest';
+
+describe('BulkPatterns', () => {
+  it('should fill all positions', () => {
+    const notes = [false, false, false, false];
+    const result = ALL_ON_PATTERN.pattern(notes);
+    expect(result).toEqual([true, true, true, true]);
+  });
+});
+```
+
+**Commands**:
+- `npm test` - Run tests once
+- `npm run test:watch` - Watch mode
+- `npm run test:ui` - Interactive UI
+
+**Gotcha**: Vitest config must be in root directory (`vitest.config.ts`), not in `src/`.
+
+---
+
+---
+
 ## Playback & UI Patterns
 
 ### Playback Restart on Division/Time Signature Change (2026-01-05)

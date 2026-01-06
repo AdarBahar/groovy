@@ -12,6 +12,121 @@ Format:
 
 ---
 
+## 2026-01-05: Note Creation Feature Enhancements
+
+**Summary**: Comprehensive enhancements to note creation including documentation, testing, mobile support, undo/redo, and custom pattern saving.
+
+**Key Changes**:
+
+- **Documentation** (5 new files):
+  - `docs/USER_GUIDE.md` - Comprehensive user guide explaining advanced mode, drag-to-paint, bulk operations, and all features
+  - `docs/QUICK_REFERENCE.md` - Quick reference card with keyboard shortcuts and patterns
+  - `docs/DEMO_VIDEO_SCRIPT.md` - Full 4-minute video script with production notes and social media cuts
+  - `docs/DEMO_TALKING_POINTS.md` - Live demo guide with scenarios and Q&A
+  - `docs/DEMO_STORYBOARD.md` - Frame-by-frame visual guide with ASCII mockups
+  - `docs/DEMO_CHEAT_SHEET.md` - Quick demo reference for presentations
+
+- **Unit Testing** (2 new files):
+  - `vitest.config.ts` - Test configuration
+  - `src/core/BulkPatterns.test.ts` - Comprehensive tests for all 15 bulk patterns
+  - Added test scripts: `npm test`, `npm run test:watch`, `npm run test:ui`
+  - All tests passing ✅
+
+- **Touch Support** (`src/poc/components/DrumGrid.tsx`, `DrumGrid.css`):
+  - Touch and drag to paint notes
+  - Long-press (500ms) to open articulation menu
+  - Touch-friendly sizing (44x44px minimum touch targets)
+  - Prevent default behaviors (no text selection, no callouts)
+  - Responsive media queries for mobile and tablets
+
+- **Undo/Redo** (3 new files):
+  - `src/hooks/useHistory.ts` - Generic history management hook with 50-action limit
+  - `src/poc/components/UndoRedoControls.tsx` - UI controls with buttons
+  - `src/poc/components/UndoRedoControls.css` - Styling with dark mode support
+  - Keyboard shortcuts: Ctrl+Z (undo), Ctrl+Shift+Z/Ctrl+Y (redo)
+  - Integrated into `PocApp.tsx` with engine synchronization
+
+- **Custom Pattern Saving** (1 new file):
+  - `src/core/PatternManager.ts` - Pattern persistence with localStorage
+  - Save/load/delete custom patterns
+  - Category organization (hi-hat, snare, kick, tom)
+  - Export/import JSON support
+  - Updated `BulkOperationsDialog.tsx` with save UI and custom pattern display
+
+- **Bug Fixes**:
+  - Fixed missing drum sample mappings in `DrumSynth.ts`:
+    - `snare-drag` → `Drag.mp3`
+    - `snare-buzz` → `Buzz.mp3`
+    - `hihat-metronome-normal` → `metronomeClick.mp3`
+    - `hihat-metronome-accent` → `metronome1Count.mp3`
+    - `hihat-cross` → `Hi Hat Normal.mp3`
+  - Eliminated console errors for missing samples
+
+- **Core Enhancements**:
+  - `src/core/ArticulationConfig.ts` - Centralized articulation metadata
+  - `src/core/BulkPatterns.ts` - 15 bulk pattern operations (hi-hat, snare, kick)
+  - `src/poc/components/EditModeToggle.tsx` - Advanced mode toggle component
+  - `src/poc/components/NoteIcon.tsx` - Articulation-specific icons
+  - Updated `src/types.ts` with articulation types and metadata
+
+**Files Created**: 19 total
+- Core: 4 files (ArticulationConfig, BulkPatterns, BulkPatterns.test, PatternManager)
+- Hooks: 1 file (useHistory)
+- Components: 8 files (EditModeToggle, BulkOperationsDialog, NoteIcon, UndoRedoControls + CSS)
+- Documentation: 5 files (USER_GUIDE, QUICK_REFERENCE, DEMO_VIDEO_SCRIPT, DEMO_TALKING_POINTS, DEMO_STORYBOARD, DEMO_CHEAT_SHEET)
+- Config: 1 file (vitest.config.ts)
+
+**Files Modified**: 10 total
+- `src/types.ts`, `src/core/index.ts`, `src/core/DrumSynth.ts`
+- `src/poc/PocApp.tsx`, `src/poc/PocApp.css`
+- `src/poc/components/DrumGrid.tsx`, `src/poc/components/DrumGrid.css`
+- `index.html`, `package.json`
+
+**Impact**:
+- ✅ **No more console errors** - All drum samples properly mapped
+- ✅ **Comprehensive documentation** - Users can learn all features
+- ✅ **Full test coverage** - All bulk patterns tested and passing
+- ✅ **Mobile-ready** - Touch support for phones and tablets
+- ✅ **Undo/Redo** - Safe experimentation with 50-action history
+- ✅ **Custom patterns** - Users can save and reuse their own patterns
+- ✅ **Demo resources** - Complete video script and presentation materials
+
+**Behavior Changes**:
+- **Advanced Edit Mode**: Toggle with 'E' key - left-click opens articulation menu
+- **Drag-to-Paint**: Ctrl+drag to paint, Alt+drag to erase
+- **Bulk Operations**: Click voice labels to open pattern dialog
+- **Touch Gestures**: Tap to toggle, drag to paint, long-press for menu
+- **Undo/Redo**: Ctrl+Z to undo, Ctrl+Shift+Z or Ctrl+Y to redo
+- **Custom Patterns**: Save button in bulk dialog, patterns persist in localStorage
+
+**Testing**:
+- ✅ All 15 bulk patterns tested (hi-hat, snare, kick)
+- ✅ Type checks passing
+- ✅ Production build successful
+- ✅ No console errors
+- ✅ Touch events working (tested in dev tools)
+- ✅ Undo/redo working with keyboard and UI
+- ✅ Custom patterns persisting across page reloads
+
+**Dependencies Added**:
+- `vitest@^2.1.8` (devDependency) - Testing framework
+
+**Deployment Notes**:
+- No deployment changes required
+- All changes are client-side enhancements
+- Build size unchanged (~480KB code + 272KB sounds)
+- Test commands: `npm test`, `npm run test:watch`, `npm run test:ui`
+
+**Follow-ups**:
+- Test touch support on real mobile devices (currently tested in dev tools)
+- Get user feedback on advanced mode and drag-to-paint UX
+- Record demo video using provided scripts
+- Consider adding pattern export/import UI (API is ready)
+- Consider adding visual feedback for undo/redo actions
+- Monitor localStorage usage for custom patterns (consider limits)
+
+---
+
 ## 2026-01-05: Playback Restart on Division Change & Default Sync Mode
 
 **Summary**: Fixed audio/visual desync when changing division during playback by restarting from beginning. Changed default sync mode from "middle" to "start".

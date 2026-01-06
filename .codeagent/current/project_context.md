@@ -30,6 +30,33 @@ Groovy is a **modern drum notation editor and player** built with strict separat
 
 ## Recent Changes (2026-01-05)
 
+### Note Creation Feature Enhancements
+- ✅ **Fixed missing samples**: All drum sample mappings corrected, no console errors
+- ✅ **Comprehensive documentation**: User guide, quick reference, demo resources
+- ✅ **Unit tests**: All 15 bulk patterns tested with Vitest
+- ✅ **Touch support**: Full mobile support with drag-to-paint and long-press
+- ✅ **Undo/Redo**: 50-action history with keyboard shortcuts and UI controls
+- ✅ **Custom patterns**: Save/load custom patterns with localStorage persistence
+
+**New Features**:
+- **Advanced Edit Mode**: Toggle with 'E' key - left-click opens articulation menu
+- **Drag-to-Paint**: Ctrl+drag to paint, Alt+drag to erase
+- **Bulk Operations**: Click voice labels for 15 built-in patterns
+- **Touch Gestures**: Tap to toggle, drag to paint, long-press for menu
+- **Undo/Redo**: Ctrl+Z to undo, Ctrl+Shift+Z or Ctrl+Y to redo
+- **Custom Patterns**: Save button in bulk dialog, patterns persist across reloads
+
+**Files Created**: 19 total (4 core, 1 hook, 8 components, 5 docs, 1 config)
+**Files Modified**: 10 total
+
+**Documentation**:
+- `docs/USER_GUIDE.md` - Comprehensive user guide
+- `docs/QUICK_REFERENCE.md` - Quick reference card
+- `docs/DEMO_VIDEO_SCRIPT.md` - Full video script
+- `docs/DEMO_TALKING_POINTS.md` - Live demo guide
+- `docs/DEMO_STORYBOARD.md` - Visual storyboard
+- `docs/DEMO_CHEAT_SHEET.md` - Quick demo reference
+
 ### Playback Restart on Division Change & Default Sync Mode
 - ✅ **Fixed critical bug**: Division/time signature changes during playback now restart from position 0
 - ✅ **Prevents audio/visual desync**: Visual progress always matches audio position
@@ -77,15 +104,22 @@ Groovy is a **modern drum notation editor and player** built with strict separat
 - Loop management with pending groove updates
 
 **POC Testing Interface** (`/poc`)
-- Full drum grid (hihat, snare, kick)
+- Full drum grid (hihat, snare, kick) with articulation support
 - Playback controls (play/stop with visual feedback)
 - Tempo control (40-240 BPM)
 - Swing control (0-100%)
 - Pattern presets (Basic Rock, Disco, Funk, Reggae, Bossa Nova, Samba, Shuffle, Waltz)
-- Sync mode selection
+- Sync mode selection (default: "start")
 - Real-time position indicator
 - Sound preview on voice labels
 - 30 drum samples loaded from `/public/sounds/`
+- **Advanced edit mode** - Toggle with 'E' key
+- **Drag-to-paint** - Ctrl+drag to paint, Alt+drag to erase
+- **Bulk operations** - 15 built-in patterns (hi-hat, snare, kick)
+- **Articulation selection** - Right-click or advanced mode for 50+ articulations
+- **Touch support** - Tap, drag, long-press for mobile
+- **Undo/Redo** - Ctrl+Z/Ctrl+Y with 50-action history
+- **Custom patterns** - Save/load custom patterns with localStorage
 
 **Production UI** (`/`)
 - Placeholder page with navigation
@@ -114,6 +148,15 @@ Groovy is a **modern drum notation editor and player** built with strict separat
 ---
 
 ## Recent Changes (Newest First)
+
+### 2026-01-05: Note Creation Feature Enhancements
+- Fixed missing drum sample mappings (no more console errors)
+- Created comprehensive documentation (user guide, demo resources)
+- Added unit tests with Vitest (all 15 bulk patterns tested)
+- Implemented touch support for mobile (drag-to-paint, long-press)
+- Added undo/redo functionality (50-action history)
+- Implemented custom pattern saving (localStorage persistence)
+- See `.codeagent/current/project_history.md` for detailed history
 
 ### 2026-01-05: Playback Restart on Division Change & Default Sync Mode
 - Fixed audio/visual desync when changing division during playback

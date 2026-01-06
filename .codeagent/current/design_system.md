@@ -83,14 +83,15 @@ UI patterns, design decisions, and style guide for Groovy.
 ## Components
 
 ### DrumGrid (POC)
-**Purpose**: Interactive drum pattern editor
+**Purpose**: Interactive drum pattern editor with articulation support
 
 **Design**:
 - Grid layout with rows for each drum voice (hihat, snare, kick)
 - Columns for each beat position (16 by default)
-- Cells toggle on/off with click
+- Cells show articulation-specific icons (Font Awesome)
 - Active cells highlighted with voice-specific color
 - Current playback position highlighted
+- Touch-friendly sizing (44x44px minimum)
 
 **Colors**:
 - Hihat: `#FFD700` (gold)
@@ -99,10 +100,24 @@ UI patterns, design decisions, and style guide for Groovy.
 - Active cell: Voice color with opacity
 - Current position: Bright highlight
 
-**Interaction**:
-- Click to toggle note on/off
-- Hover shows pointer cursor
-- Visual feedback on click
+**Interaction** (2026-01-05 enhancements):
+- **Simple Mode (default)**:
+  - Left-click to toggle note on/off
+  - Right-click to open articulation menu
+- **Advanced Mode** (toggle with 'E'):
+  - Left-click to open articulation menu
+  - Right-click to open articulation menu
+- **Drag-to-Paint**:
+  - Ctrl+drag to paint notes (crosshair cursor)
+  - Alt+drag to erase notes (not-allowed cursor)
+- **Touch Support**:
+  - Tap to toggle note
+  - Drag to paint notes
+  - Long-press (500ms) to open articulation menu
+- **Visual Feedback**:
+  - Hover shows pointer cursor
+  - Drag mode shows crosshair or not-allowed cursor
+  - Icons change based on articulation
 
 ---
 
@@ -186,6 +201,95 @@ UI patterns, design decisions, and style guide for Groovy.
 **States**:
 - Default: Semi-transparent
 - Hover: Fully opaque
+
+---
+
+### EditModeToggle (POC) - NEW 2026-01-05
+**Purpose**: Toggle between simple and advanced edit modes
+
+**Design**:
+- Toggle switch with label
+- Shows current mode (Simple/Advanced)
+- Purple accent color when advanced mode active
+- Keyboard shortcut: 'E' key
+
+**States**:
+- Simple Mode: Gray background, "Simple" label
+- Advanced Mode: Purple background, "Advanced" label
+- Hover: Slightly lighter background
+
+---
+
+### BulkOperationsDialog (POC) - NEW 2026-01-05
+**Purpose**: Select bulk patterns to apply to entire measure
+
+**Design**:
+- Modal dialog overlay
+- Pattern buttons in grid layout
+- Built-in patterns section
+- Custom patterns section (with star icons)
+- Save current pattern button (gradient purple)
+- Delete buttons for custom patterns (red)
+
+**Patterns**:
+- **Hi-Hat**: All On, Upbeats, Downbeats, Eighths, Clear
+- **Snare**: All On, Backbeat, Ghost Notes, Accents, Clear
+- **Kick**: All On, Four on Floor, Foot on Beats, Foot on "&"s, Clear
+
+**Interaction**:
+- Click voice label (Hi-Hat, Snare, Kick) to open
+- Click pattern to apply and close
+- Click save button to save current pattern
+- Click delete button to remove custom pattern
+- Click outside or X to close without applying
+
+---
+
+### NoteIcon (POC) - NEW 2026-01-05
+**Purpose**: Display articulation-specific icons in grid cells
+
+**Design**:
+- Font Awesome icons
+- Different icon for each articulation
+- Scales with cell size
+- Color matches voice color
+
+**Icon Mappings**:
+- Normal: `fa-circle`
+- Accent: `fa-circle-exclamation`
+- Ghost: `fa-circle-o`
+- Rim: `fa-circle-dot`
+- Drag/Buzz: `fa-wave-square`
+- Open: `fa-circle-o`
+- Half-Open: `fa-adjust`
+- Pedal: `fa-shoe-prints`
+- Cross-Stick: `fa-xmark`
+- Metronome: `fa-bell`
+
+---
+
+### UndoRedoControls (POC) - NEW 2026-01-05
+**Purpose**: Undo/redo buttons with keyboard shortcuts
+
+**Design**:
+- Two buttons side-by-side
+- Undo button: `fa-undo` icon + "Undo" label
+- Redo button: `fa-repeat` icon + "Redo" label
+- Disabled state when no actions available
+- Tooltips show keyboard shortcuts
+
+**States**:
+- Enabled: White background, colored on hover
+- Disabled: Gray, 40% opacity, no pointer
+- Hover: Purple border and text
+
+**Keyboard Shortcuts**:
+- Undo: Ctrl+Z (⌘+Z on Mac)
+- Redo: Ctrl+Shift+Z or Ctrl+Y (⌘+Shift+Z or ⌘+Y on Mac)
+
+**Responsive**:
+- Desktop: Show icon + label
+- Mobile: Show icon only (labels hidden)
 
 ---
 
