@@ -16,4 +16,10 @@ export { GrooveEngine } from './GrooveEngine';
 export type { GrooveEngineEvents, SyncMode } from './GrooveEngine';
 export { DrumSynth } from './DrumSynth';
 export { GrooveUtils } from './GrooveUtils';
+export { ARTICULATION_CONFIG, getArticulationMeta, getArticulationsByCategory } from './ArticulationConfig';
+export type { ArticulationMeta, InstrumentCategory } from './ArticulationConfig';
+export { HI_HAT_PATTERNS, SNARE_PATTERNS, KICK_PATTERNS } from './BulkPatterns';
+export type { BulkPattern } from './BulkPatterns';
+export { PatternManager } from './PatternManager';
+export type { CustomPattern } from './PatternManager';
 

@@ -11,7 +11,10 @@
     "preview": "vite preview",
     "preview:prod": "NODE_ENV=production vite preview --port 4173",
     "lint": "eslint .",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:ui": "vitest --ui"
   },
   "dependencies": {
     "react": "^18.3.1",

@@ -1,0 +1,254 @@
+.bulk-operations-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.bulk-operations-dialog {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  max-width: 500px;
+  width: 90%;
+  max-height: 80vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.bulk-dialog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid #e0e0e0;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.bulk-dialog-header h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.close-button {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 2rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+
+.close-button:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.bulk-dialog-content {
+  padding: 1.5rem;
+  overflow-y: auto;
+}
+
+.bulk-dialog-description {
+  margin: 0 0 1rem 0;
+  color: #666;
+  font-size: 0.95rem;
+}
+
+.pattern-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.pattern-button {
+  background: white;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: left;
+}
+
+.pattern-button:hover {
+  border-color: #667eea;
+  background: #f8f9ff;
+  transform: translateX(4px);
+}
+
+.pattern-button:active {
+  transform: translateX(2px);
+}
+
+.pattern-label {
+  font-weight: 600;
+  font-size: 1rem;
+  color: #333;
+  margin-bottom: 0.25rem;
+}
+
+.pattern-description {
+  font-size: 0.85rem;
+  color: #666;
+}
+
+.save-pattern-button {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.save-pattern-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.save-pattern-button:active {
+  transform: translateY(0);
+}
+
+.pattern-section-header {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #667eea;
+  margin: 1rem 0 0.5rem 0;
+  padding-bottom: 0.25rem;
+  border-bottom: 2px solid #e0e0e0;
+}
+
+.pattern-section-header:first-child {
+  margin-top: 0;
+}
+
+.custom-pattern-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: stretch;
+}
+
+.pattern-button.custom {
+  flex: 1;
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  border-color: transparent;
+  color: white;
+}
+
+.pattern-button.custom .pattern-label {
+  color: white;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.pattern-button.custom .pattern-description {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.pattern-button.custom:hover {
+  transform: translateX(4px);
+  box-shadow: 0 4px 12px rgba(240, 147, 251, 0.4);
+}
+
+.delete-pattern-button {
+  background: #ff4444;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  cursor: pointer;
+  padding: 0 1rem;
+  transition: all 0.2s;
+  min-width: 44px;
+}
+
+.delete-pattern-button:hover {
+  background: #cc0000;
+  transform: scale(1.05);
+}
+
+.delete-pattern-button:active {
+  transform: scale(0.95);
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .bulk-operations-dialog {
+    background: #2a2a2a;
+  }
+
+  .bulk-dialog-header {
+    border-bottom-color: #444;
+  }
+
+  .bulk-dialog-description {
+    color: #aaa;
+  }
+
+  .pattern-button {
+    background: #1a1a1a;
+    border-color: #444;
+  }
+
+  .pattern-button:hover {
+    background: #333;
+    border-color: #667eea;
+  }
+
+  .pattern-label {
+    color: #e0e0e0;
+  }
+
+  .pattern-description {
+    color: #aaa;
+  }
+}
+

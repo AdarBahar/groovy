@@ -9,6 +9,9 @@ export type DrumVoice =
   | 'hihat-open'
   | 'hihat-accent'
   | 'hihat-foot'
+  | 'hihat-metronome-normal'
+  | 'hihat-metronome-accent'
+  | 'hihat-cross'
   // Snare variations
   | 'snare-normal'
   | 'snare-accent'
@@ -16,6 +19,8 @@ export type DrumVoice =
   | 'snare-cross-stick'
   | 'snare-flam'
   | 'snare-rim'
+  | 'snare-drag'
+  | 'snare-buzz'
   // Kick
   | 'kick'
   // Toms
@@ -80,6 +85,9 @@ export const DEFAULT_GROOVE: GrooveData = {
     'hihat-open': createEmptyNotes(16),
     'hihat-accent': createEmptyNotes(16),
     'hihat-foot': createEmptyNotes(16),
+    'hihat-metronome-normal': createEmptyNotes(16),
+    'hihat-metronome-accent': createEmptyNotes(16),
+    'hihat-cross': createEmptyNotes(16),
     // Snare variations
     'snare-normal': [false, false, false, false, true, false, false, false,
                      false, false, false, false, true, false, false, false],
@@ -88,6 +96,8 @@ export const DEFAULT_GROOVE: GrooveData = {
     'snare-cross-stick': createEmptyNotes(16),
     'snare-flam': createEmptyNotes(16),
     'snare-rim': createEmptyNotes(16),
+    'snare-drag': createEmptyNotes(16),
+    'snare-buzz': createEmptyNotes(16),
     // Kick
     'kick': [true, false, false, false, false, false, false, false,
              true, false, false, false, false, false, false, false],

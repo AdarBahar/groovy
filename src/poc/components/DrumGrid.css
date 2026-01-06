@@ -148,6 +148,39 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  /* Touch-friendly enhancements */
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: none; /* Prevent default touch behaviors */
+}
+
+/* Advanced mode styling */
+.note-cell.advanced-mode {
+  cursor: context-menu;
+}
+
+.note-cell.advanced-mode.has-variations:hover {
+  border-color: #667eea;
+  box-shadow: 0 0 0 1px #667eea;
+}
+
+/* Drag-to-paint styling */
+.note-cell.drag-paint {
+  cursor: crosshair !important;
+}
+
+.note-cell.drag-erase {
+  cursor: not-allowed !important;
+}
+
+.drum-grid.dragging {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
   font-size: 0.7rem;
   position: relative;
   padding: 0;
@@ -348,6 +381,35 @@
 
   .measure {
     padding: 8px;
+  }
+
+  /* Touch-friendly sizing on mobile */
+  .note-cell {
+    min-width: 40px;
+    min-height: 40px;
+  }
+
+  .voice-label {
+    min-height: 44px;
+    font-size: 0.75rem;
+  }
+}
+
+/* Tablet and larger touch devices */
+@media (hover: none) and (pointer: coarse) {
+  .note-cell {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .voice-label {
+    min-height: 48px;
+  }
+
+  /* Increase touch target for context menu items */
+  .context-menu button {
+    min-height: 44px;
+    padding: 0.75rem 1rem;
   }
 }
 

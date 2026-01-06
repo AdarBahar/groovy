@@ -1,0 +1,79 @@
+.undo-redo-controls {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.undo-button,
+.redo-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background: white;
+  color: #333;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.9rem;
+}
+
+.undo-button:hover:not(:disabled),
+.redo-button:hover:not(:disabled) {
+  background: #f5f5f5;
+  border-color: #667eea;
+  color: #667eea;
+}
+
+.undo-button:active:not(:disabled),
+.redo-button:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.undo-button:disabled,
+.redo-button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.undo-button i,
+.redo-button i {
+  font-size: 1rem;
+}
+
+.button-label {
+  font-weight: 500;
+}
+
+/* Responsive: hide labels on small screens */
+@media (max-width: 768px) {
+  .button-label {
+    display: none;
+  }
+
+  .undo-button,
+  .redo-button {
+    padding: 0.5rem;
+    min-width: 40px;
+    justify-content: center;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .undo-button,
+  .redo-button {
+    background: #2a2a2a;
+    border-color: #444;
+    color: #e0e0e0;
+  }
+
+  .undo-button:hover:not(:disabled),
+  .redo-button:hover:not(:disabled) {
+    background: #333;
+    border-color: #8b9dff;
+    color: #8b9dff;
+  }
+}
+
