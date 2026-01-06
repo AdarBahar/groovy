@@ -30,6 +30,21 @@ Groovy is a **modern drum notation editor and player** built with strict separat
 
 ## Recent Changes
 
+### 2026-01-06: URL Encoding & Metadata Sharing (Issue #13)
+- ✅ **URL sharing**: Groove state encoded in URL params for sharing/bookmarking
+- ✅ **Share button**: Copy shareable URL to clipboard with visual feedback
+- ✅ **Metadata fields**: Title, Author, Comments added to GrooveData
+- ✅ **Metadata editor**: Input fields for groove metadata in UI
+- ✅ **Auto URL sync**: URL updates automatically as user edits (debounced)
+- ✅ **URL loading**: Opening shared URL restores exact groove state
+
+### 2026-01-06: Sheet Music Enhancements
+- ✅ **Multi-line sheet music**: Breaks to new line after 3 measures
+- ✅ **Per-line cursor**: Cursor appears only on currently playing line
+- ✅ **Hidden empty beats**: Changed visible rests (`z`) to invisible rests (`x`)
+- ✅ **Default 1/8 notes**: Changed default division from 16 to 8
+- ✅ **Measure numbers**: Added `%%barnumbers 1` directive for measure counting
+
 ### 2026-01-06: Issue #3 Complete
 - ✅ **Issue #3 closed**: Note Creation and Drum Part Mapping - all requirements met
 - ✅ **Keyboard shortcuts footer**: Persistent footer showing all shortcuts (Space, E, ⌘+drag, ⇧+drag, ⌘Z, ⌘⇧Z)

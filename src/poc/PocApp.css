@@ -71,6 +71,32 @@ body {
   flex-wrap: wrap;
 }
 
+.toggle-button {
+  padding: 0.5rem 1rem;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  background: #f8f9fa;
+  color: #495057;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.toggle-button:hover {
+  background: #e9ecef;
+  border-color: #adb5bd;
+}
+
+.toggle-button.active {
+  background: #667eea;
+  color: white;
+  border-color: #667eea;
+}
+
+.toggle-button.active:hover {
+  background: #5a6fd6;
+}
+
 .info-section {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));

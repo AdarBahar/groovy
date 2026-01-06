@@ -293,6 +293,34 @@ UI patterns, design decisions, and style guide for Groovy.
 
 ---
 
+### SheetMusicDisplay (POC) - UPDATED 2026-01-06
+**Purpose**: Render ABC notation as SVG sheet music with playback cursor
+
+**Design**:
+- Uses abcjs library for ABC → SVG rendering
+- Multi-line support: breaks after every 3 measures
+- Per-line cursor tracking during playback
+- Measure numbers displayed above each measure
+- Hidden empty beats (invisible rests preserve spacing)
+
+**Layout**:
+- Max width: 780px, centered
+- Background: white card with rounded corners
+- Responsive: scales with container width
+
+**Cursor Behavior**:
+- Appears only on currently playing line
+- Smooth horizontal animation within line
+- Instant jump when transitioning between lines
+- Fades out at end, fades in at start when looping
+
+**ABC Notation Features**:
+- `%%barnumbers 1` - Show measure numbers
+- `%%flatbeams 1` - Flat beams for drum notation
+- `x` rest symbol - Invisible rests (preserve spacing, no visual)
+
+---
+
 ### ShortcutsFooter (POC) - NEW 2026-01-06
 **Purpose**: Persistent footer showing all keyboard shortcuts
 
@@ -319,6 +347,42 @@ UI patterns, design decisions, and style guide for Groovy.
 **Responsive**:
 - Desktop: Full text, 1.5rem gaps
 - Mobile: Smaller text, 1rem gaps
+
+---
+
+### ShareButton (POC) - NEW 2026-01-06
+**Purpose**: Copy shareable groove URL to clipboard
+
+**Design**:
+- Button styled consistently with other toggle buttons
+- Shows "🔗 Share" by default
+- Changes to "✓ Copied!" for 2 seconds after click
+- Active state (blue highlight) when showing "Copied"
+
+**States**:
+- Default: "🔗 Share"
+- Copied: "✓ Copied!" with active styling
+- Auto-resets after 2 seconds
+
+---
+
+### MetadataEditor (POC) - NEW 2026-01-06
+**Purpose**: Edit groove metadata (title, author, comments)
+
+**Design**:
+- Horizontal layout with flex-wrap
+- Dark background (#1a1a2e) with border
+- Responsive: stacks on mobile
+
+**Fields**:
+- **Title**: Text input, max 100 chars, placeholder "Untitled Groove"
+- **Author**: Text input, max 50 chars, placeholder "Anonymous"
+- **Notes**: Textarea, max 500 chars, 2 rows, placeholder "Add notes..."
+
+**Styling**:
+- Labels: uppercase, 0.75rem, muted gray
+- Inputs: Dark background (#252540), purple focus ring
+- Responsive: full-width fields on mobile (<600px)
 
 ---
 

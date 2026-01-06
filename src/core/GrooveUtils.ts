@@ -1,4 +1,14 @@
-import { Division, DivisionInfo } from '../types';
+import {
+  Division,
+  DivisionInfo,
+  GrooveData,
+  MeasureConfig,
+  TimeSignature,
+  DrumVoice,
+  ALL_DRUM_VOICES,
+  MAX_MEASURES,
+  createEmptyNotesRecord,
+} from '../types';
 
 /**
  * Pure calculation functions for time signatures and divisions
@@ -94,19 +104,19 @@ export class GrooveUtils {
 
   /**
    * Get default division for a time signature
-   * Tries 16 first (most common), falls back to first compatible
+   * Tries 8 first (1/8 notes), falls back to first compatible
    */
   static getDefaultDivision(
     beats: number,
     noteValue: 4 | 8 | 16
   ): Division {
-    // Try 16 first (most common)
-    if (this.isDivisionCompatible(16, beats, noteValue)) {
-      return 16;
+    // Try 8 first (1/8 notes - default)
+    if (this.isDivisionCompatible(8, beats, noteValue)) {
+      return 8;
     }
     // Fall back to first compatible
     const compatible = this.getCompatibleDivisions(beats, noteValue);
-    return compatible[0] || 16;
+    return compatible[0] || 8;
   }
 
   /**
@@ -246,6 +256,228 @@ export class GrooveUtils {
 
     // Fallback
     return positionInBeat === 0 ? beatNumber.toString() : '';
+  }
+
+  // ============================================================
+  // MEASURE MANIPULATION METHODS
+  // ============================================================
+
+  /**
+   * Get the effective time signature for a measure
+   * Uses measure override if present, otherwise falls back to global
+   */
+  static getMeasureTimeSignature(
+    groove: GrooveData,
+    measureIndex: number
+  ): TimeSignature {
+    const measure = groove.measures[measureIndex];
+    return measure?.timeSignature || groove.timeSignature;
+  }
+
+  /**
+   * Get notes per measure for a specific measure
+   */
+  static getNotesPerMeasureForIndex(
+    groove: GrooveData,
+    measureIndex: number
+  ): number {
+    const ts = this.getMeasureTimeSignature(groove, measureIndex);
+    return this.calcNotesPerMeasure(groove.division, ts.beats, ts.noteValue);
+  }
+
+  /**
+   * Get total positions across all measures
+   */
+  static getTotalPositions(groove: GrooveData): number {
+    return groove.measures.reduce((total, _, index) => {
+      return total + this.getNotesPerMeasureForIndex(groove, index);
+    }, 0);
+  }
+
+  /**
+   * Convert absolute position to measure index and position within measure
+   */
+  static absoluteToMeasurePosition(
+    groove: GrooveData,
+    absolutePosition: number
+  ): { measureIndex: number; positionInMeasure: number } {
+    let remaining = absolutePosition;
+    for (let i = 0; i < groove.measures.length; i++) {
+      const notesInMeasure = this.getNotesPerMeasureForIndex(groove, i);
+      if (remaining < notesInMeasure) {
+        return { measureIndex: i, positionInMeasure: remaining };
+      }
+      remaining -= notesInMeasure;
+    }
+    // Fallback to last measure
+    const lastIndex = groove.measures.length - 1;
+    return {
+      measureIndex: lastIndex,
+      positionInMeasure: remaining % this.getNotesPerMeasureForIndex(groove, lastIndex),
+    };
+  }
+
+  /**
+   * Convert measure position to absolute position
+   */
+  static measureToAbsolutePosition(
+    groove: GrooveData,
+    measureIndex: number,
+    positionInMeasure: number
+  ): number {
+    let absolute = 0;
+    for (let i = 0; i < measureIndex && i < groove.measures.length; i++) {
+      absolute += this.getNotesPerMeasureForIndex(groove, i);
+    }
+    return absolute + positionInMeasure;
+  }
+
+  /**
+   * Duplicate a measure at the given index
+   * Returns new groove with duplicated measure inserted after the original
+   */
+  static duplicateMeasure(groove: GrooveData, measureIndex: number): GrooveData {
+    if (groove.measures.length >= MAX_MEASURES) {
+      console.warn(`Cannot duplicate: already at maximum ${MAX_MEASURES} measures`);
+      return groove;
+    }
+    if (measureIndex < 0 || measureIndex >= groove.measures.length) {
+      console.warn(`Invalid measure index: ${measureIndex}`);
+      return groove;
+    }
+
+    const originalMeasure = groove.measures[measureIndex];
+    const duplicatedMeasure: MeasureConfig = {
+      timeSignature: originalMeasure.timeSignature
+        ? { ...originalMeasure.timeSignature }
+        : undefined,
+      notes: {} as Record<DrumVoice, boolean[]>,
+    };
+
+    // Deep copy the notes
+    for (const voice of ALL_DRUM_VOICES) {
+      duplicatedMeasure.notes[voice] = [...(originalMeasure.notes[voice] || [])];
+    }
+
+    const newMeasures = [...groove.measures];
+    newMeasures.splice(measureIndex + 1, 0, duplicatedMeasure);
+
+    return { ...groove, measures: newMeasures };
+  }
+
+  /**
+   * Add a blank measure after the given index
+   * Uses global time signature by default, or optional override
+   */
+  static addBlankMeasure(
+    groove: GrooveData,
+    afterIndex: number,
+    overrideTimeSignature?: TimeSignature
+  ): GrooveData {
+    if (groove.measures.length >= MAX_MEASURES) {
+      console.warn(`Cannot add: already at maximum ${MAX_MEASURES} measures`);
+      return groove;
+    }
+
+    const ts = overrideTimeSignature || groove.timeSignature;
+    const notesPerMeasure = this.calcNotesPerMeasure(
+      groove.division,
+      ts.beats,
+      ts.noteValue
+    );
+
+    const newMeasure: MeasureConfig = {
+      timeSignature: overrideTimeSignature,
+      notes: createEmptyNotesRecord(notesPerMeasure),
+    };
+
+    const insertIndex = Math.min(afterIndex + 1, groove.measures.length);
+    const newMeasures = [...groove.measures];
+    newMeasures.splice(insertIndex, 0, newMeasure);
+
+    return { ...groove, measures: newMeasures };
+  }
+
+  /**
+   * Remove a measure at the given index
+   * Cannot remove if only one measure remains
+   */
+  static removeMeasure(groove: GrooveData, measureIndex: number): GrooveData {
+    if (groove.measures.length <= 1) {
+      console.warn('Cannot remove: at least one measure must remain');
+      return groove;
+    }
+    if (measureIndex < 0 || measureIndex >= groove.measures.length) {
+      console.warn(`Invalid measure index: ${measureIndex}`);
+      return groove;
+    }
+
+    const newMeasures = groove.measures.filter((_, i) => i !== measureIndex);
+    return { ...groove, measures: newMeasures };
+  }
+
+  /**
+   * Clear all notes in a measure (keep structure)
+   */
+  static clearMeasure(groove: GrooveData, measureIndex: number): GrooveData {
+    if (measureIndex < 0 || measureIndex >= groove.measures.length) {
+      console.warn(`Invalid measure index: ${measureIndex}`);
+      return groove;
+    }
+
+    const measure = groove.measures[measureIndex];
+    const notesLength = measure.notes[ALL_DRUM_VOICES[0]]?.length || 16;
+
+    const clearedMeasure: MeasureConfig = {
+      timeSignature: measure.timeSignature,
+      notes: createEmptyNotesRecord(notesLength),
+    };
+
+    const newMeasures = [...groove.measures];
+    newMeasures[measureIndex] = clearedMeasure;
+
+    return { ...groove, measures: newMeasures };
+  }
+
+  /**
+   * Update time signature for a specific measure
+   * Resizes notes arrays if needed
+   */
+  static updateMeasureTimeSignature(
+    groove: GrooveData,
+    measureIndex: number,
+    newTimeSignature: TimeSignature | undefined
+  ): GrooveData {
+    if (measureIndex < 0 || measureIndex >= groove.measures.length) {
+      console.warn(`Invalid measure index: ${measureIndex}`);
+      return groove;
+    }
+
+    const measure = groove.measures[measureIndex];
+    const oldTs = measure.timeSignature || groove.timeSignature;
+    const newTs = newTimeSignature || groove.timeSignature;
+
+    const oldLength = this.calcNotesPerMeasure(groove.division, oldTs.beats, oldTs.noteValue);
+    const newLength = this.calcNotesPerMeasure(groove.division, newTs.beats, newTs.noteValue);
+
+    const newNotes: Record<DrumVoice, boolean[]> = {} as Record<DrumVoice, boolean[]>;
+    for (const voice of ALL_DRUM_VOICES) {
+      newNotes[voice] = this.resizeNotesArray(
+        measure.notes[voice] || [],
+        oldLength,
+        newLength
+      );
+    }
+
+    const updatedMeasure: MeasureConfig = {
+      timeSignature: newTimeSignature,
+      notes: newNotes,
+    };
+
+    const newMeasures = [...groove.measures];
+    newMeasures[measureIndex] = updatedMeasure;
+
+    return { ...groove, measures: newMeasures };
   }
 }
 

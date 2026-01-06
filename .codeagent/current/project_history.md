@@ -12,6 +12,147 @@ Format:
 
 ---
 
+## 2026-01-06: URL Encoding & Metadata Sharing (Issue #13)
+
+**Summary**: Implemented URL encoding for groove state enabling sharing, bookmarking, and metadata (title, author, comments).
+
+**Key Changes**:
+
+- **GrooveData Metadata** (`src/types.ts`):
+  - Added optional `title`, `author`, `comments` fields to GrooveData interface
+  - Enables groove metadata to persist and share via URL
+
+- **URL Codec** (`src/core/GrooveURLCodec.ts`):
+  - Added `Title`, `Author`, `Comments` URL params
+  - Encode metadata only when non-empty
+  - Decode metadata from URL with graceful fallbacks
+
+- **URL Sync Hook** (`src/hooks/useURLSync.ts`):
+  - New hook for syncing groove state with browser URL
+  - Loads groove from URL on initial mount (if URL has groove params)
+  - Updates URL on every groove change using `history.replaceState`
+  - Debounced updates (300ms) to avoid excessive history entries
+  - `copyURLToClipboard()` function for sharing
+
+- **Share Button** (`src/poc/components/ShareButton.tsx`):
+  - New component to copy shareable URL to clipboard
+  - Visual feedback: "🔗 Share" → "✓ Copied!" (2s timeout)
+
+- **Metadata Editor** (`src/poc/components/MetadataEditor.tsx`, `.css`):
+  - New component with Title, Author, Notes input fields
+  - Responsive layout (stacks on mobile)
+  - Dark theme matching app design
+  - Character limits: Title (100), Author (50), Comments (500)
+
+- **PocApp Integration** (`src/poc/PocApp.tsx`):
+  - Integrated `useURLSync` hook
+  - Added metadata change handlers
+  - Added MetadataEditor and ShareButton components
+
+**Files Created**: 5
+- `src/hooks/useURLSync.ts` - URL sync hook
+- `src/poc/components/ShareButton.tsx` - Share button
+- `src/poc/components/MetadataEditor.tsx` - Metadata editor
+- `src/poc/components/MetadataEditor.css` - Metadata styles
+
+**Files Modified**: 4
+- `src/types.ts` - Added metadata fields
+- `src/core/GrooveURLCodec.ts` - Added metadata encoding/decoding
+- `src/core/GrooveURLCodec.test.ts` - Added metadata tests (4 new tests)
+- `src/poc/PocApp.tsx` - Integrated URL sync and metadata UI
+
+**Tests**: 18 tests passing (all GrooveURLCodec tests)
+- ✅ encodes metadata when present
+- ✅ does not include metadata when empty
+- ✅ decodes metadata
+- ✅ handles missing metadata gracefully
+
+**Impact**:
+- ✅ Grooves can be shared via URL (copy and paste)
+- ✅ URL updates automatically as user edits
+- ✅ Metadata (title, author, notes) included in shareable URL
+- ✅ Opening a shared URL restores the exact groove state
+- ✅ Browser back/forward works with groove history
+
+**Testing**:
+- ✅ Type checks pass
+- ✅ All 18 GrooveURLCodec tests pass
+- ✅ Manual testing confirmed URL sync and sharing
+
+**Follow-ups**:
+- Consider adding social sharing (Twitter, Facebook links)
+- Consider QR code generation for mobile sharing
+- Consider short URL service integration
+
+---
+
+## 2026-01-06: Sheet Music Enhancements
+
+**Summary**: Major improvements to sheet music display including multi-line support, per-line cursor tracking, hidden empty beats, default 1/8 notes, and measure numbers.
+
+**Key Changes**:
+
+- **Multi-line Sheet Music** (`src/core/ABCTranscoder.ts`):
+  - Added `MEASURES_PER_LINE = 3` constant
+  - Sheet music now wraps to new line after every 3 measures
+  - Implemented by adding newline character (`\n`) after every 3rd measure bar
+
+- **Per-line Cursor Tracking** (`src/poc/components/SheetMusicDisplay.tsx`):
+  - Cursor now appears only on the currently playing line
+  - Added `LineBounds` interface to track each line's vertical position
+  - Divides SVG height evenly by number of lines
+  - Cursor position clamped to stay within line boundaries
+  - Instant jump (no transition) when cursor moves between lines
+  - Dynamic `top` and `height` CSS properties for cursor positioning
+
+- **Hidden Empty Beats** (`src/core/ABCConstants.ts`):
+  - Changed `ABC_REST` from `'z'` (visible rest) to `'x'` (invisible rest)
+  - Empty beats no longer show rest symbols in sheet music
+  - Rhythmic spacing is preserved
+
+- **Default 1/8 Notes** (`src/types.ts`, `src/core/GrooveUtils.ts`):
+  - Changed `DEFAULT_GROOVE.division` from `16` to `8`
+  - Updated default measure notes for 8-position arrays
+  - Changed `getDefaultDivision()` to try division `8` first
+
+- **Measure Numbers** (`src/core/ABCConstants.ts`):
+  - Added `%%barnumbers 1` directive to `ABC_BOILERPLATE`
+  - Measure numbers now display above each measure
+
+- **Drum Grid Layout Fix** (`src/poc/components/DrumGrid.css`):
+  - Fixed multi-measure layout with `flex-wrap: nowrap`
+  - Added horizontal scrolling for measures container
+
+**Files Modified**: 6
+- `src/core/ABCTranscoder.ts` - Multi-line support
+- `src/core/ABCConstants.ts` - Hidden rests, measure numbers
+- `src/core/GrooveUtils.ts` - Default division change
+- `src/types.ts` - Default groove with 1/8 notes
+- `src/poc/components/SheetMusicDisplay.tsx` - Per-line cursor
+- `src/poc/components/DrumGrid.css` - Layout fixes
+
+**Tests Updated**: 1
+- `src/core/ABCTranscoder.test.ts` - Updated rest test for invisible rests
+
+**Impact**:
+- ✅ Sheet music is more readable with line breaks after 3 measures
+- ✅ Cursor correctly tracks playback position per line
+- ✅ Cleaner notation without visible rest symbols
+- ✅ Default experience uses simpler 1/8 note grid
+- ✅ Measure numbers help users identify position
+
+**Testing**:
+- ✅ Build passes
+- ✅ 44 tests pass (2 pre-existing failures in BulkPatterns)
+- ✅ Manual testing with 4+ measures shows correct line breaks
+- ✅ Cursor jumps correctly between lines
+
+**Follow-ups**:
+- Consider making `MEASURES_PER_LINE` configurable
+- Consider adding line numbers alongside measure numbers
+
+---
+
 ## 2026-01-06: Issue #3 Complete & Keyboard Shortcuts Footer
 
 **Summary**: Closed Issue #3 (Note Creation and Drum Part Mapping) with all requirements met. Added keyboard shortcuts footer and improved Mac compatibility for drag-to-erase.

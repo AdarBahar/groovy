@@ -4,6 +4,160 @@ Durable knowledge: decisions, patterns, "how we do things here", gotchas.
 
 ---
 
+## URL Sharing & State Persistence
+
+### URL Encoding for Groove State (2026-01-06)
+**Decision**: Encode entire groove state in URL params for sharing and bookmarking.
+
+**Reasoning**:
+- Users can share grooves by copying URL
+- No backend needed for sharing
+- Browser history works with groove state
+- Bookmarks capture exact groove state
+
+**Pattern**:
+```typescript
+// useURLSync hook handles all URL sync
+const { copyURLToClipboard } = useURLSync(groove, setGroove);
+
+// URL params: TimeSig, Div, Tempo, Measures, Swing, H, S, K, Title, Author, Comments
+// Example: ?TimeSig=4/4&Div=16&Tempo=120&H=|x-x-x-x-x-x-x-x-|&Title=My+Groove
+```
+
+**Gotcha**:
+- Use `history.replaceState` (not `pushState`) to avoid polluting browser history
+- Debounce URL updates (300ms) to avoid excessive updates during editing
+- Metadata is optional - encode only when non-empty
+
+---
+
+### Metadata Fields (2026-01-06)
+**Decision**: Add optional title, author, comments to GrooveData.
+
+**Reasoning**:
+- Allows naming/attribution of shared grooves
+- Comments can include tempo markings, style notes
+- All optional to keep default case simple
+
+**Pattern**:
+```typescript
+interface GrooveData {
+  // ... core fields ...
+  title?: string;    // max 100 chars
+  author?: string;   // max 50 chars
+  comments?: string; // max 500 chars
+}
+```
+
+**Gotcha**:
+- Use `|| undefined` not `|| ''` when clearing - empty strings still encode in URL
+- Metadata changes don't affect audio, so don't call `updateGroove()` on engine
+
+---
+
+## Sheet Music Patterns
+
+### Multi-line Sheet Music (2026-01-06)
+**Decision**: Break sheet music to new line after every 3 measures.
+
+**Reasoning**:
+- Improves readability for long patterns
+- 3 measures fits well in standard width
+- Matches common sheet music conventions
+
+**Pattern**:
+```typescript
+// In ABCTranscoder.ts
+const MEASURES_PER_LINE = 3;
+
+// Add newline after every 3 measures
+if (measureNumber % MEASURES_PER_LINE === 0 && measureIndex < groove.measures.length - 1) {
+  parts.push('\n');
+}
+```
+
+**Gotcha**:
+- Must match `MEASURES_PER_LINE` in both ABCTranscoder and SheetMusicDisplay
+- Newline goes after the bar line (`|`), not before
+
+---
+
+### Per-line Cursor Tracking (2026-01-06)
+**Decision**: Cursor appears only on the currently playing line, not spanning all lines.
+
+**Reasoning**:
+- Visual clarity - shows exactly where in the music we are
+- Works correctly with multi-line notation
+- Smooth animation within line, instant jump between lines
+
+**Pattern**:
+```typescript
+// Calculate line bounds by dividing SVG height by number of lines
+const lineHeight = svgHeight / numLines;
+const lineTop = svgRect.top + lineIdx * lineHeight;
+
+// Find which line current position is on
+const currentLine = lineBounds.find(
+  line => currentPosition >= line.startPos && currentPosition <= line.endPos
+);
+
+// Clamp cursor to line boundaries
+cursorLeft = Math.min(cursorLeft, currentLine.right);
+```
+
+**Gotcha**:
+- Use instant transition (no animation) when jumping between lines
+- Clamp cursor position to prevent it from going past line end
+
+---
+
+### Hidden Empty Beats (2026-01-06)
+**Decision**: Use invisible rests (`x`) instead of visible rests (`z`) in ABC notation.
+
+**Reasoning**:
+- Cleaner sheet music appearance
+- Preserves rhythmic spacing
+- Focus on what's played, not what's silent
+
+**Pattern**:
+```typescript
+// In ABCConstants.ts
+export const ABC_REST = 'x';  // invisible rest (was 'z')
+```
+
+**Gotcha**:
+- `x` preserves timing/spacing but doesn't render
+- `z` would show rest symbols
+
+---
+
+### Default Division (2026-01-06)
+**Decision**: Default to 1/8 notes (division: 8) instead of 1/16 notes (division: 16).
+
+**Reasoning**:
+- Simpler starting point for beginners
+- 8 positions per measure is easier to work with
+- Can always switch to 16ths for more detail
+
+**Pattern**:
+```typescript
+// In types.ts
+export const DEFAULT_GROOVE: GrooveData = {
+  division: 8,  // was 16
+  // ...
+};
+
+// In GrooveUtils.ts
+static getDefaultDivision(beats, noteValue): Division {
+  if (this.isDivisionCompatible(8, beats, noteValue)) {
+    return 8;  // was 16
+  }
+  // ...
+}
+```
+
+---
+
 ## Note Creation & Editing Patterns
 
 ### Mac Keyboard Modifier Compatibility (2026-01-06)

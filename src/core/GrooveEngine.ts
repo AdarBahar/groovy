@@ -1,4 +1,4 @@
-import { GrooveData, DrumVoice } from '../types';
+import { GrooveData, DrumVoice, ALL_DRUM_VOICES, getFlattenedNotes } from '../types';
 import { DrumSynth } from './DrumSynth';
 import { GrooveUtils } from './GrooveUtils';
 
@@ -190,20 +190,28 @@ export class GrooveEngine {
     // Calculate note duration based on tempo and division
     const beatDuration = 60 / activeGroove.tempo;
     const noteDuration = beatDuration / (activeGroove.division / 4);
-    const measureDuration = beatDuration * activeGroove.timeSignature.beats;
+
+    // Get total positions across all measures
+    const totalPositions = GrooveUtils.getTotalPositions(activeGroove);
+
+    // Get flattened notes for multi-measure playback
+    const flatNotes = getFlattenedNotes(activeGroove);
 
     // Schedule notes that should play in the next scheduleAheadTime window
     while (true) {
-      const measureNumber = Math.floor(this.currentPosition / activeGroove.division);
-      const positionInMeasure = this.currentPosition % activeGroove.division;
+      // Calculate absolute position within the full groove
+      const absolutePosition = this.currentPosition % totalPositions;
 
-      // Calculate absolute time for this note
-      const noteTime = this.startTime + (measureNumber * measureDuration) + (positionInMeasure * noteDuration);
+      // Calculate time for this position
+      const noteTime = this.startTime + (this.currentPosition * noteDuration);
 
       // Stop scheduling if we're too far ahead
       if (noteTime > currentTime + this.scheduleAheadTime) {
         break;
       }
+
+      // Get measure-relative position for swing calculation
+      const { positionInMeasure } = GrooveUtils.absoluteToMeasurePosition(activeGroove, absolutePosition);
 
       // Calculate swing offset
       const swingOffset = calculateSwingOffset(
@@ -215,20 +223,19 @@ export class GrooveEngine {
       const playTime = noteTime + (swingOffset * noteDuration);
 
       // Schedule notes for each voice
-      const voices = Object.keys(activeGroove.notes) as DrumVoice[];
-      voices.forEach((voice) => {
-        if (activeGroove.notes[voice]?.[positionInMeasure]) {
+      ALL_DRUM_VOICES.forEach((voice) => {
+        if (flatNotes[voice]?.[absolutePosition]) {
           this.synth.playDrum(voice, playTime - currentTime, 100);
         }
       });
 
-      // Schedule visual update based on sync mode
-      this.scheduleVisualUpdate(playTime, currentTime, noteDuration, positionInMeasure);
+      // Schedule visual update based on sync mode (using absolute position)
+      this.scheduleVisualUpdate(playTime, currentTime, noteDuration, absolutePosition);
 
       this.currentPosition++;
 
-      // Check if we've completed a loop
-      if (positionInMeasure === activeGroove.division - 1) {
+      // Check if we've completed a full loop through all measures
+      if (absolutePosition === totalPositions - 1) {
         if (!this.loopEnabled) {
           this.stop();
           return;
@@ -236,7 +243,7 @@ export class GrooveEngine {
 
         // Apply pending groove changes at the end of the loop
         if (this.pendingGroove) {
-          const nextLoopStartTime = this.startTime + ((measureNumber + 1) * measureDuration);
+          const nextLoopStartTime = this.startTime + (this.currentPosition * noteDuration);
           this.currentGroove = this.pendingGroove;
           this.pendingGroove = null;
           this.startTime = nextLoopStartTime;

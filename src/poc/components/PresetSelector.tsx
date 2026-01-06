@@ -1,4 +1,4 @@
-import { GrooveData, DEFAULT_GROOVE, DrumVoice } from '../../types';
+import { GrooveData, DrumVoice, createEmptyNotesRecord, createMeasureFromNotes } from '../../types';
 import './PresetSelector.css';
 
 interface PresetSelectorProps {
@@ -10,16 +10,19 @@ const createPreset = (
   tempo: number,
   swing: number,
   voices: Partial<Record<DrumVoice, boolean[]>>
-): GrooveData => ({
-  timeSignature: { beats: 4, noteValue: 4 },
-  division: 16,
-  tempo,
-  swing,
-  notes: {
-    ...DEFAULT_GROOVE.notes,
+): GrooveData => {
+  const notes = {
+    ...createEmptyNotesRecord(16),
     ...voices,
-  },
-});
+  };
+  return {
+    timeSignature: { beats: 4, noteValue: 4 },
+    division: 16,
+    tempo,
+    swing,
+    measures: [createMeasureFromNotes(notes)],
+  };
+};
 
 const PRESETS: Record<string, GrooveData> = {
   'Basic Rock': createPreset(120, 0, {
