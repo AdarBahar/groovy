@@ -12,6 +12,47 @@ Format:
 
 ---
 
+## 2026-01-06: Issue #3 Complete & Keyboard Shortcuts Footer
+
+**Summary**: Closed Issue #3 (Note Creation and Drum Part Mapping) with all requirements met. Added keyboard shortcuts footer and improved Mac compatibility for drag-to-erase.
+
+**Key Changes**:
+
+- **Keyboard Shortcuts Footer** (`src/poc/PocApp.tsx`, `PocApp.css`):
+  - Added persistent footer showing all keyboard shortcuts
+  - Displays: Space (Play), E (Edit Mode), ⌘/Ctrl+drag (Paint), ⇧/Alt+drag (Erase), ⌘Z (Undo), ⌘⇧Z (Redo)
+  - Responsive design with smaller text on mobile
+  - Uses `<kbd>` elements for proper styling
+
+- **Improved Drag-to-Erase** (`src/poc/components/DrumGrid.tsx`):
+  - Added Shift+drag as alternative to Alt+drag for erasing
+  - Shift key is more reliable on Mac (Option+click can trigger special behaviors)
+  - Both Shift and Alt now work for erasing
+
+- **Issue #3 Closed**:
+  - All requirements from the specification met
+  - Comprehensive completion comment added to GitHub
+  - Commit `29f3c28` closes the issue
+
+**Files Modified**: 3
+- `src/poc/PocApp.tsx` - Added shortcuts footer
+- `src/poc/PocApp.css` - Footer styling
+- `src/poc/components/DrumGrid.tsx` - Added Shift key support for erase
+
+**Impact**:
+- ✅ Users can now see all shortcuts at a glance
+- ✅ Mac users can reliably erase notes with Shift+drag
+- ✅ Issue #3 officially closed
+
+**Testing**:
+- Dev server hot-reloaded successfully
+- Manual testing confirmed shortcuts work
+
+**Follow-ups**:
+- None - Issue #3 is complete
+
+---
+
 ## 2026-01-05: Note Creation Feature Enhancements
 
 **Summary**: Comprehensive enhancements to note creation including documentation, testing, mobile support, undo/redo, and custom pattern saving.

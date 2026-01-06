@@ -28,9 +28,15 @@ Groovy is a **modern drum notation editor and player** built with strict separat
 
 ---
 
-## Recent Changes (2026-01-05)
+## Recent Changes
 
-### Note Creation Feature Enhancements
+### 2026-01-06: Issue #3 Complete
+- ✅ **Issue #3 closed**: Note Creation and Drum Part Mapping - all requirements met
+- ✅ **Keyboard shortcuts footer**: Persistent footer showing all shortcuts (Space, E, ⌘+drag, ⇧+drag, ⌘Z, ⌘⇧Z)
+- ✅ **Mac compatibility**: Shift+drag now works for erasing (more reliable than Option+drag)
+- Commit: `29f3c28`
+
+### 2026-01-05: Note Creation Feature Enhancements
 - ✅ **Fixed missing samples**: All drum sample mappings corrected, no console errors
 - ✅ **Comprehensive documentation**: User guide, quick reference, demo resources
 - ✅ **Unit tests**: All 15 bulk patterns tested with Vitest

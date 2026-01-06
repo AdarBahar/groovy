@@ -293,6 +293,35 @@ UI patterns, design decisions, and style guide for Groovy.
 
 ---
 
+### ShortcutsFooter (POC) - NEW 2026-01-06
+**Purpose**: Persistent footer showing all keyboard shortcuts
+
+**Design**:
+- Horizontal layout with flex-wrap
+- Uses `<kbd>` elements for key styling
+- Muted gray background (#f8f9fa)
+- Centered content with gaps between items
+
+**Shortcuts Displayed**:
+- `Space` Play/Pause
+- `E` Edit Mode
+- `⌘/Ctrl`+drag Paint
+- `⇧/Alt`+drag Erase
+- `⌘Z` Undo
+- `⌘⇧Z` Redo
+
+**Styling**:
+- Font size: 0.85rem (0.75rem on mobile)
+- Key background: white with border
+- Key border-radius: 4px
+- Box-shadow on keys for depth
+
+**Responsive**:
+- Desktop: Full text, 1.5rem gaps
+- Mobile: Smaller text, 1rem gaps
+
+---
+
 ## Layout Patterns
 
 ### POC Page
@@ -342,8 +371,15 @@ UI patterns, design decisions, and style guide for Groovy.
 - **Alt Text**: For any images/icons
 - **Skip Links**: Skip to main content
 
-### Keyboard Shortcuts (Future)
+### Keyboard Shortcuts (Implemented 2026-01-06)
 - `Space`: Play/pause
+- `E`: Toggle advanced edit mode
+- `⌘/Ctrl`+drag: Paint notes
+- `⇧/Alt`+drag: Erase notes
+- `⌘Z`/`Ctrl+Z`: Undo
+- `⌘⇧Z`/`Ctrl+Shift+Z`: Redo
+
+**Future:**
 - `Arrow Keys`: Navigate grid
 - `Enter`: Toggle cell
 - `+/-`: Adjust tempo

@@ -6,6 +6,53 @@ Durable knowledge: decisions, patterns, "how we do things here", gotchas.
 
 ## Note Creation & Editing Patterns
 
+### Mac Keyboard Modifier Compatibility (2026-01-06)
+**Decision**: Use Shift+drag as alternative to Alt+drag for erasing notes.
+
+**Reasoning**:
+- On Mac, Option (Alt) + click can trigger special characters or behaviors
+- Shift key is more reliable across platforms
+- Both modifiers now work for erasing
+
+**Pattern**:
+```typescript
+// Handle both Alt and Shift for erase
+if (event.altKey || event.shiftKey) {
+  setDragMode('erase');
+}
+```
+
+**Gotcha**:
+- Test keyboard modifiers on both Mac and Windows
+- Mac: ⌘ = metaKey, ⌥ = altKey, ⇧ = shiftKey
+- Windows: Ctrl = ctrlKey, Alt = altKey, Shift = shiftKey
+
+---
+
+### Keyboard Shortcuts Footer (2026-01-06)
+**Decision**: Add persistent footer with all keyboard shortcuts visible at all times.
+
+**Reasoning**:
+- Users don't need to discover shortcuts through trial and error
+- Quick reference always available
+- Uses `<kbd>` HTML element for proper semantics
+
+**Pattern**:
+```tsx
+<footer className="shortcuts-footer">
+  <span><kbd>Space</kbd> Play/Pause</span>
+  <span><kbd>E</kbd> Edit Mode</span>
+  <span><kbd>⌘/Ctrl</kbd>+drag Paint</span>
+  ...
+</footer>
+```
+
+**Gotcha**:
+- Use Unicode symbols for Mac keys (⌘ ⇧ ⌥)
+- Make responsive for mobile (smaller font, tighter gaps)
+
+---
+
 ### Undo/Redo Implementation (2026-01-05)
 **Decision**: Use custom `useHistory` hook with configurable history limit (default 50 actions).
 
