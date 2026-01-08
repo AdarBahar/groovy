@@ -1,0 +1,127 @@
+.auto-speed-up-config {
+  background: #1a1a2e;
+  border: 1px solid #3a3a5e;
+  border-radius: 12px;
+  padding: 16px;
+  min-width: 280px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.config-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #3a3a5e;
+}
+
+.config-header h3 {
+  margin: 0;
+  color: #fff;
+  font-size: 1.1rem;
+}
+
+.close-button {
+  background: transparent;
+  border: none;
+  color: #888;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.close-button:hover {
+  background: #3a3a5e;
+  color: #fff;
+}
+
+.config-body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.config-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.config-field label {
+  color: #ccc;
+  font-size: 0.9rem;
+}
+
+.config-field strong {
+  color: #667eea;
+}
+
+.config-field input[type='range'] {
+  width: 100%;
+  height: 6px;
+  border-radius: 3px;
+  background: #3a3a5e;
+  outline: none;
+  -webkit-appearance: none;
+}
+
+.config-field input[type='range']::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(102, 126, 234, 0.4);
+}
+
+.range-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: #888;
+}
+
+.checkbox-field label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.checkbox-field input[type='checkbox'] {
+  width: 18px;
+  height: 18px;
+  accent-color: #667eea;
+  cursor: pointer;
+}
+
+.config-footer {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid #3a3a5e;
+}
+
+.save-default-button {
+  width: 100%;
+  background: #3a3a5e;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 16px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.save-default-button:hover {
+  background: #4a4a6e;
+}
+
+.save-default-button:active {
+  transform: scale(0.98);
+}
+

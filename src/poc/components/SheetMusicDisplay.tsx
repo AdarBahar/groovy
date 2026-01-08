@@ -92,6 +92,19 @@ function SheetMusicDisplay({
     }
   }, [isPlaying]);
 
+  // Note highlighting disabled - abcjs note indices don't map 1:1 to positions
+  // because rests don't create note elements. The cursor provides visual feedback instead.
+  // TODO: Implement proper note-to-position mapping using abcjs timing info
+  useEffect(() => {
+    if (!containerRef.current) return;
+    const svg = containerRef.current.querySelector('svg');
+    if (!svg) return;
+    // Clear any previous highlighting
+    svg.querySelectorAll('.abcjs-note.playing').forEach((el) => {
+      el.classList.remove('playing');
+    });
+  }, [currentPosition, isPlaying]);
+
   useEffect(() => {
     if (!visible || !containerRef.current) {
       return;
@@ -125,21 +138,15 @@ function SheetMusicDisplay({
               const posPerMeasure = positionsPerMeasure;
               const numLines = Math.ceil(numMeasures / MEASURES_PER_LINE);
 
-              // Get all notes to calculate line bounds
+              // Get barlines to determine measure boundaries (more accurate than notes)
+              const barlines = Array.from(svg.querySelectorAll('.abcjs-bar'));
+              // Get all notes/rests for fallback
               const notes = Array.from(svg.querySelectorAll('.abcjs-note, .abcjs-rest'));
 
               if (notes.length === 0) {
                 setLineBounds([]);
                 return;
               }
-
-              // Get the overall X bounds of all notes
-              let globalMinX = Infinity, globalMaxX = -Infinity;
-              notes.forEach(note => {
-                const rect = note.getBoundingClientRect();
-                globalMinX = Math.min(globalMinX, rect.left);
-                globalMaxX = Math.max(globalMaxX, rect.right);
-              });
 
               // For multi-line, divide the SVG height evenly based on number of lines
               // Each "line" contains 2 staves (hands + feet)
@@ -161,24 +168,49 @@ function SheetMusicDisplay({
                 const startPos = lineIdx * MEASURES_PER_LINE * posPerMeasure;
                 const endPos = startPos + measuresOnLine * posPerMeasure - 1;
 
-                // Get X bounds from notes on this line (filter by Y position)
-                let minX = Infinity, maxX = -Infinity;
+                // Find barlines on this line to get accurate measure boundaries
+                const barlinesOnLine = barlines.filter(bar => {
+                  const rect = bar.getBoundingClientRect();
+                  const barY = rect.top + rect.height / 2;
+                  return barY >= lineTop && barY < lineBottom;
+                });
+
+                // Find bounds for this line
+                // Left bound: first note position (where beat 1 starts)
+                // Right bound: last barline position (end of measure)
+                let minX = Infinity;
+                let maxX = -Infinity;
+
+                // Find leftmost note on this line for the start position
                 notes.forEach(note => {
                   const rect = note.getBoundingClientRect();
                   const noteY = rect.top + rect.height / 2;
                   if (noteY >= lineTop && noteY < lineBottom) {
                     const relLeft = ((rect.left - wrapperRect.left) / wrapperRect.width) * 100;
-                    const relRight = ((rect.right - wrapperRect.left) / wrapperRect.width) * 100;
                     minX = Math.min(minX, relLeft);
-                    maxX = Math.max(maxX, relRight);
                   }
                 });
 
-                // Fallback to global bounds if no notes found on this line
-                if (minX === Infinity) {
-                  minX = ((globalMinX - wrapperRect.left) / wrapperRect.width) * 100;
-                  maxX = ((globalMaxX - wrapperRect.left) / wrapperRect.width) * 100;
+                // Use last barline for right bound (end of measure)
+                if (barlinesOnLine.length > 0) {
+                  const lastBarline = barlinesOnLine[barlinesOnLine.length - 1];
+                  const lastRect = lastBarline.getBoundingClientRect();
+                  maxX = ((lastRect.right - wrapperRect.left) / wrapperRect.width) * 100;
+                } else {
+                  // Fallback: use rightmost note
+                  notes.forEach(note => {
+                    const rect = note.getBoundingClientRect();
+                    const noteY = rect.top + rect.height / 2;
+                    if (noteY >= lineTop && noteY < lineBottom) {
+                      const relRight = ((rect.right - wrapperRect.left) / wrapperRect.width) * 100;
+                      maxX = Math.max(maxX, relRight);
+                    }
+                  });
                 }
+
+                // Final fallback
+                if (minX === Infinity) minX = 5;
+                if (maxX === -Infinity) maxX = 95;
 
                 bounds.push({
                   top: Math.max(0, topPct),

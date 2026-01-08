@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import ProductionPage from './pages/ProductionPage';
 import PocPage from './pages/PocPage';
+import NewUIPage from './pages/NewUIPage';
 import './App.css';
 
 function App() {
@@ -14,6 +15,7 @@ function App() {
       <Routes>
         <Route path="/" element={<ProductionPage />} />
         <Route path="/poc" element={<PocPage />} />
+        <Route path="/newUI" element={<NewUIPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>

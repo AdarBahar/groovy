@@ -1,0 +1,75 @@
+.auto-speed-up-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, rgba(17, 153, 142, 0.15) 0%, rgba(56, 239, 125, 0.15) 100%);
+  border: 1px solid rgba(56, 239, 125, 0.3);
+  border-radius: 8px;
+  padding: 10px 16px;
+  font-size: 0.9rem;
+  color: #e0e0e0;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.indicator-icon {
+  font-size: 1.1rem;
+  animation: pulse-icon 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse-icon {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.1);
+  }
+}
+
+.indicator-text {
+  color: #ccc;
+}
+
+.indicator-text strong {
+  color: #38ef7d;
+}
+
+.indicator-divider {
+  color: #666;
+  margin: 0 4px;
+}
+
+.indicator-countdown {
+  color: #fff;
+}
+
+.indicator-countdown strong {
+  color: #f5af19;
+}
+
+.indicator-total {
+  color: #888;
+  font-size: 0.85rem;
+  margin-left: 4px;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .auto-speed-up-indicator {
+    font-size: 0.8rem;
+    padding: 8px 12px;
+    gap: 6px;
+  }
+
+  .indicator-divider {
+    display: none;
+  }
+
+  .indicator-countdown {
+    width: 100%;
+    text-align: center;
+  }
+}
+

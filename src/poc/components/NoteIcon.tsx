@@ -5,13 +5,14 @@ import './NoteIcon.css';
 interface NoteIconProps {
   voices: DrumVoice[];
   isActive: boolean;
+  isCurrent?: boolean;
 }
 
 /**
  * Renders articulation-specific icons for drum notes
  * Supports layered icons for complex articulations
  */
-function NoteIcon({ voices, isActive }: NoteIconProps) {
+function NoteIcon({ voices, isActive, isCurrent = false }: NoteIconProps) {
   if (!isActive || voices.length === 0) {
     return null;
   }
@@ -25,8 +26,10 @@ function NoteIcon({ voices, isActive }: NoteIconProps) {
   // Check if icon is FontAwesome or emoji/text
   const isFontAwesome = primaryMeta.icon?.startsWith('fa-');
 
+  const containerClass = `note-icon-container${isCurrent ? ' playing' : ''}`;
+
   return (
-    <div className="note-icon-container">
+    <div className={containerClass}>
       {/* Primary icon */}
       {isFontAwesome ? (
         <i className={`fa ${primaryMeta.icon} note-icon primary-icon`} aria-hidden="true"></i>

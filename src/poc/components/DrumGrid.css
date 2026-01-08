@@ -233,10 +233,6 @@
   -moz-user-select: none;
   -ms-user-select: none;
 }
-  font-size: 0.7rem;
-  position: relative;
-  padding: 0;
-}
 
 .note-cell:hover {
   border-color: #667eea;

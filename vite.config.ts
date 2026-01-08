@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import tailwindcss from '@tailwindcss/vite'
 
 // ============================================================================
 // DEPLOYMENT CONFIGURATION
@@ -17,12 +18,16 @@ const PRODUCTION_BASE_PATH = '/scribe2/';
 // ============================================================================
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), tailwindcss()],
 
   // Set base path for production deployment
   // Development always uses '/' (root) for simplicity
   // Production uses PRODUCTION_BASE_PATH defined above
   base: process.env.NODE_ENV === 'production' ? PRODUCTION_BASE_PATH : '/',
+
+  server: {
+    port: 5175,
+  },
 
   build: {
     // Output directory

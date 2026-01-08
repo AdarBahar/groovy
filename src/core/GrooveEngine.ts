@@ -322,6 +322,52 @@ export class GrooveEngine {
   }
 
   /**
+   * Get current tempo
+   */
+  getTempo(): number {
+    return this.currentGroove?.tempo ?? 120;
+  }
+
+  /**
+   * Set tempo during playback without restarting
+   * Adjusts timing seamlessly for the next scheduled notes
+   */
+  setTempo(tempo: number): void {
+    if (!this.currentGroove) return;
+
+    // Clamp tempo to valid range
+    const clampedTempo = Math.max(30, Math.min(300, tempo));
+
+    if (this.isPlaying) {
+      // Calculate current time offset before tempo change
+      const currentTime = this.synth.getCurrentTime();
+      const oldBeatDuration = 60 / this.currentGroove.tempo;
+      const oldNoteDuration = oldBeatDuration / (this.currentGroove.division / 4);
+      const elapsedTime = currentTime - this.startTime;
+      const elapsedPositions = elapsedTime / oldNoteDuration;
+
+      // Update tempo
+      this.currentGroove = { ...this.currentGroove, tempo: clampedTempo };
+
+      // Recalculate start time to maintain smooth transition
+      const newBeatDuration = 60 / clampedTempo;
+      const newNoteDuration = newBeatDuration / (this.currentGroove.division / 4);
+      this.startTime = currentTime - (elapsedPositions * newNoteDuration);
+
+      // Also update pending groove if exists
+      if (this.pendingGroove) {
+        this.pendingGroove = { ...this.pendingGroove, tempo: clampedTempo };
+      }
+
+      this.emit('grooveChange', this.currentGroove);
+    } else {
+      // Not playing - just update the groove
+      this.currentGroove = { ...this.currentGroove, tempo: clampedTempo };
+      this.emit('grooveChange', this.currentGroove);
+    }
+  }
+
+  /**
    * Play a single drum hit (for preview)
    */
   async playPreview(voice: DrumVoice): Promise<void> {

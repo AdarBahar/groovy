@@ -1,9 +1,10 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { GrooveData, DEFAULT_GROOVE, DrumVoice, TimeSignature, Division, ALL_DRUM_VOICES, createEmptyNotesRecord, MAX_MEASURES } from '../types';
 import { SyncMode, GrooveUtils } from '../core';
 import { useGrooveEngine } from '../hooks/useGrooveEngine';
 import { useHistory } from '../hooks/useHistory';
 import { useURLSync } from '../hooks/useURLSync';
+import { useAutoSpeedUp } from '../hooks/useAutoSpeedUp';
 import DrumGrid from './components/DrumGrid';
 import PlaybackControls from './components/PlaybackControls';
 import TempoControl from './components/TempoControl';
@@ -16,12 +17,17 @@ import UndoRedoControls from './components/UndoRedoControls';
 import SheetMusicDisplay from './components/SheetMusicDisplay';
 import ShareButton from './components/ShareButton';
 import MetadataEditor from './components/MetadataEditor';
+import AutoSpeedUpConfig from './components/AutoSpeedUpConfig';
+import AutoSpeedUpIndicator from './components/AutoSpeedUpIndicator';
+import SyncOffsetControl, { loadSyncOffset } from './components/SyncOffsetControl';
 import './PocApp.css';
 
 function App() {
   const [syncMode, setSyncMode] = useState<SyncMode>('start');
   const [advancedEditMode, setAdvancedEditMode] = useState(false);
   const [showSheetMusic, setShowSheetMusic] = useState(true);
+  const [showSpeedUpConfig, setShowSpeedUpConfig] = useState(false);
+  const [syncOffset, setSyncOffset] = useState<number>(loadSyncOffset);
 
   // Use history hook for undo/redo
   const {
@@ -47,6 +53,46 @@ function App() {
 
   // URL sync: load groove from URL on init, update URL on changes
   const { copyURLToClipboard } = useURLSync(groove, setGroove);
+
+  // Auto Speed Up hook
+  const autoSpeedUp = useAutoSpeedUp({
+    tempo: groove.tempo,
+    onTempoChange: (tempo) => {
+      const newGroove = { ...groove, tempo };
+      setGroove(newGroove);
+      updateGroove(newGroove);
+    },
+    isPlaying,
+  });
+
+  // Calculate visual position adjusted by sync offset
+  // Positive offset = delay visual (subtract positions)
+  // Negative offset = advance visual (add positions)
+  const visualPosition = useMemo(() => {
+    if (currentPosition < 0 || !isPlaying) return currentPosition;
+
+    // Convert offset (ms) to positions
+    // ms_per_beat = 60000 / tempo
+    // positions_per_beat = division / 4 (for quarter note = 1 beat)
+    // ms_per_position = ms_per_beat / positions_per_beat = 60000 / tempo / (division / 4)
+    const msPerPosition = (60000 / groove.tempo) / (groove.division / 4);
+    const positionOffset = Math.round(syncOffset / msPerPosition);
+
+    // Total positions for wrapping
+    const totalPositions = GrooveUtils.getTotalPositions(groove);
+
+    // Apply offset (positive offset = delay visual = show earlier position)
+    let adjusted = currentPosition - positionOffset;
+
+    // Wrap around
+    if (adjusted < 0) {
+      adjusted = totalPositions + adjusted;
+    } else if (adjusted >= totalPositions) {
+      adjusted = adjusted % totalPositions;
+    }
+
+    return adjusted;
+  }, [currentPosition, syncOffset, groove.tempo, groove.division, groove, isPlaying]);
 
   // Initialize sync mode to 'start' on mount
   useEffect(() => {
@@ -160,7 +206,23 @@ function App() {
   }, [groove, setGroove, updateGroove]);
 
   const handlePlay = async () => {
+    // Stop auto speed up when using regular play
+    if (autoSpeedUp.isActive) {
+      autoSpeedUp.stop();
+    }
     await togglePlayback(groove);
+  };
+
+  const handlePlayWithSpeedUp = async () => {
+    if (isPlaying) {
+      // Stop playback and auto speed up
+      autoSpeedUp.stop();
+      stop();
+    } else {
+      // Start playback with auto speed up
+      await play(groove);
+      autoSpeedUp.start();
+    }
   };
 
   const handleTempoChange = (tempo: number) => {
@@ -327,8 +389,34 @@ function App() {
             <PlaybackControls
               isPlaying={isPlaying}
               onPlay={handlePlay}
+              onPlayWithSpeedUp={handlePlayWithSpeedUp}
+              isAutoSpeedUpActive={autoSpeedUp.isActive}
+              onConfigureSpeedUp={() => setShowSpeedUpConfig(!showSpeedUpConfig)}
             />
           </div>
+
+          {/* Auto Speed Up Config Panel */}
+          {showSpeedUpConfig && (
+            <div className="controls-row">
+              <AutoSpeedUpConfig
+                config={autoSpeedUp.config}
+                onConfigChange={autoSpeedUp.setConfig}
+                onSaveAsDefault={autoSpeedUp.saveAsDefault}
+                onClose={() => setShowSpeedUpConfig(false)}
+              />
+            </div>
+          )}
+
+          {/* Auto Speed Up Indicator */}
+          {autoSpeedUp.isActive && (
+            <div className="controls-row">
+              <AutoSpeedUpIndicator
+                config={autoSpeedUp.config}
+                state={autoSpeedUp.state}
+                currentTempo={groove.tempo}
+              />
+            </div>
+          )}
 
           <div className="controls-row">
             <DivisionSelector
@@ -350,6 +438,11 @@ function App() {
             <SyncControl
               syncMode={syncMode}
               onSyncModeChange={handleSyncModeChange}
+            />
+
+            <SyncOffsetControl
+              offset={syncOffset}
+              onOffsetChange={setSyncOffset}
             />
           </div>
         </section>
@@ -392,13 +485,13 @@ function App() {
           <SheetMusicDisplay
             groove={groove}
             visible={showSheetMusic}
-            currentPosition={currentPosition}
+            currentPosition={visualPosition}
             isPlaying={isPlaying}
           />
 
           <DrumGrid
             groove={groove}
-            currentPosition={currentPosition}
+            currentPosition={visualPosition}
             onNoteToggle={handleNoteToggle}
             onPreview={handlePreview}
             advancedEditMode={advancedEditMode}

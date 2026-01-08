@@ -198,3 +198,44 @@ export function createMeasureFromNotes(
   };
 }
 
+/**
+ * Auto Speed Up Configuration
+ * Settings for automatic tempo increase during practice
+ */
+export interface AutoSpeedUpConfig {
+  /** BPM increase per interval (1-20, default 5) */
+  stepBpm: number;
+  /** Interval in minutes between increases (1-10, default 2) */
+  intervalMinutes: number;
+  /** Keep increasing indefinitely or stop after one step */
+  keepGoing: boolean;
+}
+
+/**
+ * Auto Speed Up State
+ * Runtime state for auto speed up feature
+ */
+export interface AutoSpeedUpState {
+  /** Whether auto speed up is currently active */
+  isActive: boolean;
+  /** Starting tempo when auto speed up began */
+  baseTempo: number;
+  /** Total BPM increased so far */
+  totalIncreased: number;
+  /** Timestamp of next tempo increase (ms since epoch) */
+  nextIncreaseAt: number | null;
+  /** Time remaining until next increase (ms) */
+  timeRemaining: number;
+}
+
+/** Default auto speed up configuration */
+export const DEFAULT_AUTO_SPEED_UP_CONFIG: AutoSpeedUpConfig = {
+  stepBpm: 5,
+  intervalMinutes: 2,
+  keepGoing: true,
+};
+
+/** Minimum and maximum tempo bounds */
+export const MIN_TEMPO = 30;
+export const MAX_TEMPO = 300;
+

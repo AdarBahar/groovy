@@ -34,6 +34,20 @@
   height: auto;
 }
 
+/* Highlight currently playing notes in red */
+.sheet-music-container svg .abcjs-note.playing path,
+.sheet-music-container svg .abcjs-note.playing ellipse,
+.sheet-music-container svg .abcjs-note.playing circle {
+  fill: #ff4444 !important;
+  stroke: #ff4444 !important;
+  transition: fill 0.05s ease-out, stroke 0.05s ease-out;
+}
+
+/* Also highlight the note head and stem */
+.sheet-music-container svg .abcjs-note.playing {
+  filter: drop-shadow(0 0 3px rgba(255, 68, 68, 0.6));
+}
+
 /* Vertical playback cursor line overlaying the sheet music */
 .sheet-music-cursor {
   position: absolute;

@@ -1,8 +1,5 @@
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
+/* Note: box-sizing is handled by Tailwind's preflight */
+/* Removed universal margin/padding reset to avoid conflicts with Tailwind utilities */
 
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
