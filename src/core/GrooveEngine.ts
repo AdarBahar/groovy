@@ -39,7 +39,7 @@ function calculateSwingOffset(
 export class GrooveEngine {
   private synth: DrumSynth;
   private scheduledNotes: number[] = [];
-  private scheduledVisuals: number[] = [];
+  private scheduledVisuals = new Set<number>();
   private isPlaying = false;
   private startTime = 0;
   private currentPosition = 0;
@@ -282,12 +282,14 @@ export class GrooveEngine {
 
     const visualDelay = (visualTime - currentTime) * 1000;
     const timeoutId = window.setTimeout(() => {
+      // Self-clean: remove from set after execution to prevent memory leak
+      this.scheduledVisuals.delete(timeoutId);
       if (this.isPlaying) {
         this.emit('positionChange', position);
       }
     }, Math.max(0, visualDelay));
 
-    this.scheduledVisuals.push(timeoutId);
+    this.scheduledVisuals.add(timeoutId);
   }
 
   /**
@@ -308,7 +310,7 @@ export class GrooveEngine {
 
     // Clear scheduled visual updates
     this.scheduledVisuals.forEach((id) => clearTimeout(id));
-    this.scheduledVisuals = [];
+    this.scheduledVisuals.clear();
 
     this.emit('playbackStateChange', false);
     this.emit('positionChange', -1);
