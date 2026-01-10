@@ -5,22 +5,22 @@ import { useGrooveEngine } from '../hooks/useGrooveEngine';
 import { useHistory } from '../hooks/useHistory';
 import { useURLSync } from '../hooks/useURLSync';
 import { useAutoSpeedUp } from '../hooks/useAutoSpeedUp';
-import DrumGrid from './components/DrumGrid';
-import PlaybackControls from './components/PlaybackControls';
-import TempoControl from './components/TempoControl';
-import PresetSelector from './components/PresetSelector';
-import SyncControl from './components/SyncControl';
-import TimeSignatureSelector from './components/TimeSignatureSelector';
-import DivisionSelector from './components/DivisionSelector';
-import EditModeToggle from './components/EditModeToggle';
-import UndoRedoControls from './components/UndoRedoControls';
-import SheetMusicDisplay from './components/SheetMusicDisplay';
-import ShareButton from './components/ShareButton';
-import MetadataEditor from './components/MetadataEditor';
-import AutoSpeedUpConfig from './components/AutoSpeedUpConfig';
-import AutoSpeedUpIndicator from './components/AutoSpeedUpIndicator';
-import SyncOffsetControl, { loadSyncOffset } from './components/SyncOffsetControl';
-import './PocApp.css';
+import DrumGrid, { NoteChange } from './DrumGrid';
+import PlaybackControls from './PlaybackControls';
+import TempoControl from './TempoControl';
+import PresetSelector from './PresetSelector';
+import SyncControl from './SyncControl';
+import TimeSignatureSelector from './TimeSignatureSelector';
+import DivisionSelector from './DivisionSelector';
+import EditModeToggle from './EditModeToggle';
+import UndoRedoControls from './UndoRedoControls';
+import SheetMusicDisplay from './SheetMusicDisplay';
+import ShareButton from './ShareButton';
+import MetadataEditor from './MetadataEditor';
+import AutoSpeedUpConfig from './AutoSpeedUpConfig';
+import AutoSpeedUpIndicator from './AutoSpeedUpIndicator';
+import SyncOffsetControl, { loadSyncOffset } from './SyncOffsetControl';
+import './GrooveEditor.css';
 
 function App() {
   const [syncMode, setSyncMode] = useState<SyncMode>('start');
@@ -144,6 +144,27 @@ function App() {
     setGroove(newGroove);
     updateGroove(newGroove);
   };
+
+  // Batch set multiple notes at once (avoids React state batching issues)
+  const handleSetNotes = useCallback((changes: NoteChange[]) => {
+    const newMeasures = groove.measures.map((measure, measureIdx) => {
+      // Get all changes for this measure
+      const measureChanges = changes.filter(c => c.measureIndex === measureIdx);
+      if (measureChanges.length === 0) return measure;
+
+      // Apply all changes to this measure's notes
+      const newNotes = { ...measure.notes };
+      for (const change of measureChanges) {
+        newNotes[change.voice] = newNotes[change.voice].map((note, i) =>
+          i === change.position ? change.value : note
+        );
+      }
+      return { ...measure, notes: newNotes };
+    });
+    const newGroove = { ...groove, measures: newMeasures };
+    setGroove(newGroove);
+    updateGroove(newGroove);
+  }, [groove, setGroove, updateGroove]);
 
   // Measure manipulation handlers
   const handleMeasureDuplicate = useCallback((measureIndex: number) => {
@@ -493,6 +514,7 @@ function App() {
             groove={groove}
             currentPosition={visualPosition}
             onNoteToggle={handleNoteToggle}
+            onSetNotes={handleSetNotes}
             onPreview={handlePreview}
             advancedEditMode={advancedEditMode}
             onMeasureDuplicate={handleMeasureDuplicate}

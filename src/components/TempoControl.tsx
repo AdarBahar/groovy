@@ -1,5 +1,5 @@
-import { Division } from '../../types';
-import { GrooveUtils } from '../../core';
+import { Division } from '../types';
+import { GrooveUtils } from '../core';
 import './TempoControl.css';
 
 interface TempoControlProps {

@@ -1,4 +1,4 @@
-import { AutoSpeedUpConfig as Config } from '../../types';
+import { AutoSpeedUpConfig as Config } from '../types';
 import './AutoSpeedUpConfig.css';
 
 interface AutoSpeedUpConfigProps {

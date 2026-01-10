@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { Trash2 } from 'lucide-react';
 import { GrooveData, DEFAULT_GROOVE, DrumVoice, Division, ALL_DRUM_VOICES, createEmptyNotesRecord, MAX_MEASURES } from '../types';
 import { GrooveUtils } from '../core';
 import { useGrooveEngine } from '../hooks/useGrooveEngine';
@@ -7,9 +6,9 @@ import { useHistory } from '../hooks/useHistory';
 import { useURLSync } from '../hooks/useURLSync';
 import { useAutoSpeedUp } from '../hooks/useAutoSpeedUp';
 
-// POC components (functional) - drum grid and sheet music
-import DrumGrid from '../poc/components/DrumGrid';
-import SheetMusicDisplay from '../poc/components/SheetMusicDisplay';
+// Core components - drum grid and sheet music
+import { DrumGridDark, NoteChange } from '../components/production/DrumGridDark';
+import SheetMusicDisplay from '../components/SheetMusicDisplay';
 
 // New UI components
 import { Header } from '../components/production/Header';
@@ -18,6 +17,7 @@ import { PlaybackControls } from '../components/production/PlaybackControls';
 import { MetadataFields } from '../components/production/MetadataFields';
 import { BottomToolbar } from '../components/production/BottomToolbar';
 import { KeyboardShortcuts } from '../components/production/KeyboardShortcuts';
+import { ClearButton } from '../components/production/ClearButton';
 import { Button } from '../components/ui/button';
 
 import './ProductionPage.css';
@@ -115,6 +115,25 @@ export default function ProductionPage() {
     updateGroove(newGroove);
   };
 
+  // Batch set multiple notes at once (avoids React state batching issues)
+  const handleSetNotes = useCallback((changes: NoteChange[]) => {
+    const newMeasures = groove.measures.map((measure, measureIdx) => {
+      const measureChanges = changes.filter(c => c.measureIndex === measureIdx);
+      if (measureChanges.length === 0) return measure;
+
+      const newNotes = { ...measure.notes };
+      for (const change of measureChanges) {
+        newNotes[change.voice] = newNotes[change.voice].map((note, i) =>
+          i === change.position ? change.value : note
+        );
+      }
+      return { ...measure, notes: newNotes };
+    });
+    const newGroove = { ...groove, measures: newMeasures };
+    setGroove(newGroove);
+    updateGroove(newGroove);
+  }, [groove, setGroove, updateGroove]);
+
   // Measure manipulation handlers
   const handleMeasureDuplicate = useCallback((measureIndex: number) => {
     if (groove.measures.length >= MAX_MEASURES) return;
@@ -153,6 +172,17 @@ export default function ProductionPage() {
       if (idx !== measureIndex) return measure;
       return { ...measure, notes: createEmptyNotesRecord(notesPerMeasure) };
     });
+    const newGroove = { ...groove, measures: newMeasures };
+    setGroove(newGroove);
+    updateGroove(newGroove);
+  }, [groove, setGroove, updateGroove]);
+
+  const handleClearAll = useCallback(() => {
+    const notesPerMeasure = GrooveUtils.calcNotesPerMeasure(groove.division, groove.timeSignature.beats, groove.timeSignature.noteValue);
+    const newMeasures = groove.measures.map((measure) => ({
+      ...measure,
+      notes: createEmptyNotesRecord(notesPerMeasure),
+    }));
     const newGroove = { ...groove, measures: newMeasures };
     setGroove(newGroove);
     updateGroove(newGroove);
@@ -232,7 +262,7 @@ export default function ProductionPage() {
   };
 
   return (
-    <div className="h-screen flex flex-col bg-slate-900 text-white">
+    <div className="h-screen flex flex-col bg-slate-100 dark:bg-slate-900 text-slate-900 dark:text-white">
       <Header />
 
       <div className="flex-1 flex overflow-hidden">
@@ -265,9 +295,9 @@ export default function ProductionPage() {
               />
 
               {/* Main sequencer area - Sheet music + Grid */}
-              <div className="bg-slate-800/50 rounded-xl p-6 border border-slate-700">
+              <div className="bg-white/50 dark:bg-slate-800/50 rounded-xl p-6 border border-slate-200 dark:border-slate-700">
                 {/* Sheet Music Notation */}
-                <div className="mb-6 p-6 bg-slate-900/50 rounded-lg border border-slate-600">
+                <div className="mb-6 p-6 bg-slate-50 dark:bg-slate-900/50 rounded-lg border border-slate-200 dark:border-slate-600">
                   <SheetMusicDisplay
                     groove={groove}
                     visible={true}
@@ -279,18 +309,19 @@ export default function ProductionPage() {
                 {/* Drum Grid with time signature display */}
                 <div className="flex">
                   {/* Time signature display */}
-                  <div className="flex flex-col items-center justify-center mr-8 text-white">
+                  <div className="flex flex-col items-center justify-center mr-8 text-slate-900 dark:text-white">
                     <div className="text-4xl font-bold">{groove.timeSignature.beats}</div>
-                    <div className="w-8 h-px bg-white my-1"></div>
+                    <div className="w-8 h-px bg-slate-900 dark:bg-white my-1"></div>
                     <div className="text-4xl font-bold">{groove.timeSignature.noteValue}</div>
                   </div>
 
                   {/* Drum grid */}
                   <div className="flex-1">
-                    <DrumGrid
+                    <DrumGridDark
                       groove={groove}
                       currentPosition={visualPosition}
                       onNoteToggle={handleNoteToggle}
+                      onSetNotes={handleSetNotes}
                       onPreview={handlePreview}
                       advancedEditMode={advancedEditMode}
                       onMeasureDuplicate={handleMeasureDuplicate}
@@ -316,20 +347,12 @@ export default function ProductionPage() {
 
                   {/* Clear and Stickings buttons */}
                   <div className="flex items-center gap-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleMeasureClear(0)}
-                      className="text-slate-400 hover:text-white flex items-center gap-2 h-auto py-2 px-4"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                      <span className="text-xs uppercase">Clear</span>
-                    </Button>
+                    <ClearButton onClear={handleClearAll} />
 
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="text-slate-400 hover:text-white flex items-center gap-2 h-auto py-2 px-4"
+                      className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center gap-2 h-auto py-2 px-4"
                     >
                       <div className="w-4 h-4 flex items-center justify-center font-bold text-sm">
                         S

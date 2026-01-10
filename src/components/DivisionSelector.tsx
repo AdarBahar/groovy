@@ -1,5 +1,5 @@
-import { Division, TimeSignature } from '../../types';
-import { GrooveUtils } from '../../core';
+import { Division, TimeSignature } from '../types';
+import { GrooveUtils } from '../core';
 import './DivisionSelector.css';
 
 interface DivisionSelectorProps {

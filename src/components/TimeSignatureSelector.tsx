@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { TimeSignature } from '../../types';
+import { TimeSignature } from '../types';
 import './TimeSignatureSelector.css';
 
 interface TimeSignatureSelectorProps {

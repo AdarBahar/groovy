@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { BulkPattern } from '../../core/BulkPatterns';
-import { PatternManager, CustomPattern } from '../../core/PatternManager';
+import { BulkPattern } from '../core/BulkPatterns';
+import { PatternManager, CustomPattern } from '../core/PatternManager';
 import './BulkOperationsDialog.css';
 
 interface BulkOperationsDialogProps {

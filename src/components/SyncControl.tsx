@@ -1,4 +1,4 @@
-import { SyncMode } from '../../core';
+import { SyncMode } from '../core';
 import './SyncControl.css';
 
 interface SyncControlProps {

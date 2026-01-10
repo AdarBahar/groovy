@@ -1,4 +1,4 @@
-import { AutoSpeedUpConfig, AutoSpeedUpState } from '../../types';
+import { AutoSpeedUpConfig, AutoSpeedUpState } from '../types';
 import './AutoSpeedUpIndicator.css';
 
 interface AutoSpeedUpIndicatorProps {

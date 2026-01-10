@@ -1,5 +1,5 @@
-import { DrumVoice } from '../../types';
-import { getArticulationMeta } from '../../core';
+import { DrumVoice } from '../types';
+import { getArticulationMeta } from '../core';
 import './NoteIcon.css';
 
 interface NoteIconProps {

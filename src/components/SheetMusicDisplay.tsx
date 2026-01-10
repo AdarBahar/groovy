@@ -8,8 +8,8 @@
  */
 
 import { useRef, useEffect, useState, useMemo } from 'react';
-import { GrooveData } from '../../types';
-import { grooveToABC, renderABC, GrooveUtils } from '../../core';
+import { GrooveData } from '../types';
+import { grooveToABC, renderABC, GrooveUtils } from '../core';
 import './SheetMusicDisplay.css';
 
 /** Number of measures per line (must match ABCTranscoder.MEASURES_PER_LINE) */

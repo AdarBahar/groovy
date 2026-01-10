@@ -1,11 +1,11 @@
 import Navigation from '../components/Navigation';
-import PocApp from '../poc/PocApp';
+import GrooveEditor from '../components/GrooveEditor';
 
 export default function PocPage() {
   return (
     <>
       <Navigation />
-      <PocApp />
+      <GrooveEditor />
     </>
   );
 }

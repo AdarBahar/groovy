@@ -1,4 +1,4 @@
-import { GrooveData, DrumVoice, createEmptyNotesRecord, createMeasureFromNotes } from '../../types';
+import { GrooveData, DrumVoice, createEmptyNotesRecord, createMeasureFromNotes } from '../types';
 import './PresetSelector.css';
 
 interface PresetSelectorProps {

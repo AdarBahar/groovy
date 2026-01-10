@@ -43,7 +43,7 @@ export class GrooveEngine {
   private isPlaying = false;
   private startTime = 0;
   private currentPosition = 0;
-  private scheduleAheadTime = 0.1; // Schedule notes 100ms ahead
+  private scheduleAheadTime = 0.15; // Schedule notes 150ms ahead for better timing stability
   private timerID: number | null = null;
   private syncMode: SyncMode = 'middle';
   private currentGroove: GrooveData | null = null;
@@ -253,8 +253,8 @@ export class GrooveEngine {
       }
     }
 
-    // Schedule next check
-    this.timerID = window.setTimeout(() => this.scheduleLoop(), 25);
+    // Schedule next check (50ms interval reduces CPU usage while maintaining timing accuracy)
+    this.timerID = window.setTimeout(() => this.scheduleLoop(), 50);
   }
 
   /**

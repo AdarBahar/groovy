@@ -1,14 +1,24 @@
-import { GrooveData, DrumVoice, MAX_MEASURES } from '../../types';
-import { GrooveUtils, HI_HAT_PATTERNS, SNARE_PATTERNS, KICK_PATTERNS, BulkPattern } from '../../core';
+import { GrooveData, DrumVoice, MAX_MEASURES } from '../types';
+import { GrooveUtils, HI_HAT_PATTERNS, SNARE_PATTERNS, KICK_PATTERNS, BulkPattern } from '../core';
 import { useState, useRef, useEffect } from 'react';
 import BulkOperationsDialog from './BulkOperationsDialog';
 import NoteIcon from './NoteIcon';
 import './DrumGrid.css';
 
+/** A single note change for batch operations */
+export interface NoteChange {
+  voice: DrumVoice;
+  position: number;
+  measureIndex: number;
+  value: boolean;
+}
+
 interface DrumGridProps {
   groove: GrooveData;
   currentPosition: number;
   onNoteToggle: (voice: DrumVoice, position: number, measureIndex: number) => void;
+  /** Batch set multiple notes at once (avoids React state batching issues) */
+  onSetNotes?: (changes: NoteChange[]) => void;
   onPreview: (voice: DrumVoice) => void;
   advancedEditMode?: boolean;
   // Measure manipulation callbacks
@@ -93,6 +103,7 @@ function DrumGrid({
   groove,
   currentPosition,
   onNoteToggle,
+  onSetNotes,
   onPreview,
   advancedEditMode = false,
   onMeasureDuplicate,
@@ -380,7 +391,17 @@ function DrumGrid({
         });
       });
     } else {
-      // Turn on selected voices
+      // First, clear any existing notes for this row at this position
+      // This ensures only one variation is active per beat per row
+      const row = DRUM_ROWS[rowIndex];
+      row.variations.forEach(v => {
+        v.voices.forEach(voice => {
+          if (measure.notes[voice]?.[position]) {
+            onNoteToggle(voice, position, measureIndex);
+          }
+        });
+      });
+      // Then turn on selected voices
       voices.forEach(voice => {
         onNoteToggle(voice, position, measureIndex);
       });
@@ -423,20 +444,40 @@ function DrumGrid({
       [key]: voices,
     }));
 
-    // Clear any existing notes for this row at this position
-    const row = DRUM_ROWS[rowIndex];
-    row.variations.forEach(v => {
-      v.voices.forEach(voice => {
-        if (measure.notes[voice]?.[position]) {
-          onNoteToggle(voice, position, measureIndex);
-        }
-      });
-    });
+    // Use batch update if available to avoid React state batching issues
+    if (onSetNotes) {
+      const changes: NoteChange[] = [];
 
-    // Set the new voices
-    voices.forEach(voice => {
-      onNoteToggle(voice, position, measureIndex);
-    });
+      // Clear any existing notes for this row at this position
+      const row = DRUM_ROWS[rowIndex];
+      row.variations.forEach(v => {
+        v.voices.forEach(voice => {
+          if (measure.notes[voice]?.[position]) {
+            changes.push({ voice, position, measureIndex, value: false });
+          }
+        });
+      });
+
+      // Set the new voices
+      voices.forEach(voice => {
+        changes.push({ voice, position, measureIndex, value: true });
+      });
+
+      onSetNotes(changes);
+    } else {
+      // Fallback to individual toggles (may have stale state issues)
+      const row = DRUM_ROWS[rowIndex];
+      row.variations.forEach(v => {
+        v.voices.forEach(voice => {
+          if (measure.notes[voice]?.[position]) {
+            onNoteToggle(voice, position, measureIndex);
+          }
+        });
+      });
+      voices.forEach(voice => {
+        onNoteToggle(voice, position, measureIndex);
+      });
+    }
 
     // Preview first voice
     onPreview(voices[0]);
