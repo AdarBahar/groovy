@@ -30,6 +30,12 @@ Groovy is a **modern drum notation editor and player** built with strict separat
 
 ## Recent Changes
 
+### 2026-01-10: Audio Scheduling Tuning + Note Stacking Bug Fix
+- ✅ **Audio scheduling tuning**: Increased scheduleAheadTime to 150ms, interval to 50ms for better timing stability
+- ✅ **Note stacking bug fix**: Fixed articulation selection stacking notes instead of replacing
+- ✅ **Batch note updates**: Added `onSetNotes` callback for atomic multi-note changes
+- PR #30 merged to main (commit `2f9b286`)
+
 ### 2026-01-07: Auto Speed Up & A/V Sync Features
 - ✅ **Auto Speed Up**: Automatic tempo increase during practice (configurable start/target BPM, increment, loops between)
 - ✅ **A/V Sync Offset**: Slider to adjust visual cursor timing (-200ms to +200ms) for latency compensation
@@ -120,7 +126,7 @@ Groovy is a **modern drum notation editor and player** built with strict separat
 
 ---
 
-## Current System State (2026-01-05)
+## Current System State (2026-01-10)
 
 ### ✅ What's Working
 

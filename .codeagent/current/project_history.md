@@ -12,6 +12,81 @@ Format:
 
 ---
 
+## 2026-01-10: Audio Scheduling Tuning + Fix Note Stacking Bug
+
+**PR**: [#30](https://github.com/AdarBahar/groovy/pull/30) - Merged to main
+**Commit**: `2f9b286`
+
+### 1. Audio Scheduling Tuning
+
+**Summary**: Tuned audio scheduling parameters for better timing stability during playback.
+
+| Parameter | Before | After | Reason |
+|-----------|--------|-------|--------|
+| `scheduleAheadTime` | 100ms | 150ms | More buffer against jitter |
+| `setTimeout` interval | 25ms | 50ms | Reduces CPU usage |
+
+**Why These Values**:
+- **150ms look-ahead**: Provides enough buffer for heavy UI operations without noticeable latency
+- **50ms interval**: Still checks frequently enough (20x/sec) to stay ahead of 150ms window, while halving CPU wake-ups
+
+**File Changed**: `src/core/GrooveEngine.ts`
+
+### 2. Fix Note Stacking Bug (Articulation Voice Selection)
+
+**Summary**: Fixed critical bug where selecting a new articulation from the right-click context menu would stack notes instead of replacing them. The issue was caused by React state batching when calling `onNoteToggle` multiple times in sequence.
+
+**Key Changes**:
+
+- **DrumGrid.tsx** (`src/components/DrumGrid.tsx`):
+  - Added `NoteChange` interface for batch note operations
+  - Added `onSetNotes` prop to receive batch updates
+  - Updated `handleVoiceSelect` to collect all changes and call `onSetNotes` in one batch
+  - Fallback to individual toggles if `onSetNotes` not provided
+
+- **GrooveEditor.tsx** (`src/components/GrooveEditor.tsx`):
+  - Added `handleSetNotes` function to apply multiple note changes atomically
+  - Imported `NoteChange` type from DrumGrid
+  - Passed `onSetNotes={handleSetNotes}` to DrumGrid component
+
+- **DrumGridDark.tsx** (`src/components/production/DrumGridDark.tsx`):
+  - Same fix as DrumGrid (added `NoteChange`, `onSetNotes`, updated `handleVoiceSelect`)
+
+- **ProductionPage.tsx** (`src/pages/ProductionPage.tsx`):
+  - Same fix as GrooveEditor (added `handleSetNotes`, passed to DrumGridDark)
+
+**Root Cause Analysis**:
+When changing articulation via context menu, `handleVoiceSelect` would:
+1. Call `onNoteToggle` to clear each existing voice at that position
+2. Call `onNoteToggle` to set the new voice(s)
+
+Due to React state batching, each call captured the same stale closure value of `groove`. All updates based their changes on the original state, so only the last update "won" - the clear operations were lost.
+
+**Solution**:
+Collect all changes (clear old + set new) into an array, then apply them in a single state update using `onSetNotes`. This ensures all changes are applied atomically to the current state.
+
+**Files Modified**:
+- `src/components/DrumGrid.tsx`
+- `src/components/GrooveEditor.tsx`
+- `src/components/production/DrumGridDark.tsx`
+- `src/pages/ProductionPage.tsx`
+
+**Impact**:
+- ✅ Right-click articulation changes now correctly replace notes
+- ✅ No more stacking of multiple articulations at same position
+- ✅ Both DrumGrid (POC) and DrumGridDark (Production) fixed
+
+**Testing**:
+- ✅ Type check passes
+- ✅ Build succeeds
+- ✅ Manual testing: articulation selection now replaces instead of stacks
+
+**Follow-ups**:
+- Consider applying same pattern to other multi-toggle operations (e.g., bulk patterns)
+- Add unit test for `handleSetNotes` function
+
+---
+
 ## 2026-01-08: NewUI Page & CSS Conflict Fix
 
 **Summary**: Fixed critical CSS conflict where POC global reset was overriding Tailwind utilities on NewUI page. Added new production UI page with Figma-based components.

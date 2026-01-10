@@ -4,6 +4,76 @@ Durable knowledge: decisions, patterns, "how we do things here", gotchas.
 
 ---
 
+## Audio Scheduling Patterns
+
+### Audio Scheduling Tuning (2026-01-10)
+**Decision**: Increase `scheduleAheadTime` to 150ms and scheduler interval to 50ms for better timing stability.
+
+**Reasoning**:
+- 100ms look-ahead was sometimes insufficient during heavy UI operations (context menus, state updates)
+- 25ms scheduler interval was causing unnecessary CPU wake-ups
+- 150ms provides enough buffer without noticeable latency
+- 50ms interval (20x/sec) still stays well ahead of the 150ms window
+
+**Pattern**:
+```typescript
+// In GrooveEngine.ts
+private scheduleAheadTime = 0.15;  // 150ms look-ahead (was 0.1)
+
+// Scheduler interval
+setTimeout(() => this.scheduler(), 50);  // 50ms (was 25ms)
+```
+
+**Gotcha**:
+- Don't set scheduleAheadTime too high or notes will feel delayed to user input
+- Don't set interval too low or CPU usage increases unnecessarily
+- Balance: schedule far enough ahead for jitter, but not so far that latency is noticeable
+
+---
+
+## React State Patterns
+
+### Batch Note Updates (2026-01-10)
+**Decision**: Use batch `onSetNotes` instead of multiple `onNoteToggle` calls when changing multiple notes atomically.
+
+**Reasoning**:
+- React state batching causes stale closures when calling setState multiple times in sequence
+- Each call captures the original state value, not the updated one from previous calls
+- Only the last update "wins", previous updates are lost
+
+**Gotcha**:
+- `handleVoiceSelect` was calling `onNoteToggle` to clear old voices, then `onNoteToggle` to set new voice
+- All calls used stale `groove` state, so clears were overwritten by the set operation
+- Notes appeared to "stack" instead of replacing
+
+**Pattern**:
+```typescript
+// DON'T do this - each call uses stale state
+voices.forEach(voice => onNoteToggle(voice, position, measureIndex));
+
+// DO collect changes and apply in one batch
+const changes: NoteChange[] = [];
+// Add clear changes
+oldVoices.forEach(voice => {
+  if (measure.notes[voice]?.[position]) {
+    changes.push({ voice, position, measureIndex, value: false });
+  }
+});
+// Add set changes
+newVoices.forEach(voice => {
+  changes.push({ voice, position, measureIndex, value: true });
+});
+// Apply all at once
+onSetNotes(changes);
+```
+
+**Best Practice**:
+- When updating multiple notes that depend on each other's state, use batch updates
+- `NoteChange` interface: `{ voice, position, measureIndex, value: boolean }`
+- `onSetNotes(changes)` applies all changes in single state update
+
+---
+
 ## CSS & Styling Patterns
 
 ### CSS Bundling & Global Scope (2026-01-08)
