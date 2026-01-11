@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { GrooveData, DEFAULT_GROOVE, DrumVoice, TimeSignature, Division, ALL_DRUM_VOICES, createEmptyNotesRecord, MAX_MEASURES } from '../types';
 import { SyncMode, GrooveUtils } from '../core';
 import { useGrooveEngine } from '../hooks/useGrooveEngine';
@@ -54,13 +54,38 @@ function App() {
   // URL sync: load groove from URL on init, update URL on changes
   const { copyURLToClipboard } = useURLSync(groove, setGroove);
 
+  // Centralized engine sync: automatically update engine when groove changes
+  // This eliminates the need for manual updateGroove calls throughout the codebase
+  const prevGrooveRef = useRef<GrooveData | null>(null);
+  useEffect(() => {
+    // Skip if groove hasn't actually changed (reference check first, then compare audio-relevant fields)
+    if (prevGrooveRef.current) {
+      const prev = prevGrooveRef.current;
+      // Only sync if audio-relevant properties changed (not metadata like title/author/comments)
+      const audioChanged =
+        prev.tempo !== groove.tempo ||
+        prev.swing !== groove.swing ||
+        prev.division !== groove.division ||
+        prev.timeSignature.beats !== groove.timeSignature.beats ||
+        prev.timeSignature.noteValue !== groove.timeSignature.noteValue ||
+        prev.measures !== groove.measures; // Reference check for measures array
+
+      if (!audioChanged) {
+        prevGrooveRef.current = groove;
+        return;
+      }
+    }
+    prevGrooveRef.current = groove;
+    updateGroove(groove);
+  }, [groove, updateGroove]);
+
   // Auto Speed Up hook
   const autoSpeedUp = useAutoSpeedUp({
     tempo: groove.tempo,
     onTempoChange: (tempo) => {
       const newGroove = { ...groove, tempo };
       setGroove(newGroove);
-      updateGroove(newGroove);
+      // No need to call updateGroove - the useEffect above handles it
     },
     isPlaying,
   });
@@ -107,8 +132,7 @@ function App() {
         event.preventDefault();
         if (canUndo) {
           undo();
-          // Update engine with undone state
-          setTimeout(() => updateGroove(groove), 0);
+          // Engine sync handled by centralized useEffect
         }
       }
       // Redo: Ctrl+Shift+Z or Ctrl+Y (Cmd+Shift+Z or Cmd+Y on Mac)
@@ -119,15 +143,14 @@ function App() {
         event.preventDefault();
         if (canRedo) {
           redo();
-          // Update engine with redone state
-          setTimeout(() => updateGroove(groove), 0);
+          // Engine sync handled by centralized useEffect
         }
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [canUndo, canRedo, undo, redo, updateGroove, groove]);
+  }, [canUndo, canRedo, undo, redo]);
 
   const handleNoteToggle = (voice: DrumVoice, position: number, measureIndex: number) => {
     const newMeasures = groove.measures.map((measure, idx) => {
@@ -142,7 +165,7 @@ function App() {
     });
     const newGroove = { ...groove, measures: newMeasures };
     setGroove(newGroove);
-    updateGroove(newGroove);
+    // Engine sync handled by centralized useEffect
   };
 
   // Batch set multiple notes at once (avoids React state batching issues)
@@ -163,8 +186,8 @@ function App() {
     });
     const newGroove = { ...groove, measures: newMeasures };
     setGroove(newGroove);
-    updateGroove(newGroove);
-  }, [groove, setGroove, updateGroove]);
+    // Engine sync handled by centralized useEffect
+  }, [groove, setGroove]);
 
   // Measure manipulation handlers
   const handleMeasureDuplicate = useCallback((measureIndex: number) => {
@@ -182,8 +205,8 @@ function App() {
     ];
     const newGroove = { ...groove, measures: newMeasures };
     setGroove(newGroove);
-    updateGroove(newGroove);
-  }, [groove, setGroove, updateGroove]);
+    // Engine sync handled by centralized useEffect
+  }, [groove, setGroove]);
 
   const handleMeasureAdd = useCallback((afterIndex: number) => {
     if (groove.measures.length >= MAX_MEASURES) return;
@@ -200,16 +223,16 @@ function App() {
     ];
     const newGroove = { ...groove, measures: newMeasures };
     setGroove(newGroove);
-    updateGroove(newGroove);
-  }, [groove, setGroove, updateGroove]);
+    // Engine sync handled by centralized useEffect
+  }, [groove, setGroove]);
 
   const handleMeasureRemove = useCallback((measureIndex: number) => {
     if (groove.measures.length <= 1) return;
     const newMeasures = groove.measures.filter((_, idx) => idx !== measureIndex);
     const newGroove = { ...groove, measures: newMeasures };
     setGroove(newGroove);
-    updateGroove(newGroove);
-  }, [groove, setGroove, updateGroove]);
+    // Engine sync handled by centralized useEffect
+  }, [groove, setGroove]);
 
   const handleMeasureClear = useCallback((measureIndex: number) => {
     const notesPerMeasure = GrooveUtils.calcNotesPerMeasure(
@@ -223,8 +246,8 @@ function App() {
     });
     const newGroove = { ...groove, measures: newMeasures };
     setGroove(newGroove);
-    updateGroove(newGroove);
-  }, [groove, setGroove, updateGroove]);
+    // Engine sync handled by centralized useEffect
+  }, [groove, setGroove]);
 
   const handlePlay = async () => {
     // Stop auto speed up when using regular play
@@ -249,20 +272,19 @@ function App() {
   const handleTempoChange = (tempo: number) => {
     const newGroove = { ...groove, tempo };
     setGroove(newGroove);
-    updateGroove(newGroove);
+    // Engine sync handled by centralized useEffect
   };
 
   const handleSwingChange = (swing: number) => {
     const newGroove = { ...groove, swing };
     setGroove(newGroove);
-    updateGroove(newGroove);
+    // Engine sync handled by centralized useEffect
   };
 
-  // Metadata handlers
+  // Metadata handlers - these don't trigger engine sync (no audio impact)
   const handleTitleChange = useCallback((title: string) => {
     const newGroove = { ...groove, title: title || undefined };
     setGroove(newGroove);
-    // Don't call updateGroove for metadata-only changes (no audio impact)
   }, [groove, setGroove]);
 
   const handleAuthorChange = useCallback((author: string) => {
@@ -277,7 +299,7 @@ function App() {
 
   const handlePresetChange = (preset: GrooveData) => {
     setGroove(preset);
-    updateGroove(preset);
+    // Engine sync handled by centralized useEffect
   };
 
   const handlePreview = async (voice: DrumVoice) => {
@@ -341,7 +363,7 @@ function App() {
     };
 
     setGroove(newGroove);
-    updateGroove(newGroove);
+    // Engine sync handled by centralized useEffect
 
     // Restart playback from the beginning if it was playing
     if (wasPlaying) {
@@ -382,7 +404,7 @@ function App() {
     };
 
     setGroove(newGroove);
-    updateGroove(newGroove);
+    // Engine sync handled by centralized useEffect
 
     // Restart playback from the beginning if it was playing
     if (wasPlaying) {

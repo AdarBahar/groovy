@@ -56,6 +56,30 @@ export const ABC_SYMBOLS: Record<DrumVoice, string> = {
 };
 
 /**
+ * ABC decoration prefix for each drum voice
+ * Applied before the note symbol for articulations
+ *
+ * Standard abcjs decorations:
+ * - !>! = accent mark (>) above note (marcato)
+ * - !open! = open circle (o) above note (used for open hi-hat)
+ * - !style=harmonic! = diamond notehead (used for ride bell)
+ */
+export const ABC_DECORATIONS: Partial<Record<DrumVoice, string>> = {
+  // Hi-Hat decorations
+  'hihat-open': '!open!',
+  'hihat-accent': '!>!',
+  'hihat-metronome-accent': '!>!',
+
+  // Snare decorations
+  'snare-accent': '!>!',
+  // Note: Ghost notes would need custom %%deco which abcjs doesn't fully support
+  // For now, ghost notes render as regular notes (visual distinction via dynamics later)
+
+  // Cymbal decorations
+  'ride-bell': '!style=harmonic!', // Diamond notehead for ride bell
+};
+
+/**
  * URL tab character for each drum voice
  * Used in shareable URL encoding (GrooveScribe-compatible)
  */

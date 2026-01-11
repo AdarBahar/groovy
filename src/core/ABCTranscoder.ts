@@ -8,6 +8,7 @@
 import { GrooveData, DrumVoice, getFlattenedNotes } from '../types';
 import {
   ABC_SYMBOLS,
+  ABC_DECORATIONS,
   ABC_REST,
   HANDS_VOICES,
   FEET_VOICES,
@@ -37,8 +38,24 @@ function getActiveVoicesAtPosition(
 }
 
 /**
+ * Get the ABC symbol with decoration for a voice
+ * Decorations are placed before the note symbol
+ */
+function getDecoratedSymbol(voice: DrumVoice): string {
+  const decoration = ABC_DECORATIONS[voice] || '';
+  const symbol = ABC_SYMBOLS[voice];
+  return decoration + symbol;
+}
+
+/**
  * Generate ABC symbols for a single position
  * Returns a chord [abc] if multiple voices, single note otherwise
+ *
+ * For single notes: decoration + symbol + duration (e.g., "!accent!^g2")
+ * For chords: decorations before chord, symbols inside (e.g., "!accent![^g c]2")
+ *
+ * Note: When multiple notes have decorations in a chord, decorations are
+ * placed before the chord bracket. This is a limitation of ABC notation.
  */
 function generatePositionABC(
   notes: Record<DrumVoice, boolean[]>,
@@ -52,14 +69,21 @@ function generatePositionABC(
     return ABC_REST + durationSuffix;
   }
 
-  const symbols = activeVoices.map((voice) => ABC_SYMBOLS[voice]);
-
-  if (symbols.length === 1) {
-    return symbols[0] + durationSuffix;
+  if (activeVoices.length === 1) {
+    // Single note: decoration + symbol + duration
+    return getDecoratedSymbol(activeVoices[0]) + durationSuffix;
   }
 
   // Multiple voices at same position: create chord
-  return '[' + symbols.join('') + ']' + durationSuffix;
+  // Collect all decorations and place them before the chord
+  const decorations = activeVoices
+    .map((voice) => ABC_DECORATIONS[voice] || '')
+    .filter((d) => d !== '')
+    .join('');
+
+  const symbols = activeVoices.map((voice) => ABC_SYMBOLS[voice]);
+
+  return decorations + '[' + symbols.join('') + ']' + durationSuffix;
 }
 
 /** Number of measures per line in sheet music */

@@ -219,36 +219,38 @@
   transform: scale(0.95);
 }
 
-/* Dark mode support */
-@media (prefers-color-scheme: dark) {
-  .bulk-operations-dialog {
-    background: #2a2a2a;
-  }
+/* Dark mode support - class-based */
+.dark .bulk-operations-dialog {
+  background: #2a2a2a;
+}
 
-  .bulk-dialog-header {
-    border-bottom-color: #444;
-  }
+.dark .bulk-dialog-header {
+  border-bottom-color: #444;
+}
 
-  .bulk-dialog-description {
-    color: #aaa;
-  }
+.dark .bulk-dialog-description {
+  color: #aaa;
+}
 
-  .pattern-button {
-    background: #1a1a1a;
-    border-color: #444;
-  }
+.dark .pattern-button {
+  background: #1a1a1a;
+  border-color: #444;
+}
 
-  .pattern-button:hover {
-    background: #333;
-    border-color: #667eea;
-  }
+.dark .pattern-button:hover {
+  background: #333;
+  border-color: #667eea;
+}
 
-  .pattern-label {
-    color: #e0e0e0;
-  }
+.dark .pattern-label {
+  color: #e0e0e0;
+}
 
-  .pattern-description {
-    color: #aaa;
-  }
+.dark .pattern-description {
+  color: #aaa;
+}
+
+.dark .pattern-section-header {
+  border-bottom-color: #444;
 }
 

@@ -1,5 +1,1 @@
-notes: open hi-hat symbol and probably more symbols are not good
-Loop active counter - not counting
-play + - is not increasing the tempo
-where do I set the tempo increase settings?
-notes only - remove the top also. should remove only the editor and options on left tool bar
+
