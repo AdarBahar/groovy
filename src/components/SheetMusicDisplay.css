@@ -69,26 +69,36 @@
   text-align: center;
 }
 
-/* Dark mode support */
-@media (prefers-color-scheme: dark) {
-  .sheet-music-display {
-    background: #2d2d2d;
-    border-color: #444;
-  }
+/* Dark mode support - using class-based theming */
+.dark .sheet-music-display {
+  background: #2d2d2d;
+  border-color: #444;
+}
 
-  .sheet-music-container svg {
-    filter: invert(0.85) hue-rotate(180deg);
-  }
+.dark .sheet-music-container svg {
+  filter: invert(0.85) hue-rotate(180deg);
+}
 
-  .sheet-music-cursor {
-    background: #8b9eff;
-    box-shadow: 0 0 6px rgba(139, 158, 255, 0.8);
-  }
+.dark .sheet-music-cursor {
+  background: #8b9eff;
+  box-shadow: 0 0 6px rgba(139, 158, 255, 0.8);
+}
 
-  .sheet-music-error {
-    background: #3d3000;
-    border-color: #665500;
-    color: #ffd700;
-  }
+.dark .sheet-music-error {
+  background: #3d3000;
+  border-color: #665500;
+  color: #ffd700;
+}
+
+/* Light mode - ensure notes are black (no filter) */
+.light .sheet-music-container svg {
+  filter: none;
+}
+
+.light .sheet-music-container svg path,
+.light .sheet-music-container svg ellipse,
+.light .sheet-music-container svg circle {
+  fill: #000000;
+  stroke: #000000;
 }
 

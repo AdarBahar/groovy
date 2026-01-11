@@ -34,17 +34,17 @@ export function Sidebar({
   ];
 
   return (
-    <div className="w-20 bg-slate-800 border-r border-slate-700 flex flex-col items-center py-6 gap-6">
+    <div className="w-20 bg-slate-50 dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 flex flex-col items-center py-6 gap-6">
       {/* Toggle button at top */}
       <Button
         onClick={onToggleNotesOnly}
         className={`w-16 text-white flex items-center justify-center h-auto py-4 px-3 ${
           isNotesOnly
             ? 'bg-purple-600 hover:bg-purple-700'
-            : 'bg-slate-700 hover:bg-slate-600'
+            : 'bg-slate-300 dark:bg-slate-700 hover:bg-slate-400 dark:hover:bg-slate-600'
         }`}
       >
-        <span className="text-xs uppercase font-semibold text-center leading-tight">
+        <span className={`text-xs uppercase font-semibold text-center leading-tight ${isNotesOnly ? 'text-white' : 'text-slate-700 dark:text-white'}`}>
           {isNotesOnly ? (
             <>
               <div>Back to</div>
@@ -62,9 +62,9 @@ export function Sidebar({
       {!isNotesOnly && (
         <>
           {/* Time signature display */}
-          <div className="flex flex-col items-center justify-center text-white mb-2">
+          <div className="flex flex-col items-center justify-center text-slate-900 dark:text-white mb-2">
             <div className="text-3xl font-bold">{timeSignature.beats}</div>
-            <div className="w-8 h-px bg-white my-1"></div>
+            <div className="w-8 h-px bg-slate-900 dark:bg-white my-1"></div>
             <div className="text-3xl font-bold">{timeSignature.noteValue}</div>
           </div>
 
@@ -79,7 +79,7 @@ export function Sidebar({
                 className={`w-full h-auto py-2 px-2 flex flex-col items-center justify-center text-xs ${
                   division === option.value
                     ? 'bg-purple-600 hover:bg-purple-700 text-white'
-                    : 'text-slate-400 hover:text-white hover:bg-slate-700'
+                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700'
                 }`}
               >
                 <div className="font-bold">{option.label}</div>
@@ -98,7 +98,7 @@ export function Sidebar({
               size="icon"
               onClick={onUndo}
               disabled={!canUndo}
-              className="text-slate-400 hover:text-white hover:bg-slate-700 disabled:opacity-30"
+              className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-30"
             >
               <Undo2 className="w-5 h-5" />
             </Button>
@@ -107,7 +107,7 @@ export function Sidebar({
               size="icon"
               onClick={onRedo}
               disabled={!canRedo}
-              className="text-slate-400 hover:text-white hover:bg-slate-700 disabled:opacity-30"
+              className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-30"
             >
               <Redo2 className="w-5 h-5" />
             </Button>

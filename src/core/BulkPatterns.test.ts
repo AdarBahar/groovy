@@ -100,17 +100,17 @@ describe('BulkPatterns', () => {
     });
 
     it('All Ghost Notes pattern should use ghost voice', () => {
-      const pattern = SNARE_PATTERNS.find(p => p.id === 'snare-ghost');
+      const pattern = SNARE_PATTERNS.find(p => p.id === 'snare-all-ghost');
       expect(pattern).toBeDefined();
       expect(pattern!.voices).toEqual(['snare-ghost']);
-      
+
       for (let i = 0; i < 16; i++) {
         expect(pattern!.pattern(i, 16)).toBe(true);
       }
     });
 
     it('All Accents pattern should use accent voice', () => {
-      const pattern = SNARE_PATTERNS.find(p => p.id === 'snare-accent');
+      const pattern = SNARE_PATTERNS.find(p => p.id === 'snare-all-accent');
       expect(pattern).toBeDefined();
       expect(pattern!.voices).toEqual(['snare-accent']);
       

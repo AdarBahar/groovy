@@ -1,6 +1,7 @@
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useCallback, useMemo } from 'react';
+import { useLocation } from 'react-router-dom';
 import { GrooveData } from '../types';
-import { encodeGrooveToURL, decodeURLToGroove, hasGrooveParams } from '../core/GrooveURLCodec';
+import { encodeGrooveToURL, decodeURLToGroove, hasGrooveParams, validateURLLength, URLValidationResult } from '../core/GrooveURLCodec';
 
 /**
  * Hook for syncing groove state with browser URL
@@ -23,7 +24,10 @@ export function useURLSync(
   } = {}
 ) {
   const { debounceMs = 300, syncToURL = true, loadFromURL = true } = options;
-  
+
+  // Use react-router's location for proper basename handling when deployed to subdirectories
+  const location = useLocation();
+
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isInitialLoadRef = useRef(true);
   const lastEncodedURLRef = useRef<string>('');
@@ -60,13 +64,14 @@ export function useURLSync(
 
     debounceTimerRef.current = setTimeout(() => {
       const encoded = encodeGrooveToURL(groove);
-      
+
       // Only update if URL actually changed
       if (encoded !== lastEncodedURLRef.current) {
         lastEncodedURLRef.current = encoded;
-        const newURL = `${window.location.pathname}?${encoded}`;
+        // Use location.pathname from react-router for proper basename handling
+        const newURL = `${location.pathname}?${encoded}`;
         window.history.replaceState({ groove: true }, '', newURL);
-        
+
         // Update document title if groove has a title
         if (groove.title) {
           document.title = `${groove.title} - Groovy`;
@@ -79,29 +84,40 @@ export function useURLSync(
         clearTimeout(debounceTimerRef.current);
       }
     };
-  }, [groove, syncToURL, debounceMs]);
+  }, [groove, syncToURL, debounceMs, location.pathname]);
 
   // Get shareable URL for current groove
   const getShareableURL = useCallback((): string => {
     const encoded = encodeGrooveToURL(groove);
-    return `${window.location.origin}${window.location.pathname}?${encoded}`;
-  }, [groove]);
+    // Use location.pathname from react-router for proper basename handling
+    return `${window.location.origin}${location.pathname}?${encoded}`;
+  }, [groove, location.pathname]);
 
-  // Copy URL to clipboard
-  const copyURLToClipboard = useCallback(async (): Promise<boolean> => {
+  // Validate current URL length (memoized for performance)
+  const urlValidation = useMemo((): URLValidationResult => {
+    const url = getShareableURL();
+    return validateURLLength(url);
+  }, [getShareableURL]);
+
+  // Copy URL to clipboard with validation result
+  const copyURLToClipboard = useCallback(async (): Promise<{ success: boolean; validation: URLValidationResult }> => {
+    const url = getShareableURL();
+    const validation = validateURLLength(url);
+
     try {
-      const url = getShareableURL();
       await navigator.clipboard.writeText(url);
-      return true;
+      return { success: true, validation };
     } catch (error) {
       console.warn('Failed to copy URL to clipboard:', error);
-      return false;
+      return { success: false, validation };
     }
   }, [getShareableURL]);
 
   return {
     getShareableURL,
     copyURLToClipboard,
+    /** Current URL validation status - useful for showing warnings in UI */
+    urlValidation,
   };
 }
 

@@ -114,9 +114,9 @@ export class GrooveUtils {
     if (this.isDivisionCompatible(8, beats, noteValue)) {
       return 8;
     }
-    // Fall back to first compatible
+    // Fall back to first compatible division, or default to 8
     const compatible = this.getCompatibleDivisions(beats, noteValue);
-    return compatible[0] || 8;
+    return compatible.length > 0 ? compatible[0] : 8;
   }
 
   /**
@@ -246,12 +246,12 @@ export class GrooveUtils {
       }
       return labels[positionInBeat] || '';
     } else if (notesPerBeat === 8) {
-      // 32nd notes
-      const labels = ['', 'e', '&', 'a', 'e', '&', 'a', ''];
+      // 32nd notes: 1 e & a + e & a (standard drum notation)
+      const labels = ['', 'e', '&', 'a', '+', 'e', '&', 'a'];
       if (positionInBeat === 0) {
         return beatNumber.toString();
       }
-      return labels[positionInBeat] || '';
+      return labels[positionInBeat] ?? '';
     }
 
     // Fallback
@@ -426,7 +426,9 @@ export class GrooveUtils {
     }
 
     const measure = groove.measures[measureIndex];
-    const notesLength = measure.notes[ALL_DRUM_VOICES[0]]?.length || 16;
+    // Use first drum voice to determine notes length, with safe fallback
+    const firstVoice = ALL_DRUM_VOICES[0];
+    const notesLength = firstVoice ? (measure.notes[firstVoice]?.length ?? 16) : 16;
 
     const clearedMeasure: MeasureConfig = {
       timeSignature: measure.timeSignature,
