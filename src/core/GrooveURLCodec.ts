@@ -78,11 +78,17 @@ for (const [param, voices] of Object.entries(VOICE_GROUPS)) {
  * Encodes all measures with | separators
  */
 function encodeVoicePattern(groove: GrooveData, voices: DrumVoice[]): string {
+  // Guard against empty voices array
+  if (voices.length === 0) {
+    return '';
+  }
+
   const parts: string[] = [];
+  const firstVoice = voices[0];
 
   for (const measure of groove.measures) {
     const measureNotes = measure.notes;
-    const notesPerMeasure = measureNotes[voices[0]]?.length || 16;
+    const notesPerMeasure = measureNotes[firstVoice]?.length ?? 16;
     const pattern: string[] = [];
 
     for (let i = 0; i < notesPerMeasure; i++) {
