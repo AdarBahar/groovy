@@ -2,8 +2,19 @@
  * Analytics utility for Groovy
  *
  * Wraps window.BaharAnalytics to provide type-safe tracking methods.
- * All tracking is done through the universal analytics script loaded in index.html.
+ * Analytics is only enabled on the production domain (bahar.co.il).
+ * For other deployments, all tracking functions are no-ops.
  */
+
+// Production domain where analytics should be enabled
+const ANALYTICS_DOMAIN = 'bahar.co.il';
+const ANALYTICS_SCRIPT_URL = 'https://www.bahar.co.il/assets/universal-analytics.js';
+
+// Check if we're on the production domain
+const isAnalyticsEnabled = (): boolean => {
+  if (typeof window === 'undefined') return false;
+  return window.location.hostname.endsWith(ANALYTICS_DOMAIN);
+};
 
 // Type for the BaharAnalytics global object
 interface BaharAnalytics {
@@ -22,19 +33,37 @@ declare global {
   }
 }
 
+// Load analytics script dynamically (only on production domain)
+function loadAnalyticsScript(): void {
+  if (!isAnalyticsEnabled()) return;
+  if (document.querySelector(`script[src="${ANALYTICS_SCRIPT_URL}"]`)) return;
+
+  const script = document.createElement('script');
+  script.src = ANALYTICS_SCRIPT_URL;
+  script.setAttribute('data-project-name', 'Groovy');
+  script.async = true;
+  document.head.appendChild(script);
+}
+
+// Load analytics on module initialization
+loadAnalyticsScript();
+
 /**
- * Safe wrapper for analytics - no-op if analytics not loaded
+ * Safe wrapper for analytics - no-op if analytics not loaded or not on production domain
  */
 const analytics = {
   track: (eventName: string, properties?: Record<string, unknown>) => {
+    if (!isAnalyticsEnabled()) return;
     window.BaharAnalytics?.track(eventName, properties);
   },
 
   trackButtonClick: (buttonName: string, location?: string, properties?: Record<string, unknown>) => {
+    if (!isAnalyticsEnabled()) return;
     window.BaharAnalytics?.trackButtonClick(buttonName, location, properties);
   },
 
   trackError: (errorType: string, errorMessage: string, location?: string) => {
+    if (!isAnalyticsEnabled()) return;
     window.BaharAnalytics?.trackError(errorType, errorMessage, location);
   },
 };
