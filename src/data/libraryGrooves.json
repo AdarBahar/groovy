@@ -1,0 +1,141 @@
+{
+  "styles": [
+    {
+      "id": "rock",
+      "name": "Rock / Pop",
+      "grooves": [
+        {
+          "name": "Basic Rock",
+          "url": "TimeSig=4/4&Div=16&Tempo=120&Measures=1&H=|x-x-x-x-x-x-x-x-|&S=|----o-------o---|&K=|o-------o-------|"
+        },
+        {
+          "name": "Four on the Floor",
+          "url": "TimeSig=4/4&Div=16&Tempo=128&Measures=1&H=|x-x-x-x-x-x-x-x-|&S=|----o-------o---|&K=|o---o---o---o---|"
+        },
+        {
+          "name": "Driving Rock",
+          "url": "TimeSig=4/4&Div=16&Tempo=140&Measures=1&H=|x-x-x-x-x-x-x-x-|&S=|----o-------o---|&K=|o---o---o---o-o-|"
+        },
+        {
+          "name": "Pop Ballad",
+          "url": "TimeSig=4/4&Div=16&Tempo=72&Measures=1&H=|x-x-x-x-x-x-x-x-|&S=|----o-------o---|&K=|o-------o-------|"
+        },
+        {
+          "name": "Punk Rock",
+          "url": "TimeSig=4/4&Div=16&Tempo=180&Measures=1&H=|x-x-x-x-x-x-x-x-|&S=|----o-------o---|&K=|o-o-o-o-o-o-o-o-|"
+        }
+      ]
+    },
+    {
+      "id": "funk",
+      "name": "Funk / R&B",
+      "grooves": [
+        {
+          "name": "Motown",
+          "url": "TimeSig=4/4&Div=16&Tempo=110&Measures=1&H=|x-x-x-x-x-x-x-x-|&S=|----o--g----o--g|&K=|o-----o--go-----|"
+        },
+        {
+          "name": "Funky Drummer",
+          "url": "TimeSig=4/4&Div=16&Tempo=100&Measures=1&H=|x-x-x-x-x-x-x-x-|&S=|--g-o--g--g-o---|&K=|o--o------o-----|"
+        },
+        {
+          "name": "Hip Hop",
+          "url": "TimeSig=4/4&Div=16&Tempo=90&Measures=1&H=|x-x-x-x-x-x-x-x-|&S=|----o-------o---|&K=|o--o------o-----|"
+        },
+        {
+          "name": "Neo Soul",
+          "url": "TimeSig=4/4&Div=16&Tempo=85&Measures=1&H=|x-x-x-x-x-x-x-x-|&S=|--g-o-----g-o---|&K=|o-------o-------|"
+        }
+      ]
+    },
+    {
+      "id": "jazz",
+      "name": "Jazz / Swing",
+      "grooves": [
+        {
+          "name": "Jazz Swing",
+          "url": "TimeSig=4/4&Div=12&Tempo=140&Swing=66&Measures=1&R=|x-xx-xx-xx-x|&K=|o-----o-----|"
+        },
+        {
+          "name": "Jazz Waltz",
+          "url": "TimeSig=3/4&Div=12&Tempo=160&Swing=50&Measures=1&R=|x-xx-xx-x|&S=|------o--|&K=|o--------|"
+        },
+        {
+          "name": "Shuffle",
+          "url": "TimeSig=4/4&Div=12&Tempo=100&Swing=66&Measures=1&H=|x-xx-xx-xx-x|&S=|---o-----o--|&K=|o-----o-----|"
+        },
+        {
+          "name": "Slow Blues",
+          "url": "TimeSig=4/4&Div=12&Tempo=65&Swing=66&Measures=1&H=|x-xx-xx-xx-x|&S=|---o-----o--|&K=|o-----o-----|"
+        }
+      ]
+    },
+    {
+      "id": "latin",
+      "name": "Latin",
+      "grooves": [
+        {
+          "name": "Bossa Nova",
+          "url": "TimeSig=4/4&Div=16&Tempo=140&Measures=1&H=|x-x-x-x-x-x-x-x-|&S=|--x---x---x---x-|&K=|o--o--o-o--o--o-|"
+        },
+        {
+          "name": "Samba",
+          "url": "TimeSig=4/4&Div=16&Tempo=100&Measures=1&H=|x-x-x-x-x-x-x-x-|&S=|o-o-o-o-o-o-o-o-|&K=|o---o---o---o---|"
+        },
+        {
+          "name": "Cha-Cha",
+          "url": "TimeSig=4/4&Div=16&Tempo=120&Measures=1&H=|x-x-x-x-x-x-x-x-|&S=|----o-------o---|&K=|o-----o-o-------|"
+        },
+        {
+          "name": "Reggaeton",
+          "url": "TimeSig=4/4&Div=16&Tempo=95&Measures=1&H=|x-x-x-x-x-x-x-x-|&S=|--o---o---o---o-|&K=|o---o---o---o---|"
+        }
+      ]
+    },
+    {
+      "id": "world",
+      "name": "World",
+      "grooves": [
+        {
+          "name": "Reggae One Drop",
+          "url": "TimeSig=4/4&Div=16&Tempo=75&Measures=1&H=|--x---x---x---x-|&S=|------o---------|&K=|------o---------|"
+        },
+        {
+          "name": "Afrobeat",
+          "url": "TimeSig=4/4&Div=16&Tempo=110&Measures=1&H=|x-x-x-x-x-x-x-x-|&S=|----o--o----o--o|&K=|o--o----o--o----|"
+        },
+        {
+          "name": "6/8 Afro-Cuban",
+          "url": "TimeSig=6/8&Div=12&Tempo=120&Measures=1&H=|x-x-x-x-x-|&S=|----o---o-|&K=|o-----o---|"
+        }
+      ]
+    },
+    {
+      "id": "practice",
+      "name": "Practice",
+      "grooves": [
+        {
+          "name": "Quarter Notes",
+          "url": "TimeSig=4/4&Div=8&Tempo=80&Measures=1&S=|o-o-o-o-|"
+        },
+        {
+          "name": "Eighth Notes",
+          "url": "TimeSig=4/4&Div=8&Tempo=80&Measures=1&S=|oooooooo|"
+        },
+        {
+          "name": "Sixteenth Notes",
+          "url": "TimeSig=4/4&Div=16&Tempo=60&Measures=1&S=|oooooooooooooooo|"
+        },
+        {
+          "name": "Single Paradiddle",
+          "url": "TimeSig=4/4&Div=16&Tempo=80&Measures=1&S=|o-o-oo--o-o-oo--|&K=|------o-------o-|"
+        },
+        {
+          "name": "Double Paradiddle",
+          "url": "TimeSig=4/4&Div=24&Tempo=80&Measures=1&S=|o-o-o-oo--o-o-o-o-oo----|&K=|--------o-----------o---|"
+        }
+      ]
+    }
+  ]
+}
+

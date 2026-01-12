@@ -42,23 +42,23 @@ Runs ESLint on all source files.
 # Development build (base path: '/')
 npm run build
 
-# Production build (base path: '/scribe2/')
+# Production build (base path: '/groovy/')
 npm run build:prod
 ```
 - Runs TypeScript compiler (`tsc -b`)
 - Builds optimized production bundle with Vite
 - Output: `dist/` directory
-- Production build uses `/scribe2/` base path (configurable in `vite.config.ts`)
+- Production build uses `/groovy/` base path (configurable via `VITE_BASE_PATH` env var)
 
 ### Preview Production Build
 ```bash
 # Preview development build
 npm run preview
 
-# Preview production build (with /scribe2/ base path)
+# Preview production build (with /groovy/ base path)
 npm run preview:prod
 ```
-Serves the production build locally for testing at http://localhost:4173/scribe2/
+Serves the production build locally for testing at http://localhost:4173/groovy/
 
 ---
 
@@ -78,10 +78,10 @@ No environment variables required for local development.
 
 ## Production Deployment
 
-### Current Deployment: www.bahar.co.il/scribe2/
+### Current Deployment: www.bahar.co.il/groovy/
 
 **Method**: Manual upload to Apache server
-**Base Path**: `/scribe2/`
+**Base Path**: `/groovy/`
 **Documentation**: See `DEPLOYMENT.md` in project root
 
 #### Quick Deploy
@@ -91,10 +91,10 @@ npm run build:prod
 
 # 2. Test locally
 npm run preview:prod
-# Visit http://localhost:4173/scribe2/
+# Visit http://localhost:4173/groovy/
 
 # 3. Upload dist/ contents to server
-# Upload all files from dist/ to /scribe2/ directory
+# Upload all files from dist/ to /groovy/ directory
 # Include .htaccess file for Apache configuration
 ```
 
@@ -107,25 +107,24 @@ npm run preview:prod
 - CSS: ~10KB
 
 **Configuration**:
-- Base path configured in `vite.config.ts` via `PRODUCTION_BASE_PATH` constant
-- Current: `/scribe2/`
-- To change: Edit `PRODUCTION_BASE_PATH` and rebuild
+- Base path configured in `vite.config.ts` via `VITE_BASE_PATH` env var
+- Current default: `/groovy/`
+- To change: Set `VITE_BASE_PATH` env var or edit default in `vite.config.ts`
 - See `CHANGE_BASE_PATH.md` for detailed instructions
 
 **Server Requirements**:
 - Apache with `mod_rewrite` enabled
-- Upload `.htaccess` to `/scribe2/` directory for React Router support
-- Add exclusion to root `.htaccess`: `RewriteCond %{REQUEST_URI} !^/scribe2/`
+- Upload `.htaccess` to `/groovy/` directory for React Router support
+- Add exclusion to root `.htaccess`: `RewriteCond %{REQUEST_URI} !^/groovy/`
 - See `ROOT_HTACCESS_CHANGES.md` for root .htaccess modifications
+
+**Legacy Redirects**:
+- `/Scribe/` → `/groovy/` (original GrooveScribe)
+- `/scribe2/` → `/groovy/` (staging environment)
 
 **Deployment Documentation** (in project root):
 - `DEPLOYMENT.md` - Comprehensive deployment guide
 - `CHANGE_BASE_PATH.md` - How to change deployment subdirectory
-- `DEPLOY_README.md` - Quick upload instructions
-- `FINAL_DEPLOYMENT_STEPS.md` - Complete deployment checklist
-- `ROOT_HTACCESS_CHANGES.md` - Root .htaccess modifications
-- `ROUTER_FIX_UPDATE.md` - Router basename fix details
-- `UPDATE_DEPLOYMENT.md` - Sound loading fix details
 
 ---
 

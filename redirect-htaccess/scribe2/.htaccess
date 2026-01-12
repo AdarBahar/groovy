@@ -1,0 +1,5 @@
+# Redirect /scribe2/ to /groovy/ (preserves query string)
+# scribe2 was the staging environment, now redirects to production
+RewriteEngine On
+RewriteRule ^(.*)$ /groovy/$1 [R=301,L,QSA]
+

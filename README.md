@@ -71,7 +71,7 @@ npm run build:prod
 npm run preview:prod
 ```
 
-Open [http://localhost:4173/scribe2/](http://localhost:4173/scribe2/) in your browser.
+Open [http://localhost:4173/groovy/](http://localhost:4173/groovy/) in your browser.
 
 ### Type Check
 
@@ -81,7 +81,9 @@ npm run type-check
 
 ## Deployment
 
-The app is configured to deploy to `/scribe2/` subdirectory by default.
+The app is configured to deploy to `/groovy/` subdirectory by default.
+
+**Production URL**: https://www.bahar.co.il/groovy/
 
 ### Quick Deploy
 
