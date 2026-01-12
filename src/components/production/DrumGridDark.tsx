@@ -15,7 +15,6 @@ export interface NoteChange {
 
 interface DrumGridDarkProps {
   groove: GrooveData;
-  currentPosition: number;
   onNoteToggle: (voice: DrumVoice, position: number, measureIndex: number) => void;
   /** Batch set multiple notes at once (avoids React state batching issues) */
   onSetNotes?: (changes: NoteChange[]) => void;
@@ -94,7 +93,6 @@ const DRUM_ROWS: DrumRow[] = [
 
 export function DrumGridDark({
   groove,
-  currentPosition,
   onNoteToggle,
   onSetNotes,
   onPreview,
@@ -545,7 +543,6 @@ export function DrumGridDark({
                 {positions.map((pos) => {
                   const isActive = isPositionActive(measureIndex, rowIndex, pos);
                   const absolutePos = GrooveUtils.measureToAbsolutePosition(groove, measureIndex, pos);
-                  const isCurrent = absolutePos === currentPosition;
                   const isDown = isDownbeat(pos);
                   const hasVariations = row.variations.length > 1;
                   const variationLabel = getVariationLabel(measureIndex, rowIndex, pos);
@@ -557,12 +554,12 @@ export function DrumGridDark({
                       key={pos}
                       className={`drum-cell w-12 h-10 border cursor-pointer transition-all duration-150 flex items-center justify-center relative
                         ${isActive ? 'bg-purple-600 hover:bg-purple-700 border-purple-500' : 'bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 border-slate-300 dark:border-slate-600'}
-                        ${isCurrent ? 'ring-2 ring-purple-400 ring-opacity-50' : ''}
                         ${isDown ? 'border-l-slate-400 dark:border-l-slate-500' : ''}
                       `}
                       data-measure-index={measureIndex}
                       data-row-index={rowIndex}
                       data-position={pos}
+                      data-absolute-pos={absolutePos}
                       onClick={(e) => handleLeftClick(e, measureIndex, rowIndex, pos)}
                       onMouseDown={(e) => handleMouseDown(e, measureIndex, rowIndex, pos)}
                       onMouseEnter={() => handleMouseEnter(measureIndex, rowIndex, pos)}
@@ -572,7 +569,7 @@ export function DrumGridDark({
                       onTouchEnd={(e) => handleTouchEnd(e, measureIndex, rowIndex, pos)}
                       title={`${row.name} - ${variationLabel} at position ${pos + 1}${hasVariations ? ' (right-click for options)' : ''}`}
                     >
-                      <NoteIcon voices={activeVoices} isActive={isActive} isCurrent={isCurrent && isActive} />
+                      <NoteIcon voices={activeVoices} isActive={isActive} />
                       {isActive && isNonDefault && hasVariations && (
                         <span className="absolute top-0 right-0.5 text-xs text-white/70">*</span>
                       )}

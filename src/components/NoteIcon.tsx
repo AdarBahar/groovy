@@ -5,14 +5,16 @@ import './NoteIcon.css';
 interface NoteIconProps {
   voices: DrumVoice[];
   isActive: boolean;
-  isCurrent?: boolean;
 }
 
 /**
  * Renders articulation-specific icons for drum notes
  * Supports layered icons for complex articulations
+ *
+ * Note: The 'playing' class for current position highlighting is added
+ * via direct DOM manipulation in usePlaybackHighlight hook for performance.
  */
-function NoteIcon({ voices, isActive, isCurrent = false }: NoteIconProps) {
+function NoteIcon({ voices, isActive }: NoteIconProps) {
   if (!isActive || voices.length === 0) {
     return null;
   }
@@ -26,7 +28,7 @@ function NoteIcon({ voices, isActive, isCurrent = false }: NoteIconProps) {
   // Check if icon is FontAwesome or emoji/text
   const isFontAwesome = primaryMeta.icon?.startsWith('fa-');
 
-  const containerClass = `note-icon-container${isCurrent ? ' playing' : ''}`;
+  const containerClass = 'note-icon-container';
 
   return (
     <div className={containerClass}>

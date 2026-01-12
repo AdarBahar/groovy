@@ -41,12 +41,17 @@ function SheetMusicDisplay({
 }: SheetMusicDisplayProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const cursorRef = useRef<HTMLDivElement>(null);
   const [error, setError] = useState<string | null>(null);
   const [lineBounds, setLineBounds] = useState<LineBounds[]>([]);
 
+  // Store lineBounds in ref for use in position update effect
+  const lineBoundsRef = useRef<LineBounds[]>([]);
+  lineBoundsRef.current = lineBounds;
+
   // Track previous position to detect loop reset
   const prevPositionRef = useRef<number>(-1);
-  const [isResetting, setIsResetting] = useState(false);
+  const isResettingRef = useRef<boolean>(false);
 
   // Total positions across all measures
   const totalPositions = useMemo(() => GrooveUtils.getTotalPositions(groove), [groove]);
@@ -64,31 +69,83 @@ function SheetMusicDisplay({
     return (beatDuration / subdivisionsPerBeat) * 1000;
   }, [groove.tempo, groove.division]);
 
-  // Detect when position loops back to start
+  // Update cursor position via direct DOM manipulation (performance optimization)
+  // This avoids React re-renders for high-frequency position updates
   useEffect(() => {
+    const cursor = cursorRef.current;
+    if (!cursor) return;
+
+    const bounds = lineBoundsRef.current;
     const prevPos = prevPositionRef.current;
+
+    // Detect loop reset
     const isLoopReset = prevPos >= totalPositions - 2 &&
                         currentPosition === 0 &&
                         isPlaying &&
                         prevPos !== -1;
 
     if (isLoopReset) {
-      setIsResetting(true);
+      isResettingRef.current = true;
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
-          setIsResetting(false);
+          isResettingRef.current = false;
         });
       });
     }
 
+    // Hide cursor if not playing or invalid position
+    if (!isPlaying || currentPosition < 0 || bounds.length === 0) {
+      cursor.style.display = 'none';
+      prevPositionRef.current = currentPosition;
+      return;
+    }
+
+    // Find the line for the current position
+    const currentLine = bounds.find(
+      line => currentPosition >= line.startPos && currentPosition <= line.endPos
+    ) || bounds[0];
+
+    if (!currentLine) {
+      cursor.style.display = 'none';
+      prevPositionRef.current = currentPosition;
+      return;
+    }
+
+    // Calculate cursor position
+    const targetPosition = isResettingRef.current ? 0 : currentPosition + 1;
+    const linePositions = currentLine.endPos - currentLine.startPos + 1;
+    const clampedTarget = Math.min(targetPosition, currentLine.endPos + 1);
+    const posInLine = clampedTarget - currentLine.startPos;
+    const lineWidth = currentLine.right - currentLine.left;
+    let cursorLeft = currentLine.left + (posInLine / linePositions) * lineWidth;
+    cursorLeft = Math.min(cursorLeft, currentLine.right);
+
+    // Check if we're transitioning between lines
+    const prevLine = bounds.find(
+      line => prevPos >= line.startPos && prevPos <= line.endPos
+    );
+    const isLineTransition = prevLine !== currentLine && prevPos >= 0;
+
+    // Update cursor styles directly
+    cursor.style.display = 'block';
+    cursor.style.left = `${cursorLeft}%`;
+    cursor.style.top = `${currentLine.top}%`;
+    cursor.style.height = `${currentLine.bottom - currentLine.top}%`;
+    cursor.style.transition = (isResettingRef.current || isLineTransition)
+      ? 'none'
+      : `left ${transitionDurationMs}ms linear`;
+
     prevPositionRef.current = currentPosition;
-  }, [currentPosition, totalPositions, isPlaying]);
+  }, [currentPosition, isPlaying, totalPositions, transitionDurationMs]);
 
   // Reset state when playback stops
   useEffect(() => {
     if (!isPlaying) {
       prevPositionRef.current = -1;
-      setIsResetting(false);
+      isResettingRef.current = false;
+      if (cursorRef.current) {
+        cursorRef.current.style.display = 'none';
+      }
     }
   }, [isPlaying]);
 
@@ -237,49 +294,6 @@ function SheetMusicDisplay({
     return null;
   }
 
-  // Find which line the current position is on and calculate cursor position
-  const targetPosition = currentPosition >= 0
-    ? (isResetting ? 0 : currentPosition + 1)
-    : -1;
-
-  // Find the line for the current position (not target, to properly detect line)
-  const currentLine = lineBounds.find(
-    line => currentPosition >= line.startPos && currentPosition <= line.endPos
-  ) || lineBounds[0];
-
-  // Calculate cursor position within the line
-  let cursorLeft = -10;
-  let cursorTop = 0;
-  let cursorHeight = 100;
-
-  if (currentLine && targetPosition >= 0) {
-    const linePositions = currentLine.endPos - currentLine.startPos + 1;
-    // Clamp position to stay within the current line
-    const clampedTarget = Math.min(targetPosition, currentLine.endPos + 1);
-    const posInLine = clampedTarget - currentLine.startPos;
-    const lineWidth = currentLine.right - currentLine.left;
-    cursorLeft = currentLine.left + (posInLine / linePositions) * lineWidth;
-    // Clamp cursor to not exceed line boundaries
-    cursorLeft = Math.min(cursorLeft, currentLine.right);
-    cursorTop = currentLine.top;
-    cursorHeight = currentLine.bottom - currentLine.top;
-  }
-
-  // Check if we're transitioning between lines (need instant jump)
-  const isLineTransition = useMemo(() => {
-    if (!isPlaying || currentPosition < 0 || lineBounds.length <= 1) return false;
-    const prevPos = prevPositionRef.current;
-    if (prevPos < 0) return false;
-
-    const prevLine = lineBounds.find(
-      line => prevPos >= line.startPos && prevPos <= line.endPos
-    );
-    const currLine = lineBounds.find(
-      line => currentPosition >= line.startPos && currentPosition <= line.endPos
-    );
-    return prevLine !== currLine;
-  }, [currentPosition, isPlaying, lineBounds]);
-
   return (
     <div className="sheet-music-display">
       {error ? (
@@ -293,22 +307,12 @@ function SheetMusicDisplay({
             className="sheet-music-container"
             aria-label="Sheet music notation"
           />
-          {/* Vertical playback cursor line - appears only on the current line */}
-          {isPlaying && currentPosition >= 0 && currentLine && (
-            <div
-              className="sheet-music-cursor"
-              style={{
-                left: `${cursorLeft}%`,
-                top: `${cursorTop}%`,
-                height: `${cursorHeight}%`,
-                // When resetting or transitioning lines: no transition
-                // Normal playback: smooth left transition
-                transition: (isResetting || isLineTransition)
-                  ? 'none'
-                  : `left ${transitionDurationMs}ms linear`
-              }}
-            />
-          )}
+          {/* Vertical playback cursor line - position updated via direct DOM manipulation */}
+          <div
+            ref={cursorRef}
+            className="sheet-music-cursor"
+            style={{ display: 'none' }}
+          />
         </div>
       )}
     </div>
