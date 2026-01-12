@@ -453,6 +453,74 @@ UI patterns, design decisions, and style guide for Groovy.
 
 ---
 
+### GrooveLibraryModal (Production) - NEW 2026-01-12
+**Purpose**: Browse and load built-in preset drum patterns
+
+**Design**:
+- Modal dialog with category tabs
+- Max width: 2xl (672px)
+- Max height: 80vh with scrollable content
+
+**Layout**:
+- **Header**: Library icon + "Groove Library" title + description
+- **Tabs**: Horizontal button row for style categories
+- **Content**: Scrollable list of groove cards
+- **Footer**: Help text + Close button
+
+**Style Categories** (tabs):
+- Rock / Pop, Funk / R&B, Jazz / Swing, Latin, World, Practice
+
+**Groove Cards**:
+- Play icon (purple) on left
+- Name (bold) + metadata (time sig, tempo) in center
+- "Save Copy" button on right (appears on hover)
+
+**States**:
+- Active tab: Purple background, white text
+- Inactive tab: Ghost style, gray text
+- Hover on card: Purple border, light purple background
+- Saved feedback: Green "Saved!" text for 2 seconds
+
+**Interaction**:
+- Click tab to switch category
+- Click card to load groove and close modal
+- Click "Save Copy" to save to My Groovies (doesn't close)
+
+---
+
+### MyGroovesModal (Production) - NEW 2026-01-12
+**Purpose**: Browse, load, and delete user's saved grooves
+
+**Design**:
+- Modal dialog similar to GrooveLibraryModal
+- Shows list of saved grooves with metadata
+- Delete button with confirmation (click twice)
+
+**Groove Cards**:
+- Play icon (purple) on left
+- Name + time sig/tempo + last modified date
+- Delete button on right (appears on hover)
+
+**Empty State**:
+- Folder icon + "No saved groovies yet" message
+- Instruction to create and save patterns
+
+---
+
+### SaveGrooveModal (Production) - NEW 2026-01-12
+**Purpose**: Name and save a groove to My Groovies
+
+**Design**:
+- Compact modal with text input
+- Auto-focuses name field on open
+- Shows duplicate warning if name exists
+
+**States**:
+- New groove: Save button enabled
+- Duplicate name: Warning message + "Overwrite" button
+
+---
+
 ## Layout Patterns
 
 ### POC Page

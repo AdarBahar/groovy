@@ -12,6 +12,88 @@ Format:
 
 ---
 
+## 2026-01-12: Built-in Groove Library (Issue #15)
+
+**Commit**: `7227b60`
+**Branch**: main
+
+### Summary
+
+Added a built-in groove library with 25 preset drum patterns organized into 6 style categories. Users can browse, load, and save library grooves to their personal "My Groovies" collection for editing.
+
+### Key Changes
+
+**New Data File** (`src/data/libraryGrooves.json`):
+- JSON file containing 25 preset grooves in URL-encoded format
+- Organized into 6 style categories:
+  - **Rock / Pop** (5): Basic Rock, Four on the Floor, Driving Rock, Pop Ballad, Punk Rock
+  - **Funk / R&B** (4): Motown, Funky Drummer, Hip Hop, Neo Soul
+  - **Jazz / Swing** (4): Jazz Swing, Jazz Waltz, Shuffle, Slow Blues
+  - **Latin** (4): Bossa Nova, Samba, Cha-Cha, Reggaeton
+  - **World** (3): Reggae One Drop, Afrobeat, 6/8 Afro-Cuban
+  - **Practice** (5): Quarter Notes, Eighth Notes, Sixteenth Notes, Single Paradiddle, Double Paradiddle
+- Each groove stored as URL query string (same format as shareable URLs)
+
+**New Hook** (`src/hooks/useGrooveLibrary.ts`):
+- `LibraryGroove` interface: name, url, styleId, styleName
+- `LibraryStyle` interface: id, name, grooves[]
+- Returns: styles[], getAllGrooves(), getGroovesByStyle(), decodeGroove(), findGroove()
+- Uses `decodeURLToGroove` from core to parse URL strings
+
+**New Component** (`src/components/production/GrooveLibraryModal.tsx`):
+- Modal with category tabs for style navigation
+- Groove cards showing name, time signature, tempo
+- Click groove to load into editor
+- "Save Copy" button to save to My Groovies for editing
+- Visual feedback when groove is saved
+
+**Updated Components**:
+- `Header.tsx`: Added "Library" button with Library icon
+- `ProductionPage.tsx`: Added modal state, handlers for loading and saving library grooves
+
+### Also Included (from previous uncommitted work)
+
+- **My Groovies Feature**: GrooveStorage.ts, useMyGrooves.ts, MyGroovesModal.tsx, SaveGrooveModal.tsx
+- **Path Updates**: Changed from /scribe2/ to /groovy/ as production path
+- **Redirect Files**: Added .htaccess files for /Scribe/ and /scribe2/ redirects
+
+### Files Created
+- `src/data/libraryGrooves.json` - Groove library data (25 presets)
+- `src/hooks/useGrooveLibrary.ts` - Library access hook
+- `src/components/production/GrooveLibraryModal.tsx` - Library browser modal
+- `src/core/GrooveStorage.ts` - localStorage persistence for grooves
+- `src/hooks/useMyGrooves.ts` - My Groovies state management
+- `src/components/production/MyGroovesModal.tsx` - Saved grooves browser
+- `src/components/production/SaveGrooveModal.tsx` - Save dialog with name input
+- `redirect-htaccess/Scribe/.htaccess` - Redirect old URLs
+- `redirect-htaccess/scribe2/.htaccess` - Redirect old URLs
+
+### Files Modified
+- `src/components/production/Header.tsx` - Added Library button
+- `src/pages/ProductionPage.tsx` - Integrated all new modals
+- `src/core/index.ts` - Export GrooveStorage
+- `vite.config.ts` - Updated default path to /groovy/
+- Various deployment docs
+
+### Impact
+- ✅ Users can browse 25 built-in drum patterns
+- ✅ Patterns organized by musical style for easy discovery
+- ✅ Library grooves can be loaded instantly
+- ✅ "Save Copy" allows editing library patterns
+- ✅ No backend required - all data bundled with app
+
+### Testing
+- ✅ Type check passes
+- ✅ Build succeeds (2030 modules, 1.74s)
+- ✅ No TypeScript diagnostics
+
+### Follow-ups
+- Consider adding more groove styles (Electronic, Metal, etc.)
+- Consider adding preview playback before loading
+- Consider adding search/filter functionality
+
+---
+
 ## 2026-01-10: Audio Scheduling Tuning + Fix Note Stacking Bug
 
 **PR**: [#30](https://github.com/AdarBahar/groovy/pull/30) - Merged to main

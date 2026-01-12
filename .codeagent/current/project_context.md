@@ -30,6 +30,14 @@ Groovy is a **modern drum notation editor and player** built with strict separat
 
 ## Recent Changes
 
+### 2026-01-12: Built-in Groove Library (Issue #15)
+- ✅ **Groove Library**: 25 preset patterns in 6 style categories (Rock, Funk, Jazz, Latin, World, Practice)
+- ✅ **Library Data**: `src/data/libraryGrooves.json` - URL-encoded grooves bundled with app
+- ✅ **Library Hook**: `useGrooveLibrary` - loads, parses, and provides access to library
+- ✅ **Library Modal**: Category tabs, groove cards, click to load, "Save Copy" button
+- ✅ **My Groovies**: Full save/load/delete functionality with localStorage persistence
+- Commit `7227b60` on main
+
 ### 2026-01-10: Audio Scheduling Tuning + Note Stacking Bug Fix
 - ✅ **Audio scheduling tuning**: Increased scheduleAheadTime to 150ms, interval to 50ms for better timing stability
 - ✅ **Note stacking bug fix**: Fixed articulation selection stacking notes instead of replacing
@@ -126,7 +134,7 @@ Groovy is a **modern drum notation editor and player** built with strict separat
 
 ---
 
-## Current System State (2026-01-10)
+## Current System State (2026-01-12)
 
 ### ✅ What's Working
 
@@ -156,27 +164,30 @@ Groovy is a **modern drum notation editor and player** built with strict separat
 - **Custom patterns** - Save/load custom patterns with localStorage
 
 **Production UI** (`/`)
-- Placeholder page with navigation
-- Ready for development
+- Full drum grid with playback controls
+- Sheet music display with playback cursor
+- **Groove Library** - 25 built-in presets in 6 styles
+- **My Groovies** - Save/load/delete user patterns
+- Time signature and division controls
+- Tempo and swing controls
+- Undo/Redo functionality
 
 **Infrastructure**
 - React Router for dual-page setup
 - TypeScript with strict type checking
 - Vite for fast development and builds
 - ESLint for code quality
+- localStorage for user pattern persistence
 
 ### 🚧 In Progress
 
-- Production UI design and implementation
 - Additional drum voices (toms, cymbals, percussion)
 - Advanced features (velocity, articulations, multi-measure)
 
 ### 📋 Planned
 
-- Notation rendering (ABC notation, sheet music)
 - MIDI import/export
 - Audio export
-- Save/load patterns
 - Cloud storage and user accounts
 
 ---

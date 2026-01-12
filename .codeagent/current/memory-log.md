@@ -4,6 +4,64 @@ Durable knowledge: decisions, patterns, "how we do things here", gotchas.
 
 ---
 
+## Groove Library Patterns
+
+### Library Data Storage (2026-01-12)
+**Decision**: Store library grooves as URL-encoded strings in a JSON file bundled with the app.
+
+**File Location**: `src/data/libraryGrooves.json`
+
+**Reasoning**:
+- Same format as shareable URLs - reuses existing URL codec
+- No runtime parsing needed beyond URL decoding
+- Easy to add new grooves by copying URL from browser
+- JSON file is statically imported and bundled
+
+**Pattern**:
+```json
+{
+  "styles": [
+    {
+      "id": "rock",
+      "name": "Rock / Pop",
+      "grooves": [
+        {
+          "name": "Basic Rock",
+          "url": "TimeSig=4/4&Div=16&Tempo=120&Measures=1&H=|x-x-x-x-x-x-x-x-|&S=|----o-------o---|&K=|o-------o-------|"
+        }
+      ]
+    }
+  ]
+}
+```
+
+**Gotcha**:
+- URL must NOT include the `?` prefix - just the query string
+- When decoding, prefix with `?` before calling `decodeURLToGroove`
+
+---
+
+### Library vs My Groovies (2026-01-12)
+**Decision**: Library grooves are read-only; users must "Save Copy" to edit.
+
+**Reasoning**:
+- Library provides stable, curated presets
+- Users can customize without affecting original
+- Clear separation of built-in vs user content
+- My Groovies uses localStorage for persistence
+
+**Pattern**:
+```typescript
+// Load library groove (read-only, from bundled JSON)
+const grooveData = decodeGroove(libraryGroove);
+setGroove(grooveData);
+
+// Save to My Groovies (editable, stored in localStorage)
+onSaveToMyGroovies(grooveData, libraryGroove.name);
+```
+
+---
+
 ## Audio Scheduling Patterns
 
 ### Audio Scheduling Tuning (2026-01-10)
