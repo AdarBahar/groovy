@@ -1,6 +1,6 @@
 /**
  * GrooveLibraryModal
- * 
+ *
  * Modal for browsing and loading built-in groove library.
  * Grooves are read-only but can be saved to My Groovies for editing.
  */
@@ -17,6 +17,7 @@ import {
 import { Button } from '../ui/button';
 import { useGrooveLibrary, LibraryGroove } from '../../hooks/useGrooveLibrary';
 import { GrooveData } from '../../types';
+import { trackLibraryStyleSelect, trackLibraryGrooveLoad, trackLibraryGrooveSave } from '../../utils/analytics';
 
 interface GrooveLibraryModalProps {
   isOpen: boolean;
@@ -37,7 +38,14 @@ export function GrooveLibraryModal({
 
   const activeStyle = styles.find(s => s.id === activeStyleId);
 
+  const handleStyleChange = (styleId: string) => {
+    const style = styles.find(s => s.id === styleId);
+    if (style) trackLibraryStyleSelect(style.name);
+    setActiveStyleId(styleId);
+  };
+
   const handleLoad = (libraryGroove: LibraryGroove) => {
+    trackLibraryGrooveLoad(libraryGroove.name, activeStyle?.name ?? '');
     const grooveData = decodeGroove(libraryGroove);
     // Set the title to the library groove name
     grooveData.title = libraryGroove.name;
@@ -47,6 +55,7 @@ export function GrooveLibraryModal({
 
   const handleSaveToMyGroovies = (libraryGroove: LibraryGroove, e: React.MouseEvent) => {
     e.stopPropagation();
+    trackLibraryGrooveSave(libraryGroove.name, activeStyle?.name ?? '');
     const grooveData = decodeGroove(libraryGroove);
     grooveData.title = libraryGroove.name;
     onSaveToMyGroovies(grooveData, libraryGroove.name);
@@ -86,7 +95,7 @@ export function GrooveLibraryModal({
               key={style.id}
               variant={activeStyleId === style.id ? 'default' : 'ghost'}
               size="sm"
-              onClick={() => setActiveStyleId(style.id)}
+              onClick={() => handleStyleChange(style.id)}
               className={`flex-shrink-0 ${
                 activeStyleId === style.id
                   ? 'bg-purple-600 hover:bg-purple-700 text-white'

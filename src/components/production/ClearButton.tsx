@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Trash2 } from 'lucide-react';
 import { Button } from '../ui/button';
+import { trackClearAll } from '../../utils/analytics';
 
 type ClearButtonState = 'default' | 'confirmation' | 'processing';
 
@@ -46,6 +47,7 @@ export function ClearButton({ onClear }: ClearButtonProps) {
   };
 
   const handleConfirm = () => {
+    trackClearAll();
     setState('processing');
     setTimeout(() => {
       onClear();

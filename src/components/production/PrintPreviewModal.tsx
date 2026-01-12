@@ -18,6 +18,7 @@ import {
 import { Button } from '../ui/button';
 import { GrooveData } from '../../types';
 import { grooveToABC, renderABC, getShareableURL } from '../../core';
+import { trackPrint } from '../../utils/analytics';
 import './PrintPreviewModal.css';
 
 interface PrintPreviewModalProps {
@@ -71,6 +72,7 @@ export function PrintPreviewModal({ groove, isOpen, onClose, onAddTitle }: Print
 
   const handlePrint = () => {
     if (!sheetMusicRef.current) return;
+    trackPrint();
 
     // Get the sheet music SVG
     const svgElement = sheetMusicRef.current.querySelector('svg');
