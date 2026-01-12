@@ -184,6 +184,10 @@ export function trackCountInToggle(enabled: boolean) {
   analytics.track('Count In Toggled', { enabled });
 }
 
+export function trackMetronomeChange(frequency: string) {
+  analytics.track('Metronome Changed', { frequency });
+}
+
 export function trackNotesOnlyToggle(enabled: boolean) {
   analytics.track('Notes Only Mode Toggled', { enabled });
 }

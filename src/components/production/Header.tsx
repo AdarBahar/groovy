@@ -1,16 +1,25 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Info, Sun, Moon, Save, FolderOpen, Library } from 'lucide-react';
+import { Info, Sun, Moon, Save, FolderOpen, Library, Settings } from 'lucide-react';
 import { Button } from '../ui/button';
 import { useTheme } from '../../contexts/ThemeContext';
 import { AutoSpeedUpModal } from './AutoSpeedUpModal';
 import { AboutModal } from './AboutModal';
-import { AutoSpeedUpConfig } from '../../types';
+import { MetronomeOptionsMenu } from './MetronomeOptionsMenu';
+import { AutoSpeedUpConfig, MetronomeConfig, MetronomeFrequency, MetronomeOffsetClick } from '../../types';
 import { trackThemeToggle, trackAutoSpeedUpConfigOpen } from '../../utils/analytics';
 
 interface HeaderProps {
   metronome?: 'off' | '4th' | '8th' | '16th';
   onMetronomeChange?: (value: 'off' | '4th' | '8th' | '16th') => void;
+  // Metronome options
+  metronomeConfig?: MetronomeConfig;
+  onMetronomeFrequencyChange?: (frequency: MetronomeFrequency) => void;
+  onMetronomeSoloChange?: (solo: boolean) => void;
+  onMetronomeCountInChange?: (countIn: boolean) => void;
+  onMetronomeVolumeChange?: (volume: number) => void;
+  onMetronomeOffsetClickChange?: (offsetClick: MetronomeOffsetClick) => void;
+  // Other props
   countInEnabled?: boolean;
   onCountInToggle?: () => void;
   autoSpeedUpConfig?: AutoSpeedUpConfig;
@@ -25,6 +34,12 @@ interface HeaderProps {
 export function Header({
   metronome = 'off',
   onMetronomeChange,
+  metronomeConfig,
+  onMetronomeFrequencyChange,
+  onMetronomeSoloChange,
+  onMetronomeCountInChange,
+  onMetronomeVolumeChange,
+  onMetronomeOffsetClickChange,
   countInEnabled = false,
   onCountInToggle,
   autoSpeedUpConfig,
@@ -39,6 +54,7 @@ export function Header({
   const { toggleTheme, isDark } = useTheme();
   const [showSpeedUpModal, setShowSpeedUpModal] = useState(false);
   const [showAboutModal, setShowAboutModal] = useState(false);
+  const [showMetronomeOptions, setShowMetronomeOptions] = useState(false);
 
   return (
     <header className="flex items-center justify-between px-6 py-4 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
@@ -50,7 +66,7 @@ export function Header({
           <span className="text-slate-900 dark:text-white font-semibold text-lg">Groovy</span>
         </Link>
 
-        <div className="flex items-center gap-4 text-sm">
+        <div className="flex items-center gap-4 text-sm relative">
           <span className="text-slate-500 dark:text-slate-400">Metronome:</span>
           {metronomeOptions.map((option) => (
             <button
@@ -61,6 +77,32 @@ export function Header({
               {option === 'off' ? 'OFF' : option}
             </button>
           ))}
+          {/* Metronome Options Button */}
+          {metronomeConfig && onMetronomeFrequencyChange && (
+            <>
+              <button
+                onClick={() => setShowMetronomeOptions(!showMetronomeOptions)}
+                className={`ml-2 p-1 rounded transition-colors ${
+                  showMetronomeOptions
+                    ? 'text-purple-500 bg-purple-100 dark:bg-purple-900/30'
+                    : 'text-slate-400 dark:text-slate-500 hover:text-slate-900 dark:hover:text-white'
+                }`}
+                title="Metronome Options"
+              >
+                <Settings className="w-4 h-4" />
+              </button>
+              <MetronomeOptionsMenu
+                isOpen={showMetronomeOptions}
+                onClose={() => setShowMetronomeOptions(false)}
+                config={metronomeConfig}
+                onFrequencyChange={onMetronomeFrequencyChange}
+                onSoloChange={onMetronomeSoloChange || (() => {})}
+                onCountInChange={onMetronomeCountInChange || (() => {})}
+                onVolumeChange={onMetronomeVolumeChange || (() => {})}
+                onOffsetClickChange={onMetronomeOffsetClickChange || (() => {})}
+              />
+            </>
+          )}
         </div>
       </div>
 
