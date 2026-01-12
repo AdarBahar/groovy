@@ -1,6 +1,6 @@
 # Deployment Guide
 
-## Production Deployment to www.bahar.co.il/scribe2/
+## Production Deployment to www.bahar.co.il/groovy/
 
 This guide covers deploying Groovy to a subdirectory on your web server.
 
@@ -18,7 +18,7 @@ npm run build:prod
 This will:
 - Run TypeScript type checking
 - Build optimized production bundle
-- Set base path to `/scribe2/`
+- Set base path to `/groovy/`
 - Output to `dist/` directory
 
 ### 2. Verify Build Locally
@@ -26,20 +26,20 @@ This will:
 npm run preview:prod
 ```
 
-Open http://localhost:4173/scribe2/ to test the production build locally.
+Open http://localhost:4173/groovy/ to test the production build locally.
 
 ### 3. Deploy to Server
 
 **Manual Deployment:**
 ```bash
 # Upload the entire dist/ folder contents to:
-# www.bahar.co.il/scribe2/
+# www.bahar.co.il/groovy/
 
 # Using SCP (example):
-scp -r dist/* user@bahar.co.il:/path/to/www/scribe2/
+scp -r dist/* user@bahar.co.il:/path/to/www/groovy/
 
 # Using FTP/SFTP:
-# Upload all files from dist/ to /scribe2/ directory on server
+# Upload all files from dist/ to /groovy/ directory on server
 ```
 
 ---
@@ -71,7 +71,7 @@ dist/
 
 ### Apache (.htaccess)
 
-Create or update `.htaccess` in the `/scribe2/` directory:
+Create or update `.htaccess` in the `/groovy/` directory:
 
 ```apache
 # Enable rewrite engine
@@ -106,10 +106,10 @@ RewriteRule ^ index.html [L]
 If using Nginx, add to your server block:
 
 ```nginx
-location /scribe2/ {
-    alias /path/to/www/scribe2/;
-    try_files $uri $uri/ /scribe2/index.html;
-    
+location /groovy/ {
+    alias /path/to/www/groovy/;
+    try_files $uri $uri/ /groovy/index.html;
+
     # Cache static assets
     location ~* \.(js|css|png|jpg|jpeg|gif|ico|mp3)$ {
         expires 1y;
@@ -126,16 +126,16 @@ Before deploying:
 - [ ] Run `npm run type-check` (no errors)
 - [ ] Run `npm run lint` (no errors)
 - [ ] Run `npm run build:prod` (successful build)
-- [ ] Run `npm run preview:prod` (test locally at http://localhost:4173/scribe2/)
-- [ ] Test all routes: `/scribe2/` and `/scribe2/poc`
+- [ ] Run `npm run preview:prod` (test locally at http://localhost:4173/groovy/)
+- [ ] Test all routes: `/groovy/` and `/groovy/poc`
 - [ ] Test playback functionality
 - [ ] Verify drum samples load correctly
 - [ ] Check browser console for errors
 
 After deploying:
-- [ ] Visit https://www.bahar.co.il/scribe2/
+- [ ] Visit https://www.bahar.co.il/groovy/
 - [ ] Test production UI page
-- [ ] Visit https://www.bahar.co.il/scribe2/poc
+- [ ] Visit https://www.bahar.co.il/groovy/poc
 - [ ] Test POC page functionality
 - [ ] Test playback and all controls
 - [ ] Check browser console for errors
@@ -149,7 +149,7 @@ After deploying:
 **Solution**: Ensure `.htaccess` or Nginx config redirects all routes to `index.html`
 
 ### Issue: Assets not loading (404 on JS/CSS files)
-**Solution**: Verify `base: '/scribe2/'` is set in `vite.config.ts` and rebuild
+**Solution**: Verify `base: '/groovy/'` is set in `vite.config.ts` and rebuild
 
 ### Issue: Sounds not playing
 **Solution**: 
@@ -200,6 +200,6 @@ jobs:
       - run: npm run build:prod
       - name: Deploy to server
         run: |
-          scp -r dist/* ${{ secrets.SERVER_USER }}@bahar.co.il:/path/to/www/scribe2/
+          scp -r dist/* ${{ secrets.SERVER_USER }}@bahar.co.il:/path/to/www/groovy/
 ```
 

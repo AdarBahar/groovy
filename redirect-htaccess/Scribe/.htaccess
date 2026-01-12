@@ -1,0 +1,5 @@
+# Redirect /Scribe/ to /groovy/ (preserves query string)
+# Scribe was the original GrooveScribe app, now redirects to Groovy
+RewriteEngine On
+RewriteRule ^(.*)$ /groovy/$1 [R=301,L,QSA]
+

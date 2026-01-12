@@ -10,12 +10,12 @@ import tailwindcss from '@tailwindcss/vite'
 //
 // Examples:
 //   - Root deployment: VITE_BASE_PATH=/
-//   - Subdirectory:    VITE_BASE_PATH=/scribe2/
+//   - Subdirectory:    VITE_BASE_PATH=/groovy/
 //   - Custom path:     VITE_BASE_PATH=/my-app/
 //
 // Note: Must start and end with '/'
-// Default: '/scribe2/' (for backward compatibility)
-const PRODUCTION_BASE_PATH = process.env.VITE_BASE_PATH || '/scribe2/';
+// Default: '/groovy/' (production deployment)
+const PRODUCTION_BASE_PATH = process.env.VITE_BASE_PATH || '/scribe/';
 
 // ============================================================================
 // VITE CONFIGURATION
@@ -26,7 +26,7 @@ export default defineConfig({
 
   // Set base path for production deployment
   // Development always uses '/' (root) for simplicity
-  // Production uses VITE_BASE_PATH env var (or default '/scribe2/')
+  // Production uses VITE_BASE_PATH env var (or default '/scribe/')
   base: process.env.NODE_ENV === 'production' ? PRODUCTION_BASE_PATH : '/',
 
   server: {

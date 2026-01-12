@@ -68,3 +68,16 @@ export {
   ALL_EXPORT_FORMATS,
 } from './ExportUtils';
 export type { ExportFormat, JSONExportOptions, ExportMetadata } from './ExportUtils';
+
+// Groove Storage (My Grooves persistence)
+export {
+  saveGroove,
+  loadAllGrooves,
+  loadGrooveById,
+  decodeGroove,
+  deleteGroove,
+  clearAllGrooves,
+  grooveNameExists,
+  exportGrooves,
+} from './GrooveStorage';
+export type { SavedGroove, SaveResult } from './GrooveStorage';

@@ -25,6 +25,7 @@ import { DownloadModal } from '../components/production/DownloadModal';
 import { PrintPreviewModal } from '../components/production/PrintPreviewModal';
 import { MyGroovesModal } from '../components/production/MyGroovesModal';
 import { SaveGrooveModal } from '../components/production/SaveGrooveModal';
+import { GrooveLibraryModal } from '../components/production/GrooveLibraryModal';
 import { Button } from '../components/ui/button';
 
 import './ProductionPage.css';
@@ -36,6 +37,7 @@ export default function ProductionPage() {
   const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
   const [isMyGroovesModalOpen, setIsMyGroovesModalOpen] = useState(false);
   const [isSaveGrooveModalOpen, setIsSaveGrooveModalOpen] = useState(false);
+  const [isGrooveLibraryModalOpen, setIsGrooveLibraryModalOpen] = useState(false);
   const [elapsedTime, setElapsedTime] = useState('0:00');
   const [countInEnabled, setCountInEnabled] = useState(false);
   const [isCountingIn, setIsCountingIn] = useState(false);
@@ -332,6 +334,16 @@ export default function ProductionPage() {
     myGrooves.deleteGroove(id);
   };
 
+  // Library groove handlers
+  const handleLoadLibraryGroove = (grooveData: GrooveData) => {
+    setGroove(grooveData);
+    // URL will update automatically via useURLSync
+  };
+
+  const handleSaveLibraryGrooveToMyGroovies = (grooveData: GrooveData, name: string) => {
+    myGrooves.saveGroove(grooveData, name);
+  };
+
   return (
     <div className="h-screen flex flex-col bg-slate-100 dark:bg-slate-900 text-slate-900 dark:text-white">
       <Header
@@ -342,6 +354,7 @@ export default function ProductionPage() {
         onAutoSpeedUpSaveDefault={autoSpeedUp.saveAsDefault}
         onSaveGroove={() => setIsSaveGrooveModalOpen(true)}
         onOpenMyGrooves={() => setIsMyGroovesModalOpen(true)}
+        onOpenGrooveLibrary={() => setIsGrooveLibraryModalOpen(true)}
         savedGroovesCount={myGrooves.grooves.length}
       />
 
@@ -485,6 +498,13 @@ export default function ProductionPage() {
         onSave={handleSaveGroove}
         initialName={groove.title || ''}
         findByName={myGrooves.findByName}
+      />
+
+      <GrooveLibraryModal
+        isOpen={isGrooveLibraryModalOpen}
+        onClose={() => setIsGrooveLibraryModalOpen(false)}
+        onLoadGroove={handleLoadLibraryGroove}
+        onSaveToMyGroovies={handleSaveLibraryGrooveToMyGroovies}
       />
     </div>
   );

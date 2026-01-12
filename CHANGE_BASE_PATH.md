@@ -1,39 +1,47 @@
 # How to Change the Deployment Base Path
 
 ## Overview
-The app is currently configured to deploy to `/scribe2/` subdirectory. This guide shows how to change it to a different path.
+The app is currently configured to deploy to `/groovy/` subdirectory. This guide shows how to change it to a different path.
 
 ---
 
 ## Quick Change
 
-### Edit `vite.config.ts`
+### Option 1: Use Environment Variable (Recommended)
 
-**Find this line (around line 13):**
-```typescript
-const PRODUCTION_BASE_PATH = '/scribe2/';
+Set the `VITE_BASE_PATH` environment variable when building:
+
+```bash
+# Deploy to root
+VITE_BASE_PATH=/ npm run build:prod
+
+# Deploy to custom subdirectory
+VITE_BASE_PATH=/my-app/ npm run build:prod
 ```
 
-**Change it to your desired path:**
+### Option 2: Edit `vite.config.ts`
+
+**Find this line (around line 18):**
+```typescript
+const PRODUCTION_BASE_PATH = process.env.VITE_BASE_PATH || '/groovy/';
+```
+
+**Change the default to your desired path:**
 
 ### Examples:
 
 #### Deploy to Root (/)
 ```typescript
-const PRODUCTION_BASE_PATH = '/';
+const PRODUCTION_BASE_PATH = process.env.VITE_BASE_PATH || '/';
 ```
 
 #### Deploy to Different Subdirectory
 ```typescript
-const PRODUCTION_BASE_PATH = '/my-app/';
+const PRODUCTION_BASE_PATH = process.env.VITE_BASE_PATH || '/my-app/';
 ```
 
 ```typescript
-const PRODUCTION_BASE_PATH = '/groovy/';
-```
-
-```typescript
-const PRODUCTION_BASE_PATH = '/drum-editor/';
+const PRODUCTION_BASE_PATH = process.env.VITE_BASE_PATH || '/drum-editor/';
 ```
 
 **Important:** The path must:
@@ -56,7 +64,7 @@ npm run build:prod
 If you changed to a different subdirectory, you may need to update:
 
 #### Root .htaccess
-Add exclusion for your new path (same as we did for `/scribe2/`):
+Add exclusion for your new path (same as we did for `/groovy/`):
 
 **In `public_html/.htaccess`, add:**
 ```apache
@@ -147,13 +155,13 @@ You can maintain different configs for different environments:
 ```
 
 **Staging:**
-```typescript
-const PRODUCTION_BASE_PATH = '/groovy-staging/';
+```bash
+VITE_BASE_PATH=/groovy-staging/ npm run build:prod
 ```
 
 **Production:**
-```typescript
-const PRODUCTION_BASE_PATH = '/scribe2/';
+```bash
+npm run build:prod  # Uses default /groovy/
 ```
 
 ---
@@ -226,13 +234,21 @@ URLs should stay in your subdirectory, not change to root.
 
 ## Current Configuration
 
-**Current Base Path:** `/scribe2/`  
-**Server Location:** `www.bahar.co.il/scribe2/`  
+**Current Base Path:** `/groovy/`
+**Server Location:** `www.bahar.co.il/groovy/`
 **Access URLs:**
-- https://www.bahar.co.il/scribe2/
-- https://www.bahar.co.il/scribe2/poc
+- https://www.bahar.co.il/groovy/
+- https://www.bahar.co.il/groovy/poc
 
-To change, edit `PRODUCTION_BASE_PATH` in `vite.config.ts` and rebuild.
+To change, use `VITE_BASE_PATH` env var or edit `vite.config.ts` and rebuild.
+
+---
+
+## Legacy Redirects
+
+Old URLs are automatically redirected to the new location:
+- `www.bahar.co.il/Scribe/` → `www.bahar.co.il/groovy/` (original GrooveScribe)
+- `www.bahar.co.il/scribe2/` → `www.bahar.co.il/groovy/` (staging environment)
 
 ---
 
@@ -240,7 +256,7 @@ To change, edit `PRODUCTION_BASE_PATH` in `vite.config.ts` and rebuild.
 
 **To change deployment path:**
 
-1. Edit `vite.config.ts` → Change `PRODUCTION_BASE_PATH`
+1. Set `VITE_BASE_PATH` env var (or edit `vite.config.ts`)
 2. Run `npm run build:prod`
 3. Update root `.htaccess` (add exclusion if needed)
 4. Upload `dist/` to new location

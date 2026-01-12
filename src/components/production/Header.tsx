@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Info, Sun, Moon } from 'lucide-react';
+import { Info, Sun, Moon, Save, FolderOpen, Library } from 'lucide-react';
 import { Button } from '../ui/button';
 import { useTheme } from '../../contexts/ThemeContext';
 import { AutoSpeedUpModal } from './AutoSpeedUpModal';
@@ -15,6 +15,10 @@ interface HeaderProps {
   autoSpeedUpConfig?: AutoSpeedUpConfig;
   onAutoSpeedUpConfigChange?: (config: AutoSpeedUpConfig) => void;
   onAutoSpeedUpSaveDefault?: () => void;
+  onSaveGroove?: () => void;
+  onOpenMyGrooves?: () => void;
+  onOpenGrooveLibrary?: () => void;
+  savedGroovesCount?: number;
 }
 
 export function Header({
@@ -25,6 +29,10 @@ export function Header({
   autoSpeedUpConfig,
   onAutoSpeedUpConfigChange,
   onAutoSpeedUpSaveDefault,
+  onSaveGroove,
+  onOpenMyGrooves,
+  onOpenGrooveLibrary,
+  savedGroovesCount = 0,
 }: HeaderProps) {
   const metronomeOptions: Array<'off' | '4th' | '8th' | '16th'> = ['off', '4th', '8th', '16th'];
   const { toggleTheme, isDark } = useTheme();
@@ -56,11 +64,43 @@ export function Header({
       </div>
 
       <div className="flex items-center gap-4">
-        <Link to="/poc">
-          <Button variant="ghost" size="sm" className="text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white">
-            📁 My Grooves
-          </Button>
-        </Link>
+        {/* Save Groove Button */}
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onSaveGroove}
+          className="text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white"
+        >
+          <Save className="w-4 h-4 mr-2" />
+          Save
+        </Button>
+
+        {/* My Groovies Button */}
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onOpenMyGrooves}
+          className="text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white relative"
+        >
+          <FolderOpen className="w-4 h-4 mr-2" />
+          My Groovies
+          {savedGroovesCount > 0 && (
+            <span className="absolute -top-1 -right-1 w-5 h-5 bg-purple-600 text-white text-xs rounded-full flex items-center justify-center">
+              {savedGroovesCount > 9 ? '9+' : savedGroovesCount}
+            </span>
+          )}
+        </Button>
+
+        {/* Groove Library Button */}
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onOpenGrooveLibrary}
+          className="text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white"
+        >
+          <Library className="w-4 h-4 mr-2" />
+          Library
+        </Button>
 
         {/* Count In Toggle */}
         <Button
