@@ -12,6 +12,66 @@ Format:
 
 ---
 
+## 2026-01-12: Amplitude Analytics Integration (Issue #51)
+
+**Commits**: `c6dd181`, `49e91f8`
+**Branch**: main
+
+### Summary
+
+Integrated Amplitude analytics to track user interactions. Analytics is conditional and only enabled on the production domain (bahar.co.il). Generic/open-source deployments have zero analytics overhead.
+
+### Key Changes
+
+**New File** (`src/utils/analytics.ts`):
+- Type-safe wrapper for `window.BaharAnalytics` global
+- Domain check: only loads script on `*.bahar.co.il`
+- Dynamic script loading (no static script tag in HTML)
+- All tracking functions are no-ops when disabled
+
+**Tracked Events**:
+| Category | Events |
+|----------|--------|
+| **Playback** | Play started (mode, tempo, time sig), Stop (mode, duration) |
+| **Groove Editing** | Division changed, Note toggled, Tempo/Swing changed, Measure actions |
+| **My Groovies** | Opened, Save, Load, Delete |
+| **Library** | Opened, Style selected, Groove loaded, Saved to My Groovies |
+| **Export/Share** | URL shared, Download modal opened, Downloaded (format), Print preview opened, Printed |
+| **UI** | Theme toggled, Count-in toggled, Notes-only toggled, Undo/Redo, Clear all, Auto speed up config opened |
+
+### Files Created
+- `src/utils/analytics.ts` - Analytics wrapper with 25+ tracking functions
+
+### Files Modified
+- `src/pages/ProductionPage.tsx` - Added analytics tracking calls
+- `src/components/production/Header.tsx` - Theme toggle and auto speed up tracking
+- `src/components/production/GrooveLibraryModal.tsx` - Library interaction tracking
+- `src/components/production/DownloadModal.tsx` - Download tracking
+- `src/components/production/PrintPreviewModal.tsx` - Print tracking
+- `src/components/production/ClearButton.tsx` - Clear all tracking
+
+### Impact
+- ✅ Full analytics coverage for user interactions
+- ✅ Zero analytics for open-source/generic deployments
+- ✅ No external script loaded unless on production domain
+- ✅ Type-safe tracking methods prevent typos
+
+### Deployment Notes
+- Analytics only works on `*.bahar.co.il` domains
+- No configuration needed for other deployments
+- External script: `https://www.bahar.co.il/assets/universal-analytics.js`
+
+### Testing
+- ✅ Type check passes
+- ✅ Build succeeds (2031 modules, 1.68s)
+- ✅ No analytics script loaded on localhost
+
+### Follow-ups
+- Monitor analytics dashboard for event data
+- Consider adding more granular events if needed
+
+---
+
 ## 2026-01-12: Built-in Groove Library (Issue #15)
 
 **Commit**: `7227b60`

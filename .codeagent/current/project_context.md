@@ -30,6 +30,13 @@ Groovy is a **modern drum notation editor and player** built with strict separat
 
 ## Recent Changes
 
+### 2026-01-12: Amplitude Analytics Integration (Issue #51)
+- ✅ **Analytics wrapper**: `src/utils/analytics.ts` with type-safe tracking methods
+- ✅ **Conditional loading**: Script only loads on production domain (bahar.co.il)
+- ✅ **Zero overhead for OSS**: Generic deployments have no analytics script/tracking
+- ✅ **25+ events tracked**: Playback, editing, My Groovies, Library, export/share, UI interactions
+- Commits `c6dd181`, `49e91f8` on main
+
 ### 2026-01-12: Built-in Groove Library (Issue #15)
 - ✅ **Groove Library**: 25 preset patterns in 6 style categories (Rock, Funk, Jazz, Latin, World, Practice)
 - ✅ **Library Data**: `src/data/libraryGrooves.json` - URL-encoded grooves bundled with app

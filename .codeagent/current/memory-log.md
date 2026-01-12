@@ -4,6 +4,49 @@ Durable knowledge: decisions, patterns, "how we do things here", gotchas.
 
 ---
 
+## Analytics Patterns
+
+### Conditional Analytics Loading (2026-01-12)
+**Decision**: Load analytics script dynamically only on production domain (bahar.co.il).
+
+**Reasoning**:
+- Open-source deployments shouldn't have analytics
+- No external script loaded for non-production domains
+- All tracking functions become no-ops when disabled
+- Zero performance/network overhead for generic deployments
+
+**Pattern**:
+```typescript
+// In src/utils/analytics.ts
+const ANALYTICS_DOMAIN = 'bahar.co.il';
+
+const isAnalyticsEnabled = (): boolean => {
+  if (typeof window === 'undefined') return false;
+  return window.location.hostname.endsWith(ANALYTICS_DOMAIN);
+};
+
+// Load script only on production
+function loadAnalyticsScript(): void {
+  if (!isAnalyticsEnabled()) return;
+  // ...dynamically create script tag
+}
+
+// All tracking functions check before sending
+const analytics = {
+  track: (eventName: string, props?: Record<string, unknown>) => {
+    if (!isAnalyticsEnabled()) return;
+    window.BaharAnalytics?.track(eventName, props);
+  },
+};
+```
+
+**Gotcha**:
+- Script must be loaded before any tracking calls
+- Module initialization calls `loadAnalyticsScript()` automatically
+- `window.BaharAnalytics` is undefined until script loads (use optional chaining)
+
+---
+
 ## Groove Library Patterns
 
 ### Library Data Storage (2026-01-12)
