@@ -1,1 +1,19 @@
 Mobile view!
+
+P0 (High Priority - Ready for Work)
+#31 - [Feature] Footer actions (Export & Share) - PARTIAL: Share Modal done, Download formats pending
+P1 (Medium-High Priority)
+#17 - [Feature] Embed Code for Grooves - Has spec and acceptance criteria (DONE via Share Modal)
+#16 - [Feature] Short Links for Sharing - Has spec and acceptance criteria
+P2 (Medium Priority)
+#24 - [P2] Audio Context Policy Risks - Has analysis and recommended approach
+#23 - [P2] Fragile DOM-based Cursor Logic - Has analysis and recommended approach
+Low Priority
+#28 - [P3] Accessibility Enhancements - Nice to have, low user impact
+#27 - [P3] Sparse Data Optimization - Not justified, premature optimization
+#26 - [P3] God Component Pattern - Acceptable current structure
+#21 - [P3] Singleton Violation in Audio Engine - Not currently a problem
+
+DONE
+#31 - [Feature] Share Modal - Link/Social/Embed/QR/Email tabs
+#4 - [Feature] Metronome - Full spec with detailed requirements

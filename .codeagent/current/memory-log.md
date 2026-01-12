@@ -4,6 +4,104 @@ Durable knowledge: decisions, patterns, "how we do things here", gotchas.
 
 ---
 
+## Metronome Patterns
+
+### Metronome Offset Calculation (2026-01-12)
+**Decision**: Support offset clicks at different subdivisions (E, AND, A for 16ths; TI, TA for triplets).
+
+**Reasoning**:
+- Common practice technique to internalize subdivisions
+- Clicking on off-beats develops rhythmic independence
+- ROTATE mode helps practice all subdivision positions
+
+**Pattern**:
+```typescript
+// Calculate offset positions based on division and offset type
+private getOffsetPositions(division: number, offsetClick: MetronomeOffsetClick): number[] {
+  const positionsPerBeat = division / 4;
+
+  if (offsetClick === '1') return [0]; // On the beat
+  if (offsetClick === 'AND') return [positionsPerBeat / 2]; // Half-way
+  if (offsetClick === 'E') return [positionsPerBeat / 4]; // First e
+  if (offsetClick === 'A') return [positionsPerBeat * 3 / 4]; // First a
+  // ... triplet positions
+}
+
+// Check if current position should have metronome click
+private shouldPlayMetronome(position: number, division: number): 'accent' | 'normal' | null {
+  if (this.metronomeConfig.frequency === 0) return null;
+  const positionsPerMetronomeBeat = division / this.metronomeConfig.frequency;
+  const beatPosition = position % positionsPerMetronomeBeat;
+  const offsetPositions = this.getOffsetPositions(division, this.metronomeConfig.offsetClick);
+  if (offsetPositions.includes(beatPosition)) {
+    return position === 0 ? 'accent' : 'normal';
+  }
+  return null;
+}
+```
+
+**Gotcha**:
+- Offset positions are relative to each metronome beat, not the measure
+- ROTATE mode increments offset index on each loop
+- Triplet divisions (12, 24) use TI/TA; non-triplet use E/AND/A
+
+---
+
+### Metronome Volume Boost (2026-01-12)
+**Decision**: Apply 2.5x volume boost to metronome samples in DrumSynth.
+
+**Reasoning**:
+- Metronome audio files are inherently quieter than drum samples
+- Without boost, metronome is barely audible at 100% volume
+- Boost makes metronome volume slider useful across full range
+
+**Pattern**:
+```typescript
+// In DrumSynth.playDrum()
+let volume = velocity / 127;
+if (voice.startsWith('hihat-metronome')) {
+  volume *= 2.5;
+}
+```
+
+**Gotcha**:
+- Only boost metronome samples, not regular hi-hat sounds
+- Metronome voices: `hihat-metronome-normal`, `hihat-metronome-accent`
+
+---
+
+### Metronome Settings Persistence (2026-01-12)
+**Decision**: Store metronome config in localStorage, not URL.
+
+**Reasoning**:
+- Metronome settings are user preferences, not groove data
+- Different from tempo/time signature which are part of the groove
+- localStorage is simpler for user preferences
+- No need to share metronome settings in URLs
+
+**Pattern**:
+```typescript
+const METRONOME_STORAGE_KEY = 'groovy-metronome-config';
+
+function loadMetronomeConfig(): MetronomeConfig {
+  try {
+    const saved = localStorage.getItem(METRONOME_STORAGE_KEY);
+    if (saved) return { ...DEFAULT_METRONOME_CONFIG, ...JSON.parse(saved) };
+  } catch (e) { /* ignore */ }
+  return DEFAULT_METRONOME_CONFIG;
+}
+
+function saveMetronomeConfig(config: MetronomeConfig): void {
+  localStorage.setItem(METRONOME_STORAGE_KEY, JSON.stringify(config));
+}
+```
+
+**Gotcha**:
+- Merge with defaults to handle missing fields from older saved configs
+- Initialize engine with loaded config on mount
+
+---
+
 ## Analytics Patterns
 
 ### Conditional Analytics Loading (2026-01-12)

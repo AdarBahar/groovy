@@ -27,6 +27,7 @@ import { PrintPreviewModal } from '../components/production/PrintPreviewModal';
 import { MyGroovesModal } from '../components/production/MyGroovesModal';
 import { SaveGrooveModal } from '../components/production/SaveGrooveModal';
 import { GrooveLibraryModal } from '../components/production/GrooveLibraryModal';
+import { ShareModal } from '../components/production/ShareModal';
 import { Button } from '../components/ui/button';
 
 import './ProductionPage.css';
@@ -61,6 +62,7 @@ export default function ProductionPage() {
   const [isMyGroovesModalOpen, setIsMyGroovesModalOpen] = useState(false);
   const [isSaveGrooveModalOpen, setIsSaveGrooveModalOpen] = useState(false);
   const [isGrooveLibraryModalOpen, setIsGrooveLibraryModalOpen] = useState(false);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [elapsedTime, setElapsedTime] = useState('0:00');
   const [isCountingIn, setIsCountingIn] = useState(false);
   const [countdownNumber, setCountdownNumber] = useState<number | null>(null);
@@ -98,7 +100,7 @@ export default function ProductionPage() {
   } = useGrooveEngine();
 
   // URL sync
-  const { copyURLToClipboard } = useURLSync(groove, setGroove);
+  useURLSync(groove, setGroove);
 
   // My Grooves (localStorage persistence)
   const myGrooves = useMyGrooves();
@@ -542,7 +544,7 @@ export default function ProductionPage() {
       </div>
 
       <BottomToolbar
-        onShare={async () => { analytics.trackShare(); return copyURLToClipboard(); }}
+        onShare={() => { analytics.trackShareModalOpen(); setIsShareModalOpen(true); }}
         onDownload={() => { analytics.trackDownloadOpen(); setIsDownloadModalOpen(true); }}
         onPrint={() => { analytics.trackPrintOpen(); setIsPrintModalOpen(true); }}
       />
@@ -581,6 +583,12 @@ export default function ProductionPage() {
         onClose={() => setIsGrooveLibraryModalOpen(false)}
         onLoadGroove={handleLoadLibraryGroove}
         onSaveToMyGroovies={handleSaveLibraryGrooveToMyGroovies}
+      />
+
+      <ShareModal
+        groove={groove}
+        isOpen={isShareModalOpen}
+        onClose={() => setIsShareModalOpen(false)}
       />
     </div>
   );

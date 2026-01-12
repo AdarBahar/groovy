@@ -12,6 +12,138 @@ Format:
 
 ---
 
+## 2026-01-12: Share Modal (Issue #31 - Partial)
+
+**Commit**: `8925959`
+**Branch**: main
+
+### Summary
+
+Implemented Share Modal with 5 tabs for sharing grooves: Link, Social, Embed, QR Code, and Email. This partially addresses Issue #31 (Export & Share), with the Share functionality now complete.
+
+### Key Changes
+
+**New File** (`src/components/production/ShareModal.tsx`):
+- Modal component with tabbed interface using Radix Dialog
+- **Link tab**: Copy shareable URL with validation warnings for long URLs
+- **Social tab**: Share to X/Twitter, Facebook, Reddit via popup windows
+- **Embed tab**: Generate and copy iframe embed code for websites
+- **QR tab**: Display scannable QR code using `qrcode.react` library
+- **Email tab**: Open email client with pre-filled subject and body
+
+**Analytics** (`src/utils/analytics.ts`):
+- Added `trackShareModalOpen()` for modal opens
+- Added `trackShareMethod(method)` for tracking share method usage (link/twitter/facebook/reddit/embed/qr/email)
+
+**Bottom Toolbar** (`src/components/production/BottomToolbar.tsx`):
+- Simplified Share button to open modal instead of copying URL directly
+- Removed URL copy state management (moved to ShareModal)
+
+**Production Page** (`src/pages/ProductionPage.tsx`):
+- Added `isShareModalOpen` state
+- Integrated `ShareModal` component
+- Updated `onShare` handler to open modal
+
+### Impact
+
+- Users can now share grooves via multiple channels from a single modal
+- Social media sharing opens in popup windows (Twitter, Facebook, Reddit)
+- Embed code allows embedding grooves in websites/blogs
+- QR code enables easy mobile access to shared grooves
+- Email sharing opens default email client with pre-filled content
+
+### Follow-ups
+
+- Issue #31 still has Download formats pending (MIDI, PDF, PNG, SVG, WAV, MP3)
+- Issue #16 (Short Links) could integrate with Link tab
+- Issue #17 (Embed Code) is now complete via the Embed tab
+
+---
+
+## 2026-01-12: Metronome Feature (Issue #4)
+
+**Commit**: `96fc92f`
+**Branch**: main
+
+### Summary
+
+Implemented full metronome feature with frequency controls, solo mode, count-in, volume control, offset click, and localStorage persistence. The metronome is synchronized with the groove player and tempo.
+
+### Key Changes
+
+**New File** (`src/components/production/MetronomeOptionsMenu.tsx`):
+- Options dropdown with Solo, Count-in, Volume, Offset Click controls
+- Frequency selector (OFF, 4th, 8th, 16th)
+- Volume slider (0-100%)
+- Checkboxes for Solo, Count-in, Offset click
+
+**Types** (`src/types.ts`):
+- `MetronomeFrequency`: `0 | 4 | 8 | 16`
+- `MetronomeOffsetClick`: `'1' | 'E' | 'AND' | 'A' | 'TI' | 'TA' | 'ROTATE'`
+- `MetronomeConfig` interface with all settings
+- `DEFAULT_METRONOME_CONFIG` constant
+
+**Core Engine** (`src/core/GrooveEngine.ts`):
+- Added `metronomeConfig` private field
+- Metronome scheduling in main scheduler loop
+- `shouldPlayMetronome()` - determines click type based on frequency and offset
+- `getOffsetPositions()` - calculates offset for E/AND/A/TI/TA positions
+- ROTATE mode: cycles through offsets on each loop
+- Solo mode: mutes groove notes when enabled
+- Accent on beat 1, normal clicks on other beats
+
+**Audio** (`src/core/DrumSynth.ts`):
+- Added 2.5x volume boost for metronome samples (inherently quieter than drums)
+
+**React Hook** (`src/hooks/useGrooveEngine.ts`):
+- Added metronome state with localStorage persistence
+- `loadMetronomeConfig()` / `saveMetronomeConfig()` helpers
+- Methods: `setMetronomeFrequency`, `setMetronomeSolo`, `setMetronomeCountIn`, `setMetronomeVolume`, `setMetronomeOffsetClick`, `setMetronomeConfig`
+- Engine initialized with saved config on mount
+
+**Header** (`src/components/production/Header.tsx`):
+- Added Options button (▼) next to metronome controls
+- Integrated MetronomeOptionsMenu
+
+**ProductionPage** (`src/pages/ProductionPage.tsx`):
+- Count-in now uses `metronomeConfig.countIn` instead of local state
+- Wired metronome config handlers to Header
+
+### Features Implemented
+
+| Feature | Description |
+|---------|-------------|
+| **Frequency** | OFF, 4th, 8th, 16th note subdivisions |
+| **Solo Mode** | Mutes drum sounds, plays only metronome |
+| **Count-In** | 4-beat count before playback starts |
+| **Volume** | 0-100% slider for metronome loudness |
+| **Offset Click** | Shift clicks to E, AND, A (16ths) or TI, TA (triplets) |
+| **ROTATE** | Cycles through offsets on each loop |
+| **Persistence** | Settings saved to localStorage |
+
+### Impact
+- ✅ Full metronome functionality for practice
+- ✅ Metronome synced with groove tempo and time signature
+- ✅ Settings persist across page reloads
+- ✅ Solo mode for metronome-only practice
+
+### Testing
+- ✅ Type check passes
+- ✅ Build succeeds (782KB JS + 92KB CSS)
+- ✅ All 50 tests pass
+- ✅ Manual testing: all metronome features work correctly
+
+### Bug Fixes During Implementation
+- Fixed volume display showing 8000% (was multiplying 0-100 by 100)
+- Added 2.5x boost for metronome samples (were too quiet)
+
+### Follow-ups
+- Consider adding URL persistence for MetronomeFreq param
+- Consider adding visual metronome indicator during playback
+- Consider adding more offset click options in UI dropdown
+
+---
+
 ## 2026-01-12: Amplitude Analytics Integration (Issue #51)
 
 **Commits**: `c6dd181`, `49e91f8`

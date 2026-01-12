@@ -156,6 +156,14 @@ export function trackShare() {
   analytics.track('URL Shared');
 }
 
+export function trackShareModalOpen() {
+  analytics.track('Share Modal Opened');
+}
+
+export function trackShareMethod(method: 'link' | 'twitter' | 'facebook' | 'reddit' | 'embed' | 'qr' | 'email') {
+  analytics.track('Share Method Used', { method });
+}
+
 export function trackDownloadOpen() {
   analytics.track('Download Modal Opened');
 }
