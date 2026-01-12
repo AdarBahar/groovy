@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { GrooveData, DEFAULT_GROOVE, DrumVoice, Division, ALL_DRUM_VOICES } from '../types';
+import { GrooveData, DEFAULT_GROOVE, DrumVoice, Division, ALL_DRUM_VOICES, MetronomeFrequency } from '../types';
 import { GrooveUtils, decodeGroove, SavedGroove } from '../core';
 import { useGrooveEngine } from '../hooks/useGrooveEngine';
 import { useHistory } from '../hooks/useHistory';
@@ -31,6 +31,28 @@ import { Button } from '../components/ui/button';
 
 import './ProductionPage.css';
 
+// Helper to convert MetronomeFrequency to Header format
+function frequencyToMetronomeOption(freq: MetronomeFrequency): 'off' | '4th' | '8th' | '16th' {
+  switch (freq) {
+    case 0: return 'off';
+    case 4: return '4th';
+    case 8: return '8th';
+    case 16: return '16th';
+    default: return 'off';
+  }
+}
+
+// Helper to convert Header format to MetronomeFrequency
+function metronomeOptionToFrequency(option: 'off' | '4th' | '8th' | '16th'): MetronomeFrequency {
+  switch (option) {
+    case 'off': return 0;
+    case '4th': return 4;
+    case '8th': return 8;
+    case '16th': return 16;
+    default: return 0;
+  }
+}
+
 export default function ProductionPage() {
   const [advancedEditMode] = useState(false);
   const [isNotesOnly, setIsNotesOnly] = useState(false);
@@ -40,7 +62,6 @@ export default function ProductionPage() {
   const [isSaveGrooveModalOpen, setIsSaveGrooveModalOpen] = useState(false);
   const [isGrooveLibraryModalOpen, setIsGrooveLibraryModalOpen] = useState(false);
   const [elapsedTime, setElapsedTime] = useState('0:00');
-  const [countInEnabled, setCountInEnabled] = useState(false);
   const [isCountingIn, setIsCountingIn] = useState(false);
   const [countdownNumber, setCountdownNumber] = useState<number | null>(null);
   const [countingInButton, setCountingInButton] = useState<'play' | 'playPlus' | null>(null);
@@ -67,6 +88,13 @@ export default function ProductionPage() {
     playPreview,
     play,
     stop,
+    // Metronome
+    metronomeConfig,
+    setMetronomeFrequency,
+    setMetronomeSolo,
+    setMetronomeCountIn,
+    setMetronomeVolume,
+    setMetronomeOffsetClick,
   } = useGrooveEngine();
 
   // URL sync
@@ -250,8 +278,8 @@ export default function ProductionPage() {
       analytics.trackStop('normal', duration);
       stop();
     } else {
-      // Start playback (with count-in if enabled)
-      if (countInEnabled) {
+      // Start playback (with count-in if enabled in metronome options)
+      if (metronomeConfig.countIn) {
         const completed = await playCountIn('play');
         if (!completed) return; // Count-in was cancelled
       }
@@ -273,7 +301,7 @@ export default function ProductionPage() {
       autoSpeedUp.stop();
       stop();
     } else {
-      if (countInEnabled) {
+      if (metronomeConfig.countIn) {
         const completed = await playCountIn('playPlus');
         if (!completed) return; // Count-in was cancelled
       }
@@ -357,9 +385,9 @@ export default function ProductionPage() {
   };
 
   const handleCountInToggle = () => {
-    const newValue = !countInEnabled;
+    const newValue = !metronomeConfig.countIn;
     analytics.trackCountInToggle(newValue);
-    setCountInEnabled(newValue);
+    setMetronomeCountIn(newValue);
   };
 
   const handleNotesOnlyToggle = () => {
@@ -378,10 +406,24 @@ export default function ProductionPage() {
     redo();
   };
 
+  const handleMetronomeChange = (option: 'off' | '4th' | '8th' | '16th') => {
+    const frequency = metronomeOptionToFrequency(option);
+    setMetronomeFrequency(frequency);
+    analytics.trackMetronomeChange(option);
+  };
+
   return (
     <div className="h-screen flex flex-col bg-slate-100 dark:bg-slate-900 text-slate-900 dark:text-white">
       <Header
-        countInEnabled={countInEnabled}
+        metronome={frequencyToMetronomeOption(metronomeConfig.frequency)}
+        onMetronomeChange={handleMetronomeChange}
+        metronomeConfig={metronomeConfig}
+        onMetronomeFrequencyChange={setMetronomeFrequency}
+        onMetronomeSoloChange={setMetronomeSolo}
+        onMetronomeCountInChange={setMetronomeCountIn}
+        onMetronomeVolumeChange={setMetronomeVolume}
+        onMetronomeOffsetClickChange={setMetronomeOffsetClick}
+        countInEnabled={metronomeConfig.countIn}
         onCountInToggle={handleCountInToggle}
         autoSpeedUpConfig={autoSpeedUp.config}
         onAutoSpeedUpConfigChange={autoSpeedUp.setConfig}

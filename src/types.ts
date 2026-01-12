@@ -239,3 +239,47 @@ export const DEFAULT_AUTO_SPEED_UP_CONFIG: AutoSpeedUpConfig = {
 export const MIN_TEMPO = 30;
 export const MAX_TEMPO = 300;
 
+/**
+ * Metronome frequency (clicks per measure)
+ * 0 = off, 4 = quarter notes, 8 = eighth notes, 16 = sixteenth notes
+ */
+export type MetronomeFrequency = 0 | 4 | 8 | 16;
+
+/**
+ * Metronome offset click position
+ * Determines where the click falls relative to the beat
+ * - '1': On the beat (default)
+ * - 'E': On the "e" of "1 e & a" (second 16th)
+ * - 'AND': On the "&" (second 8th)
+ * - 'A': On the "a" (fourth 16th)
+ * - 'TI': Triplet offset (second note of triplet)
+ * - 'TA': Triplet offset (third note of triplet)
+ * - 'ROTATE': Cycle through offsets on each loop
+ */
+export type MetronomeOffsetClick = '1' | 'E' | 'AND' | 'A' | 'TI' | 'TA' | 'ROTATE';
+
+/**
+ * Metronome configuration
+ */
+export interface MetronomeConfig {
+  /** Metronome frequency (0 = off, 4/8/16 = subdivisions) */
+  frequency: MetronomeFrequency;
+  /** Solo mode: mute groove notes, play only metronome */
+  solo: boolean;
+  /** Count-in: play one bar of metronome before groove starts */
+  countIn: boolean;
+  /** Offset click position */
+  offsetClick: MetronomeOffsetClick;
+  /** Volume (0-100) */
+  volume: number;
+}
+
+/** Default metronome configuration */
+export const DEFAULT_METRONOME_CONFIG: MetronomeConfig = {
+  frequency: 0,
+  solo: false,
+  countIn: false,
+  offsetClick: '1',
+  volume: 80,
+};
+

@@ -105,7 +105,12 @@ export class DrumSynth {
 
     // Create gain node for velocity
     const gainNode = this.audioContext.createGain();
-    const volume = velocity / 127;
+    let volume = velocity / 127;
+
+    // Boost metronome samples (they are quieter than drum samples)
+    if (voice.startsWith('hihat-metronome')) {
+      volume *= 2.5; // Boost metronome volume
+    }
     gainNode.gain.value = volume;
 
     // Connect nodes
