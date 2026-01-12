@@ -6,6 +6,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { AutoSpeedUpModal } from './AutoSpeedUpModal';
 import { AboutModal } from './AboutModal';
 import { AutoSpeedUpConfig } from '../../types';
+import { trackThemeToggle, trackAutoSpeedUpConfigOpen } from '../../utils/analytics';
 
 interface HeaderProps {
   metronome?: 'off' | '4th' | '8th' | '16th';
@@ -122,7 +123,7 @@ export function Header({
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => setShowSpeedUpModal(!showSpeedUpModal)}
+              onClick={() => { if (!showSpeedUpModal) trackAutoSpeedUpConfigOpen(); setShowSpeedUpModal(!showSpeedUpModal); }}
               className={`transition-colors ${
                 showSpeedUpModal
                   ? 'text-white bg-slate-700'
@@ -158,7 +159,7 @@ export function Header({
         <Button
           variant="ghost"
           size="icon"
-          onClick={toggleTheme}
+          onClick={() => { trackThemeToggle(!isDark); toggleTheme(); }}
           className="text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white"
           title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
         >

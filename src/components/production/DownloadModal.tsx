@@ -17,6 +17,7 @@ import {
   downloadAsJSON,
   isFormatSupported,
 } from '../../core';
+import { trackDownload } from '../../utils/analytics';
 
 interface DownloadModalProps {
   groove: GrooveData;
@@ -53,6 +54,7 @@ export function DownloadModal({ groove, isOpen, onClose }: DownloadModalProps) {
           console.warn(`Format ${selectedFormat} not yet implemented`);
           break;
       }
+      trackDownload(selectedFormat);
       setDownloadSuccess(true);
       setTimeout(() => setDownloadSuccess(false), 2000);
     } catch (error) {

@@ -8,6 +8,7 @@ import { useAutoSpeedUp } from '../hooks/useAutoSpeedUp';
 import { useGrooveActions } from '../hooks/useGrooveActions';
 import { useMyGrooves } from '../hooks/useMyGrooves';
 import { usePlaybackHighlight } from '../hooks/usePlaybackHighlight';
+import * as analytics from '../utils/analytics';
 
 // Core components - drum grid and sheet music
 import { DrumGridDark } from '../components/production/DrumGridDark';
@@ -245,6 +246,8 @@ export default function ProductionPage() {
 
     if (isPlaying) {
       // Stop playback
+      const duration = playStartTimeRef.current ? (Date.now() - playStartTimeRef.current) / 1000 : 0;
+      analytics.trackStop('normal', duration);
       stop();
     } else {
       // Start playback (with count-in if enabled)
@@ -252,6 +255,7 @@ export default function ProductionPage() {
         const completed = await playCountIn('play');
         if (!completed) return; // Count-in was cancelled
       }
+      analytics.trackPlay('normal', groove.tempo, `${groove.timeSignature.beats}/${groove.timeSignature.noteValue}`);
       await play(groove);
     }
   };
@@ -264,6 +268,8 @@ export default function ProductionPage() {
     }
 
     if (isPlaying) {
+      const duration = playStartTimeRef.current ? (Date.now() - playStartTimeRef.current) / 1000 : 0;
+      analytics.trackStop('speed-up', duration);
       autoSpeedUp.stop();
       stop();
     } else {
@@ -271,6 +277,7 @@ export default function ProductionPage() {
         const completed = await playCountIn('playPlus');
         if (!completed) return; // Count-in was cancelled
       }
+      analytics.trackPlay('speed-up', groove.tempo, `${groove.timeSignature.beats}/${groove.timeSignature.noteValue}`);
       await play(groove);
       autoSpeedUp.start();
     }
@@ -293,6 +300,7 @@ export default function ProductionPage() {
   };
 
   const handleDivisionChange = async (division: Division) => {
+    analytics.trackDivisionChange(division);
     const wasPlaying = isPlaying;
     if (wasPlaying) stop();
 
@@ -321,16 +329,20 @@ export default function ProductionPage() {
 
   // My Grooves handlers
   const handleSaveGroove = (name: string, existingId?: string) => {
+    analytics.trackGrooveSave(name, !!existingId);
     myGrooves.saveGroove(groove, name, existingId);
   };
 
   const handleLoadGroove = (saved: SavedGroove) => {
+    analytics.trackGrooveLoad(saved.name);
     const loadedGroove = decodeGroove(saved);
     setGroove(loadedGroove);
     // URL will update automatically via useURLSync
   };
 
   const handleDeleteGroove = (id: string) => {
+    const groove = myGrooves.grooves.find(g => g.id === id);
+    if (groove) analytics.trackGrooveDelete(groove.name);
     myGrooves.deleteGroove(id);
   };
 
@@ -344,31 +356,53 @@ export default function ProductionPage() {
     myGrooves.saveGroove(grooveData, name);
   };
 
+  const handleCountInToggle = () => {
+    const newValue = !countInEnabled;
+    analytics.trackCountInToggle(newValue);
+    setCountInEnabled(newValue);
+  };
+
+  const handleNotesOnlyToggle = () => {
+    const newValue = !isNotesOnly;
+    analytics.trackNotesOnlyToggle(newValue);
+    setIsNotesOnly(newValue);
+  };
+
+  const handleUndo = () => {
+    analytics.trackUndoRedo('undo');
+    undo();
+  };
+
+  const handleRedo = () => {
+    analytics.trackUndoRedo('redo');
+    redo();
+  };
+
   return (
     <div className="h-screen flex flex-col bg-slate-100 dark:bg-slate-900 text-slate-900 dark:text-white">
       <Header
         countInEnabled={countInEnabled}
-        onCountInToggle={() => setCountInEnabled(!countInEnabled)}
+        onCountInToggle={handleCountInToggle}
         autoSpeedUpConfig={autoSpeedUp.config}
         onAutoSpeedUpConfigChange={autoSpeedUp.setConfig}
         onAutoSpeedUpSaveDefault={autoSpeedUp.saveAsDefault}
         onSaveGroove={() => setIsSaveGrooveModalOpen(true)}
-        onOpenMyGrooves={() => setIsMyGroovesModalOpen(true)}
-        onOpenGrooveLibrary={() => setIsGrooveLibraryModalOpen(true)}
+        onOpenMyGrooves={() => { analytics.trackMyGroovesOpen(); setIsMyGroovesModalOpen(true); }}
+        onOpenGrooveLibrary={() => { analytics.trackLibraryOpen(); setIsGrooveLibraryModalOpen(true); }}
         savedGroovesCount={myGrooves.grooves.length}
       />
 
       <div className="flex-1 flex overflow-hidden">
         <Sidebar
           isNotesOnly={isNotesOnly}
-          onToggleNotesOnly={() => setIsNotesOnly(!isNotesOnly)}
+          onToggleNotesOnly={handleNotesOnlyToggle}
           timeSignature={groove.timeSignature}
           division={groove.division}
           onDivisionChange={handleDivisionChange}
           canUndo={canUndo}
           canRedo={canRedo}
-          onUndo={undo}
-          onRedo={redo}
+          onUndo={handleUndo}
+          onRedo={handleRedo}
         />
 
         <div className="flex-1 flex flex-col overflow-hidden">
@@ -466,9 +500,9 @@ export default function ProductionPage() {
       </div>
 
       <BottomToolbar
-        onShare={copyURLToClipboard}
-        onDownload={() => setIsDownloadModalOpen(true)}
-        onPrint={() => setIsPrintModalOpen(true)}
+        onShare={async () => { analytics.trackShare(); return copyURLToClipboard(); }}
+        onDownload={() => { analytics.trackDownloadOpen(); setIsDownloadModalOpen(true); }}
+        onPrint={() => { analytics.trackPrintOpen(); setIsPrintModalOpen(true); }}
       />
 
       <DownloadModal
