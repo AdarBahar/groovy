@@ -7,6 +7,7 @@ import { useURLSync } from '../hooks/useURLSync';
 import { useAutoSpeedUp } from '../hooks/useAutoSpeedUp';
 import { useGrooveActions } from '../hooks/useGrooveActions';
 import { useMyGrooves } from '../hooks/useMyGrooves';
+import { usePlaybackHighlight } from '../hooks/usePlaybackHighlight';
 
 // Core components - drum grid and sheet music
 import { DrumGridDark } from '../components/production/DrumGridDark';
@@ -126,6 +127,10 @@ export default function ProductionPage() {
     if (currentPosition < 0 || !isPlaying) return currentPosition;
     return currentPosition;
   }, [currentPosition, isPlaying]);
+
+  // Use direct DOM manipulation for playback highlighting (performance optimization)
+  // This avoids React re-renders for high-frequency position updates during playback
+  usePlaybackHighlight(visualPosition, isPlaying);
 
   // Initialize sync mode
   useEffect(() => {
@@ -410,7 +415,6 @@ export default function ProductionPage() {
                     <div className="flex-1">
                       <DrumGridDark
                         groove={groove}
-                        currentPosition={visualPosition}
                         onNoteToggle={handleNoteToggle}
                         onSetNotes={handleSetNotes}
                         onPreview={handlePreview}

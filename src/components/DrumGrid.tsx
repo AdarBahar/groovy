@@ -663,7 +663,7 @@ function DrumGrid({
                         onTouchEnd={(e) => handleTouchEnd(e, measureIndex, rowIndex, pos)}
                         title={`${row.name} - ${variationLabel} at position ${pos + 1}${hasVariations ? (advancedEditMode ? ' (click for options)' : ' (right-click for options)') : ''}`}
                       >
-                        <NoteIcon voices={activeVoices} isActive={isActive} isCurrent={isCurrent && isActive} />
+                        <NoteIcon voices={activeVoices} isActive={isActive} />
                         {isActive && isNonDefault && hasVariations && (
                           <span className="variation-indicator">*</span>
                         )}
