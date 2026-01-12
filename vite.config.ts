@@ -5,13 +5,17 @@ import tailwindcss from '@tailwindcss/vite'
 // ============================================================================
 // DEPLOYMENT CONFIGURATION
 // ============================================================================
-// Change this to deploy to a different subdirectory
+// Base path is configured via VITE_BASE_PATH environment variable.
+// This allows CI/CD to set the deployment path without code changes.
+//
 // Examples:
-//   - Root deployment: '/'
-//   - Subdirectory: '/scribe2/'
-//   - Different subdirectory: '/my-app/'
+//   - Root deployment: VITE_BASE_PATH=/
+//   - Subdirectory:    VITE_BASE_PATH=/scribe2/
+//   - Custom path:     VITE_BASE_PATH=/my-app/
+//
 // Note: Must start and end with '/'
-const PRODUCTION_BASE_PATH = '/scribe2/';
+// Default: '/scribe2/' (for backward compatibility)
+const PRODUCTION_BASE_PATH = process.env.VITE_BASE_PATH || '/scribe2/';
 
 // ============================================================================
 // VITE CONFIGURATION
@@ -22,7 +26,7 @@ export default defineConfig({
 
   // Set base path for production deployment
   // Development always uses '/' (root) for simplicity
-  // Production uses PRODUCTION_BASE_PATH defined above
+  // Production uses VITE_BASE_PATH env var (or default '/scribe2/')
   base: process.env.NODE_ENV === 'production' ? PRODUCTION_BASE_PATH : '/',
 
   server: {
