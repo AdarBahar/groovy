@@ -1,11 +1,12 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { GrooveData, DEFAULT_GROOVE, DrumVoice, Division, ALL_DRUM_VOICES } from '../types';
-import { GrooveUtils } from '../core';
+import { GrooveUtils, decodeGroove, SavedGroove } from '../core';
 import { useGrooveEngine } from '../hooks/useGrooveEngine';
 import { useHistory } from '../hooks/useHistory';
 import { useURLSync } from '../hooks/useURLSync';
 import { useAutoSpeedUp } from '../hooks/useAutoSpeedUp';
 import { useGrooveActions } from '../hooks/useGrooveActions';
+import { useMyGrooves } from '../hooks/useMyGrooves';
 
 // Core components - drum grid and sheet music
 import { DrumGridDark } from '../components/production/DrumGridDark';
@@ -21,6 +22,8 @@ import { KeyboardShortcuts } from '../components/production/KeyboardShortcuts';
 import { ClearButton } from '../components/production/ClearButton';
 import { DownloadModal } from '../components/production/DownloadModal';
 import { PrintPreviewModal } from '../components/production/PrintPreviewModal';
+import { MyGroovesModal } from '../components/production/MyGroovesModal';
+import { SaveGrooveModal } from '../components/production/SaveGrooveModal';
 import { Button } from '../components/ui/button';
 
 import './ProductionPage.css';
@@ -30,6 +33,8 @@ export default function ProductionPage() {
   const [isNotesOnly, setIsNotesOnly] = useState(false);
   const [isDownloadModalOpen, setIsDownloadModalOpen] = useState(false);
   const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
+  const [isMyGroovesModalOpen, setIsMyGroovesModalOpen] = useState(false);
+  const [isSaveGrooveModalOpen, setIsSaveGrooveModalOpen] = useState(false);
   const [elapsedTime, setElapsedTime] = useState('0:00');
   const [countInEnabled, setCountInEnabled] = useState(false);
   const [isCountingIn, setIsCountingIn] = useState(false);
@@ -62,6 +67,9 @@ export default function ProductionPage() {
 
   // URL sync
   const { copyURLToClipboard } = useURLSync(groove, setGroove);
+
+  // My Grooves (localStorage persistence)
+  const myGrooves = useMyGrooves();
 
   // Shared groove actions (note toggling, measure manipulation, metadata)
   const {
@@ -304,6 +312,21 @@ export default function ProductionPage() {
     if (wasPlaying) await play(newGroove);
   };
 
+  // My Grooves handlers
+  const handleSaveGroove = (name: string, existingId?: string) => {
+    myGrooves.saveGroove(groove, name, existingId);
+  };
+
+  const handleLoadGroove = (saved: SavedGroove) => {
+    const loadedGroove = decodeGroove(saved);
+    setGroove(loadedGroove);
+    // URL will update automatically via useURLSync
+  };
+
+  const handleDeleteGroove = (id: string) => {
+    myGrooves.deleteGroove(id);
+  };
+
   return (
     <div className="h-screen flex flex-col bg-slate-100 dark:bg-slate-900 text-slate-900 dark:text-white">
       <Header
@@ -312,6 +335,9 @@ export default function ProductionPage() {
         autoSpeedUpConfig={autoSpeedUp.config}
         onAutoSpeedUpConfigChange={autoSpeedUp.setConfig}
         onAutoSpeedUpSaveDefault={autoSpeedUp.saveAsDefault}
+        onSaveGroove={() => setIsSaveGrooveModalOpen(true)}
+        onOpenMyGrooves={() => setIsMyGroovesModalOpen(true)}
+        savedGroovesCount={myGrooves.grooves.length}
       />
 
       <div className="flex-1 flex overflow-hidden">
@@ -344,6 +370,18 @@ export default function ProductionPage() {
                 elapsedTime={elapsedTime}
                 countdownNumber={countdownNumber}
                 countingInButton={countingInButton}
+              />
+
+              {/* Metadata Details - Title, Author, Comments */}
+              <MetadataFields
+                ref={metadataFieldsRef}
+                title={groove.title || ''}
+                author={groove.author || ''}
+                comments={groove.comments || ''}
+                onTitleChange={handleTitleChange}
+                onAuthorChange={handleAuthorChange}
+                onCommentsChange={handleCommentsChange}
+                isNotesOnly={isNotesOnly}
               />
 
               {/* Main sequencer area - Sheet music + Grid */}
@@ -388,34 +426,20 @@ export default function ProductionPage() {
               </div>
 
               {!isNotesOnly && (
-                <>
-                  {/* Metadata fields */}
-                  <MetadataFields
-                    ref={metadataFieldsRef}
-                    title={groove.title || ''}
-                    author={groove.author || ''}
-                    comments={groove.comments || ''}
-                    onTitleChange={handleTitleChange}
-                    onAuthorChange={handleAuthorChange}
-                    onCommentsChange={handleCommentsChange}
-                  />
+                <div className="flex items-center gap-2">
+                  <ClearButton onClear={handleClearAll} />
 
-                  {/* Clear and Stickings buttons */}
-                  <div className="flex items-center gap-2">
-                    <ClearButton onClear={handleClearAll} />
-
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center gap-2 h-auto py-2 px-4"
-                    >
-                      <div className="w-4 h-4 flex items-center justify-center font-bold text-sm">
-                        S
-                      </div>
-                      <span className="text-xs uppercase">Stickings</span>
-                    </Button>
-                  </div>
-                </>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center gap-2 h-auto py-2 px-4"
+                  >
+                    <div className="w-4 h-4 flex items-center justify-center font-bold text-sm">
+                      S
+                    </div>
+                    <span className="text-xs uppercase">Stickings</span>
+                  </Button>
+                </div>
               )}
             </div>
           </main>
@@ -441,6 +465,22 @@ export default function ProductionPage() {
         isOpen={isPrintModalOpen}
         onClose={() => setIsPrintModalOpen(false)}
         onAddTitle={() => metadataFieldsRef.current?.openAndFocusTitle()}
+      />
+
+      <MyGroovesModal
+        isOpen={isMyGroovesModalOpen}
+        onClose={() => setIsMyGroovesModalOpen(false)}
+        grooves={myGrooves.grooves}
+        onLoadGroove={handleLoadGroove}
+        onDeleteGroove={handleDeleteGroove}
+      />
+
+      <SaveGrooveModal
+        isOpen={isSaveGrooveModalOpen}
+        onClose={() => setIsSaveGrooveModalOpen(false)}
+        onSave={handleSaveGroove}
+        initialName={groove.title || ''}
+        findByName={myGrooves.findByName}
       />
     </div>
   );
