@@ -30,6 +30,12 @@ Groovy is a **modern drum notation editor and player** built with strict separat
 
 ## Recent Changes
 
+### 2026-01-13: Bundle Size Optimization
+- ✅ **Manual chunk splitting**: Heavy libraries split into separate chunks
+- ✅ **Main bundle**: Reduced from 1,407 kB to 787 kB (44% smaller)
+- ✅ **Lazy loading**: jspdf, lamejs, midi-writer-js, qrcode loaded on demand
+- ✅ **vite.config.ts**: Added manualChunks configuration
+
 ### 2026-01-12: Export Functionality (Issue #31 - Complete)
 - ✅ **Download Modal**: Full-featured export modal with format selection
 - ✅ **Export Formats**: JSON, MIDI, PDF, PNG, SVG, MP3 (WAV pending)

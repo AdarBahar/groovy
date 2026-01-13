@@ -12,6 +12,61 @@ Format:
 
 ---
 
+## 2026-01-13: Bundle Size Optimization
+
+**Branch**: main
+
+### Summary
+
+Optimized production bundle size by implementing manual chunk splitting in Vite. Main bundle reduced from 1,407 kB to 787 kB (44% smaller). Heavy export libraries are now lazy-loaded on demand.
+
+### Key Changes
+
+**Updated File** (`vite.config.ts`):
+- Added manual chunks for heavy export libraries:
+  - `jspdf` (389 kB) - loaded only on PDF export
+  - `lamejs` (169 kB) - loaded only on MP3 export
+  - `midi-writer-js` (17 kB) - loaded only on MIDI export
+  - `qrcode` (25 kB) - loaded only on QR code generation
+  - `lucide-react` (16 kB) - icons library
+- Removed unused `rollup-plugin-visualizer` import
+
+**Updated File** (`src/core/ExportUtils.ts`):
+- Fixed QRCode dynamic import (removed incorrect `.default` access)
+
+### Impact
+
+| Metric | Before | After | Change |
+|--------|--------|-------|--------|
+| Main bundle | 1,407 kB | 787 kB | -44% |
+| Initial page load | ~1.4 MB | ~0.8 MB | -44% |
+| Gzipped main | 439 kB | 235 kB | -46% |
+
+**Bundle Breakdown (After)**:
+- `index-*.js` (main): 787 kB
+- `jspdf-*.js`: 389 kB (lazy)
+- `html2canvas-*.js`: 202 kB (lazy)
+- `react-vendor-*.js`: 178 kB
+- `lamejs-*.js`: 169 kB (lazy)
+- `index.es-*.js` (abcjs): 159 kB (lazy)
+- `qrcode-*.js`: 25 kB (lazy)
+- `purify.es-*.js`: 23 kB (lazy)
+- `midi-writer-*.js`: 17 kB (lazy)
+- `lucide-*.js`: 16 kB
+
+### Deployment / Ops Notes
+
+- No new dependencies added
+- No configuration changes required
+- Chunk warning (>1000 kB) is now resolved
+
+### Follow-ups
+
+- Consider further splitting if main bundle grows
+- Monitor initial page load performance
+
+---
+
 ## 2026-01-12: Export Functionality (Issue #31 - Download Formats)
 
 **Branch**: main

@@ -4,6 +4,35 @@ Durable knowledge: decisions, patterns, "how we do things here", gotchas.
 
 ---
 
+## Bundle Optimization
+
+### Manual Chunk Splitting (2026-01-13)
+**Decision**: Use Vite's `manualChunks` to split heavy export libraries into separate chunks.
+
+**Reasoning**:
+- Main bundle was 1,407 kB, causing slow initial page loads
+- Export libraries (jspdf, lamejs, midi-writer-js, qrcode) only needed when user exports
+- Lazy loading these reduces initial bundle to 787 kB (44% smaller)
+
+**Pattern**:
+```typescript
+// vite.config.ts
+manualChunks: {
+  'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+  jspdf: ['jspdf'],
+  lamejs: ['@breezystack/lamejs'],
+  'midi-writer': ['midi-writer-js'],
+  qrcode: ['qrcode'],
+  lucide: ['lucide-react'],
+}
+```
+
+**Gotcha**:
+- The `qrcode` module exports functions directly, NOT on `.default`
+- Use `QRCodeModule.toDataURL()`, not `QRCodeModule.default.toDataURL()`
+
+---
+
 ## Metronome Patterns
 
 ### Metronome Offset Calculation (2026-01-12)
