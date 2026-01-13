@@ -48,7 +48,6 @@ const DRUM_ROWS: DrumRow[] = [
       { voices: ['stacker'], label: 'Stacker', shortcut: '8' },
       { voices: ['hihat-metronome-normal'], label: 'Metronome', shortcut: '9' },
       { voices: ['hihat-metronome-accent'], label: 'Metronome Accent', shortcut: '0' },
-      { voices: ['hihat-cross'], label: 'Cross' },
     ],
   },
   {
@@ -135,6 +134,7 @@ export function DrumGridDark({
   const [isDragging, setIsDragging] = useState(false);
   const [dragMode, setDragMode] = useState<'paint' | 'erase' | null>(null);
   const [dragMeasureIndex, setDragMeasureIndex] = useState<number>(0);
+  const [dragSourceVoices, setDragSourceVoices] = useState<DrumVoice[] | null>(null);
 
   // Touch state
   const [touchStartTime, setTouchStartTime] = useState<number>(0);
@@ -227,21 +227,28 @@ export function DrumGridDark({
       if (isDragging) {
         setIsDragging(false);
         setDragMode(null);
+        setDragSourceVoices(null);
       }
     };
     document.addEventListener('mouseup', handleMouseUp);
     return () => document.removeEventListener('mouseup', handleMouseUp);
   }, [isDragging]);
 
-  // Drag action
-  const applyDragAction = (mode: 'paint' | 'erase', measureIndex: number, rowIndex: number, position: number) => {
+  // Drag action - uses sourceVoices to copy the same articulation to all painted positions
+  const applyDragAction = (mode: 'paint' | 'erase', measureIndex: number, rowIndex: number, position: number, sourceVoices?: DrumVoice[]) => {
     const measure = groove.measures[measureIndex];
     if (!measure) return;
-    const voices = getVoicesForPosition(measureIndex, rowIndex, position);
     const isActive = isPositionActive(measureIndex, rowIndex, position);
 
     if (mode === 'paint' && !isActive) {
+      // Use source voices (from drag start) or fall back to position's current selection
+      const voices = sourceVoices || getVoicesForPosition(measureIndex, rowIndex, position);
       voices.forEach(voice => onNoteToggle(voice, position, measureIndex));
+      // Update voice selection for this position to match source
+      if (sourceVoices) {
+        const key = `${measureIndex}-${rowIndex}-${position}`;
+        setVoiceSelections(prev => ({ ...prev, [key]: sourceVoices }));
+      }
     } else if (mode === 'erase' && isActive) {
       const row = DRUM_ROWS[rowIndex];
       row.variations.forEach(v => {
@@ -257,32 +264,39 @@ export function DrumGridDark({
   const handleMouseDown = (event: React.MouseEvent, measureIndex: number, rowIndex: number, position: number) => {
     if (event.ctrlKey || event.metaKey) {
       event.preventDefault();
+      // Capture the source voices from the starting position
+      const sourceVoices = getVoicesForPosition(measureIndex, rowIndex, position);
       setIsDragging(true);
       setDragMode('paint');
       setDragMeasureIndex(measureIndex);
-      applyDragAction('paint', measureIndex, rowIndex, position);
+      setDragSourceVoices(sourceVoices);
+      applyDragAction('paint', measureIndex, rowIndex, position, sourceVoices);
     } else if (event.altKey || event.shiftKey) {
       event.preventDefault();
       setIsDragging(true);
       setDragMode('erase');
       setDragMeasureIndex(measureIndex);
+      setDragSourceVoices(null);
       applyDragAction('erase', measureIndex, rowIndex, position);
     }
   };
 
   const handleMouseEnter = (measureIndex: number, rowIndex: number, position: number) => {
     if (isDragging && dragMode && measureIndex === dragMeasureIndex) {
-      applyDragAction(dragMode, measureIndex, rowIndex, position);
+      applyDragAction(dragMode, measureIndex, rowIndex, position, dragSourceVoices || undefined);
     }
   };
 
   const handleTouchStart = (_event: React.TouchEvent, measureIndex: number, rowIndex: number, position: number) => {
     setTouchStartTime(Date.now());
     setTouchMoved(false);
+    // Capture the source voices from the starting position
+    const sourceVoices = getVoicesForPosition(measureIndex, rowIndex, position);
     setIsDragging(true);
     setDragMode('paint');
     setDragMeasureIndex(measureIndex);
-    applyDragAction('paint', measureIndex, rowIndex, position);
+    setDragSourceVoices(sourceVoices);
+    applyDragAction('paint', measureIndex, rowIndex, position, sourceVoices);
   };
 
   const handleTouchMove = (event: React.TouchEvent) => {
@@ -296,7 +310,7 @@ export function DrumGridDark({
       const rIdx = parseInt(cellButton.dataset.rowIndex || '-1');
       const pos = parseInt(cellButton.dataset.position || '-1');
       if (mIdx >= 0 && rIdx >= 0 && pos >= 0 && dragMode && mIdx === dragMeasureIndex) {
-        applyDragAction(dragMode, mIdx, rIdx, pos);
+        applyDragAction(dragMode, mIdx, rIdx, pos, dragSourceVoices || undefined);
       }
     }
   };
@@ -309,6 +323,7 @@ export function DrumGridDark({
     }
     setIsDragging(false);
     setDragMode(null);
+    setDragSourceVoices(null);
     setTouchMoved(false);
   };
 

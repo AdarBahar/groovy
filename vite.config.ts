@@ -22,7 +22,10 @@ const PRODUCTION_BASE_PATH = process.env.VITE_BASE_PATH || '/scribe/';
 // ============================================================================
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react(), tailwindcss()],
+  plugins: [
+    react(),
+    tailwindcss(),
+  ],
 
   // Set base path for production deployment
   // Development always uses '/' (root) for simplicity
@@ -52,6 +55,13 @@ export default defineConfig({
         // Manual chunk splitting for better caching
         manualChunks: {
           'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+          // Heavy export libraries - loaded on demand
+          'jspdf': ['jspdf'],
+          'midi-writer': ['midi-writer-js'],
+          'qrcode': ['qrcode'],
+          'lamejs': ['@breezystack/lamejs'],
+          // UI libraries
+          'lucide': ['lucide-react'],
         },
       },
     },

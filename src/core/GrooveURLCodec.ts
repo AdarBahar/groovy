@@ -335,9 +335,16 @@ export function validateURLLength(url: string): URLValidationResult {
 
 /**
  * Get full URL with groove encoded as query params
+ *
+ * Uses import.meta.env.BASE_URL to ensure the correct base path is used
+ * in production deployments (e.g., /scribe/ or /groovy/).
  */
 export function getShareableURL(groove: GrooveData, baseURL?: string): string {
-  const base = baseURL || window.location.origin + window.location.pathname;
+  // Use provided baseURL, or construct from origin + Vite's BASE_URL
+  // import.meta.env.BASE_URL is set by Vite based on the 'base' config:
+  // - Development: '/'
+  // - Production: '/scribe/' (or whatever PRODUCTION_BASE_PATH is set to)
+  const base = baseURL || window.location.origin + (import.meta.env.BASE_URL || '/');
   const params = encodeGrooveToURL(groove);
   return `${base}?${params}`;
 }

@@ -61,13 +61,24 @@ export type { URLValidationResult } from './GrooveURLCodec';
 export {
   exportToJSON,
   downloadAsJSON,
+  exportToSVG,
+  downloadAsSVG,
+  exportToPNG,
+  downloadAsPNG,
+  exportToPDF,
+  downloadAsPDF,
+  exportToMIDI,
+  downloadAsMIDI,
+  exportToMP3,
+  downloadAsMP3,
+  generateSheetMusicSVG,
   triggerDownload,
   generateFilename,
   isFormatSupported,
   getFormatInfo,
   ALL_EXPORT_FORMATS,
 } from './ExportUtils';
-export type { ExportFormat, JSONExportOptions, ExportMetadata } from './ExportUtils';
+export type { ExportFormat, JSONExportOptions, ImageExportOptions, AudioExportOptions, ExportMetadata } from './ExportUtils';
 
 // Groove Storage (My Grooves persistence)
 export {
