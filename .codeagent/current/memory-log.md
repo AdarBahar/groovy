@@ -4,6 +4,443 @@ Durable knowledge: decisions, patterns, "how we do things here", gotchas.
 
 ---
 
+## Security Patterns
+
+### Debug Mode Toggle Pattern (2026-01-14)
+**Decision**: Implement clickable debug mode toggle in About modal that persists across sessions.
+
+**Reasoning**:
+- Removes console spam in production for end users
+- Developers can enable debug mode without code changes
+- Easter egg pattern (click "Adar Bahar") makes it discoverable but not intrusive
+- Persists preference in localStorage
+
+**Pattern**:
+```typescript
+// src/utils/logger.ts
+class Logger {
+  private debugMode: boolean;
+
+  constructor() {
+    const saved = localStorage.getItem('groovy-debug-mode');
+    this.debugMode = saved === 'true';
+  }
+
+  toggleDebugMode(): boolean {
+    this.debugMode = !this.debugMode;
+    localStorage.setItem('groovy-debug-mode', String(this.debugMode));
+    console.log(`🔧 Debug mode ${this.debugMode ? 'ENABLED' : 'DISABLED'}`);
+    return this.debugMode;
+  }
+
+  isDebugMode(): boolean {
+    return this.debugMode;
+  }
+
+  log(...args: unknown[]): void {
+    if (this.debugMode) console.log(...args);
+  }
+
+  warn(...args: unknown[]): void {
+    if (this.debugMode) console.warn(...args);
+  }
+
+  error(...args: unknown[]): void {
+    console.error(...args); // Always log errors
+  }
+}
+
+export const logger = new Logger();
+```
+
+**UI Integration**:
+```typescript
+// AboutModal.tsx
+const [debugMode, setDebugMode] = useState(logger.isDebugMode());
+
+const handleDebugToggle = () => {
+  const newMode = logger.toggleDebugMode();
+  setDebugMode(newMode);
+};
+
+// In render:
+<button onClick={handleDebugToggle} className="...">
+  Adar Bahar
+</button>
+{debugMode && (
+  <span className="text-xs px-2 py-1 rounded bg-purple-600 text-white">
+    Debug Mode ON
+  </span>
+)}
+```
+
+**Gotcha**:
+- Always log errors regardless of debug mode (security/critical issues)
+- Replace console.log/warn with logger.log/warn throughout codebase
+- Don't use console.* directly (bypasses debug toggle)
+
+---
+
+### Safe Storage Pattern (2026-01-14)
+**Decision**: Wrap localStorage with quota handling and auto-cleanup to prevent QuotaExceededError.
+
+**Reasoning**:
+- Browser localStorage limit is ~5MB (varies by browser)
+- Grooves with 100+ measures can exceed quota
+- Auto-cleanup removes oldest 25% of items when quota exceeded
+- Graceful degradation with user-friendly error messages
+
+**Pattern**:
+```typescript
+// src/utils/safeStorage.ts
+const STORAGE_QUOTA_THRESHOLD = 5 * 1024 * 1024 * 0.9; // 90% of 5MB
+
+export function safeSetItem(key: string, value: string): StorageResult {
+  try {
+    const currentUsage = getStorageUsage();
+    const estimatedSize = (key.length + value.length) * 2; // UTF-16
+
+    if (currentUsage + estimatedSize > STORAGE_QUOTA_THRESHOLD) {
+      logger.warn(`localStorage approaching quota: ${(currentUsage / 1024 / 1024).toFixed(2)}MB`);
+    }
+
+    localStorage.setItem(key, value);
+    return { success: true };
+  } catch (error) {
+    if (error instanceof DOMException && error.name === 'QuotaExceededError') {
+      return {
+        success: false,
+        error: 'Storage quota exceeded',
+        quotaExceeded: true,
+      };
+    }
+    return { success: false, error: 'Failed to save' };
+  }
+}
+
+export function cleanupOldItems(keyPrefix: string): StorageResult {
+  const keysToCheck = Object.keys(localStorage).filter(k => k.startsWith(keyPrefix));
+  const itemsToRemove = Math.max(1, Math.floor(keysToCheck.length * 0.25));
+
+  // Remove oldest 25%
+  keysToCheck.slice(0, itemsToRemove).forEach(key => localStorage.removeItem(key));
+
+  return { success: true };
+}
+```
+
+**Usage in GrooveStorage**:
+```typescript
+const result = safeStorage.setItem(STORAGE_KEY, JSON.stringify(grooves));
+if (!result.success) {
+  if (result.quotaExceeded) {
+    logger.warn('Storage quota exceeded, attempting cleanup...');
+    safeStorage.cleanup('groove-');
+
+    // Retry after cleanup
+    const retryResult = safeStorage.setItem(STORAGE_KEY, JSON.stringify(grooves));
+    if (!retryResult.success) {
+      return {
+        success: false,
+        error: 'Storage full. Please delete some saved grooves.',
+      };
+    }
+  }
+}
+```
+
+**Gotcha**:
+- UTF-16 encoding means 2 bytes per character (use `* 2` for size estimation)
+- Cleanup is aggressive (25%) to ensure retry succeeds
+- Always inform user when grooves are deleted
+- Test with large datasets (100+ grooves)
+
+---
+
+### Rate Limiting Pattern (2026-01-14)
+**Decision**: Add per-voice rate limiting to audio playback to prevent DoS attacks.
+
+**Reasoning**:
+- Malicious code or bugs could spam `playDrum()` thousands of times
+- Creates excessive CPU load and audio buffer overflow
+- 10ms minimum interval per voice prevents abuse while allowing realistic drumming
+
+**Pattern**:
+```typescript
+// src/core/DrumSynth.ts
+export class DrumSynth {
+  private lastPlayTime = new Map<DrumVoice, number>();
+  private readonly MIN_PLAY_INTERVAL_MS = 10;
+
+  playDrum(voice: DrumVoice, time: number = 0, velocity: number = 100) {
+    // Rate limiting
+    const now = Date.now();
+    const lastPlay = this.lastPlayTime.get(voice) || 0;
+    if (now - lastPlay < this.MIN_PLAY_INTERVAL_MS) {
+      logger.warn(`Rate limit: Skipping ${voice} play (too soon after last hit)`);
+      return;
+    }
+    this.lastPlayTime.set(voice, now);
+
+    // ... play audio
+  }
+}
+```
+
+**Gotcha**:
+- Rate limit is per-voice (kick can play while hi-hat rate-limited)
+- 10ms is fast enough for human performance (faster = suspect)
+- Use `Date.now()` for rate limiting (milliseconds)
+- Use `audioContext.currentTime` for audio scheduling (seconds)
+- Don't confuse the two timing systems!
+
+---
+
+### Error Boundary Pattern (2026-01-14)
+**Decision**: Wrap entire React app with ErrorBoundary to catch unhandled errors.
+
+**Reasoning**:
+- React errors crash entire app by default (white screen of death)
+- Error boundary provides fallback UI with recovery options
+- Logs errors to analytics for monitoring
+- Improves user experience during unexpected failures
+
+**Pattern**:
+```typescript
+// src/components/ErrorBoundary.tsx
+export class ErrorBoundary extends Component<Props, State> {
+  static getDerivedStateFromError(error: Error): Partial<State> {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo): void {
+    logger.error('ErrorBoundary caught an error:', error, errorInfo);
+
+    // Track error in analytics
+    if (typeof window !== 'undefined' && window.BaharAnalytics) {
+      window.BaharAnalytics.trackError(
+        'React Error Boundary',
+        error.message,
+        errorInfo.componentStack || 'unknown'
+      );
+    }
+  }
+
+  render(): ReactNode {
+    if (this.state.hasError) {
+      return <FallbackUI
+        error={this.state.error}
+        onReset={this.handleReset}
+        onReload={this.handleReload}
+      />;
+    }
+    return this.props.children;
+  }
+}
+```
+
+**Usage**:
+```typescript
+// App.tsx
+function App() {
+  return (
+    <ErrorBoundary>
+      <BrowserRouter basename={basename}>
+        <Routes>
+          {/* ... */}
+        </Routes>
+      </BrowserRouter>
+    </ErrorBoundary>
+  );
+}
+```
+
+**Gotcha**:
+- Error boundaries are class components (can't use hooks)
+- Only catches errors in child components, not in event handlers
+- For event handler errors, use try/catch blocks
+- Always provide "Try Again" and "Reload" buttons in fallback UI
+
+---
+
+### CSP Header Configuration (2026-01-14)
+**Decision**: Add Content-Security-Policy header to .htaccess for XSS protection.
+
+**Reasoning**:
+- Restricts resource loading to prevent XSS attacks
+- Allows self-hosted content and analytics domain
+- Permits inline styles (required by Tailwind)
+- Blocks inline scripts and object embeds
+
+**Pattern**:
+```apache
+# .htaccess
+Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' https://www.bahar.co.il; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self'; connect-src 'self' https://www.bahar.co.il https://bahar.co.il https://api.amplitude.com https://api.eu.amplitude.com; font-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'self';"
+
+Header always set Referrer-Policy "strict-origin-when-cross-origin"
+
+Header always set Permissions-Policy "geolocation=(), microphone=(), camera=()"
+```
+
+**Explanation**:
+- `default-src 'self'`: Only load resources from same origin by default
+- `script-src 'self' 'unsafe-inline' https://www.bahar.co.il`: Allow scripts from self and analytics domain
+- `style-src 'self' 'unsafe-inline'`: Allow inline styles (Tailwind requirement)
+- `img-src 'self' data: blob:`: Allow images from self, data URIs (QR codes), blobs (canvas)
+- `connect-src`: Allow API calls to analytics domains
+- `object-src 'none'`: Block Flash/Java applets
+- `form-action 'self'`: Prevent form submissions to external domains
+
+**Gotcha**:
+- Test thoroughly after adding CSP (can break functionality)
+- `'unsafe-inline'` for scripts is dangerous but required for analytics
+- Consider nonce-based CSP for better security
+- Check browser console for CSP violations during development
+
+---
+
+### Type Safety Without @ts-ignore (2026-01-14)
+**Decision**: Use proper type assertions instead of @ts-ignore to maintain type safety.
+
+**Reasoning**:
+- @ts-ignore disables all type checking for the line
+- Masks potential bugs and makes code harder to maintain
+- Type assertions preserve type safety while satisfying compiler
+
+**Pattern**:
+```typescript
+// DON'T do this (unsafe):
+// @ts-ignore - TypeScript has trouble with spread args here
+listener(...args);
+
+// DO this (safe):
+(listener as (...callbackArgs: typeof args) => void)(...args);
+```
+
+**Explanation**:
+- `typeof args` preserves exact tuple type
+- Type assertion tells compiler the function signature
+- Maintains type checking for function body
+- Compiler can still catch errors in listener implementation
+
+**Gotcha**:
+- Type assertions are runtime no-ops (don't convert types)
+- Only use when you're certain about the type
+- Prefer narrowing (typeof, instanceof) over assertions when possible
+- Always add comment explaining why assertion is needed
+
+---
+
+### XSS Prevention - Avoiding innerHTML (2026-01-14)
+**Decision**: Never use innerHTML; use safe DOM methods instead.
+
+**Reasoning**:
+- innerHTML can execute malicious scripts from untrusted data
+- Safe alternatives provide same functionality without XSS risk
+- Especially critical for user-generated content (groove titles, comments)
+
+**Pattern**:
+```typescript
+// DON'T do this (XSS vulnerability):
+element.innerHTML = userContent;
+element.innerHTML = `<div>${userInput}</div>`;
+
+// DO use safe alternatives:
+
+// Reading SVG content:
+const svgElement = container.querySelector('svg');
+const serializer = new XMLSerializer();
+const svgString = serializer.serializeToString(svgElement);
+
+// Cloning elements:
+const clone = originalElement.cloneNode(true) as HTMLElement;
+container.appendChild(clone);
+
+// Clearing content:
+while (element.firstChild) {
+  element.removeChild(element.firstChild);
+}
+
+// Creating new elements:
+const div = document.createElement('div');
+div.textContent = userInput; // textContent auto-escapes
+container.appendChild(div);
+```
+
+**Gotcha**:
+- textContent auto-escapes HTML (safe for user input)
+- innerHTML does NOT escape (always unsafe for user input)
+- Even seemingly safe innerHTML can be exploited
+- Use DOMPurify library if you absolutely need to render HTML
+
+---
+
+## UI Patterns
+
+### Drum Grid Row Structure (2026-01-14)
+**Decision**: Use DRUM_ROWS array to define drum grid structure with rows, variations, and keyboard shortcuts.
+
+**Reasoning**:
+- Declarative structure easier to modify than hardcoded UI
+- Single source of truth for grid layout
+- Keyboard shortcuts defined alongside variations
+- Each row can have multiple voices (e.g., "Kick & Hi-Hat Foot")
+
+**Pattern**:
+```typescript
+// In DrumGrid.tsx and DrumGridDark.tsx
+interface DrumRow {
+  name: string;                // Row label displayed in UI
+  defaultVoices: DrumVoice[];  // Default selected voices
+  variations: {                // Dropdown menu options
+    voices: DrumVoice[];       // Can be multiple voices
+    label: string;             // Display name
+    shortcut?: string;         // Optional keyboard shortcut
+  }[];
+}
+
+const DRUM_ROWS: DrumRow[] = [
+  {
+    name: 'Cymbals',
+    defaultVoices: ['crash'],
+    variations: [
+      { voices: ['crash'], label: 'Crash', shortcut: '1' },
+      { voices: ['ride'], label: 'Ride', shortcut: '2' },
+      { voices: ['ride-bell'], label: 'Ride Bell', shortcut: '3' },
+      { voices: ['cowbell'], label: 'Cowbell', shortcut: '4' },
+      { voices: ['stacker'], label: 'Stacker', shortcut: '5' },
+    ],
+  },
+  // ... more rows
+];
+```
+
+**Usage**:
+```typescript
+// Grid iterates over DRUM_ROWS
+DRUM_ROWS.map((row, rowIndex) => {
+  // Render row with all variations
+  row.variations.map(variation => {
+    // Render dropdown item with shortcut
+  });
+});
+```
+
+**Gotcha**:
+- DRUM_ROWS exists in 2 files: `DrumGrid.tsx` and `DrumGridDark.tsx`
+- Must keep both in sync when making changes
+- POC page uses `DrumGrid.tsx`, production uses `DrumGridDark.tsx`
+- Row order matters - index 0 appears at top of grid
+- Voices use names (not indices), so reordering rows is safe
+
+**Row Organization Best Practices** (Issue #55):
+- Group related sounds together (cymbals separate from hi-hats)
+- Limit variations per row to 5-8 for usability
+- Place most-used voices at top (cymbals before hi-hat)
+- Keyboard shortcuts 1-5 easier to reach than 6-0
+
+---
+
 ## Bundle Optimization
 
 ### Manual Chunk Splitting (2026-01-13)
@@ -133,6 +570,53 @@ function saveMetronomeConfig(config: MetronomeConfig): void {
 
 ## Analytics Patterns
 
+### Environment Variables for Secrets (2026-01-14)
+**Decision**: Move hardcoded domains and URLs to environment variables for flexibility and security.
+
+**Reasoning**:
+- Open-source deployments need different analytics domains
+- Environment variables allow customization without code changes
+- Sensitive URLs don't belong in source control
+- Provides defaults for development while allowing production overrides
+
+**Pattern**:
+```typescript
+// src/utils/analytics.ts
+const ANALYTICS_DOMAIN = import.meta.env.VITE_ANALYTICS_DOMAIN || 'bahar.co.il';
+const ANALYTICS_SCRIPT_URL = import.meta.env.VITE_ANALYTICS_SCRIPT_URL || 'https://www.bahar.co.il/assets/universal-analytics.js';
+
+const isAnalyticsEnabled = (): boolean => {
+  if (typeof window === 'undefined') return false;
+  return window.location.hostname.endsWith(ANALYTICS_DOMAIN);
+};
+```
+
+**.env.example** (template for developers):
+```bash
+# Analytics Domain (analytics only loads on this domain)
+VITE_ANALYTICS_DOMAIN=bahar.co.il
+
+# Analytics Script URL
+VITE_ANALYTICS_SCRIPT_URL=https://www.bahar.co.il/assets/universal-analytics.js
+```
+
+**.env** (local override, gitignored):
+```bash
+# Developers can override locally for testing
+VITE_ANALYTICS_DOMAIN=localhost
+VITE_ANALYTICS_SCRIPT_URL=http://localhost:8080/analytics.js
+```
+
+**Gotcha**:
+- Vite requires `VITE_` prefix for client-side env vars
+- Use `import.meta.env.VITE_*`, not `process.env.*`
+- Rebuild required after changing .env (not hot-reloaded)
+- Always provide defaults with `|| 'fallback'`
+- Never commit .env to git (add to .gitignore)
+- Provide .env.example as template for developers
+
+---
+
 ### Conditional Analytics Loading (2026-01-12)
 **Decision**: Load analytics script dynamically only on production domain (bahar.co.il).
 
@@ -145,7 +629,7 @@ function saveMetronomeConfig(config: MetronomeConfig): void {
 **Pattern**:
 ```typescript
 // In src/utils/analytics.ts
-const ANALYTICS_DOMAIN = 'bahar.co.il';
+const ANALYTICS_DOMAIN = import.meta.env.VITE_ANALYTICS_DOMAIN || 'bahar.co.il';
 
 const isAnalyticsEnabled = (): boolean => {
   if (typeof window === 'undefined') return false;
@@ -171,6 +655,7 @@ const analytics = {
 - Script must be loaded before any tracking calls
 - Module initialization calls `loadAnalyticsScript()` automatically
 - `window.BaharAnalytics` is undefined until script loads (use optional chaining)
+- Now uses environment variables for domain/URL configuration (2026-01-14)
 
 ---
 

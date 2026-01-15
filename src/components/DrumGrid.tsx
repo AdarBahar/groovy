@@ -37,19 +37,25 @@ interface DrumRow {
 
 const DRUM_ROWS: DrumRow[] = [
   {
+    name: 'Cymbals',
+    defaultVoices: ['crash'],
+    variations: [
+      { voices: ['crash'], label: 'Crash', shortcut: '1' },
+      { voices: ['ride'], label: 'Ride', shortcut: '2' },
+      { voices: ['ride-bell'], label: 'Ride Bell', shortcut: '3' },
+      { voices: ['cowbell'], label: 'Cowbell', shortcut: '4' },
+      { voices: ['stacker'], label: 'Stacker', shortcut: '5' },
+    ],
+  },
+  {
     name: 'Hi-Hat',
     defaultVoices: ['hihat-closed'],
     variations: [
       { voices: ['hihat-closed'], label: 'Closed', shortcut: '1' },
       { voices: ['hihat-open'], label: 'Open', shortcut: '2' },
       { voices: ['hihat-accent'], label: 'Accent', shortcut: '3' },
-      { voices: ['crash'], label: 'Crash', shortcut: '4' },
-      { voices: ['ride'], label: 'Ride', shortcut: '5' },
-      { voices: ['ride-bell'], label: 'Ride Bell', shortcut: '6' },
-      { voices: ['cowbell'], label: 'Cowbell', shortcut: '7' },
-      { voices: ['stacker'], label: 'Stacker', shortcut: '8' },
-      { voices: ['hihat-metronome-normal'], label: 'Metronome', shortcut: '9' },
-      { voices: ['hihat-metronome-accent'], label: 'Metronome Accent', shortcut: '0' },
+      { voices: ['hihat-metronome-normal'], label: 'Metronome', shortcut: '4' },
+      { voices: ['hihat-metronome-accent'], label: 'Metronome Accent', shortcut: '5' },
     ],
   },
   {
