@@ -8,6 +8,7 @@ import { useAutoSpeedUp } from '../hooks/useAutoSpeedUp';
 import { useGrooveActions } from '../hooks/useGrooveActions';
 import { useMyGrooves } from '../hooks/useMyGrooves';
 import { usePlaybackHighlight } from '../hooks/usePlaybackHighlight';
+import { useResponsive } from '../hooks/useMediaQuery';
 import * as analytics from '../utils/analytics';
 
 // Core components - drum grid and sheet music
@@ -67,9 +68,28 @@ export default function ProductionPage() {
   const [isCountingIn, setIsCountingIn] = useState(false);
   const [countdownNumber, setCountdownNumber] = useState<number | null>(null);
   const [countingInButton, setCountingInButton] = useState<'play' | 'playPlus' | null>(null);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const playStartTimeRef = useRef<number | null>(null);
   const countInTimeoutRef = useRef<number | null>(null);
   const metadataFieldsRef = useRef<MetadataFieldsRef>(null);
+
+  // Responsive detection
+  const { isMobile } = useResponsive();
+
+  // Close sidebar when switching from mobile to desktop
+  useEffect(() => {
+    if (!isMobile) {
+      setIsSidebarOpen(false);
+    }
+  }, [isMobile]);
+
+  const handleToggleSidebar = useCallback(() => {
+    setIsSidebarOpen(prev => !prev);
+  }, []);
+
+  const handleCloseSidebar = useCallback(() => {
+    setIsSidebarOpen(false);
+  }, []);
 
   // Use history hook for undo/redo
   const {
@@ -434,6 +454,7 @@ export default function ProductionPage() {
         onOpenMyGrooves={() => { analytics.trackMyGroovesOpen(); setIsMyGroovesModalOpen(true); }}
         onOpenGrooveLibrary={() => { analytics.trackLibraryOpen(); setIsGrooveLibraryModalOpen(true); }}
         savedGroovesCount={myGrooves.grooves.length}
+        onToggleSidebar={handleToggleSidebar}
       />
 
       <div className="flex-1 flex overflow-hidden">
@@ -447,6 +468,8 @@ export default function ProductionPage() {
           canRedo={canRedo}
           onUndo={handleUndo}
           onRedo={handleRedo}
+          isOpen={isSidebarOpen}
+          onClose={handleCloseSidebar}
         />
 
         <div className="flex-1 flex flex-col overflow-hidden">
