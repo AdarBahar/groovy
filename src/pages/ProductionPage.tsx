@@ -474,7 +474,7 @@ export default function ProductionPage() {
 
         <div className="flex-1 flex flex-col overflow-hidden">
           <main className="flex-1 overflow-auto">
-            <div className="p-6 space-y-6">
+            <div className="p-3 sm:p-4 md:p-6 space-y-4 md:space-y-6">
               {/* Playback controls */}
               <PlaybackControls
                 isPlaying={isPlaying}
@@ -504,9 +504,9 @@ export default function ProductionPage() {
               />
 
               {/* Main sequencer area - Sheet music + Grid */}
-              <div className="bg-white/50 dark:bg-slate-800/50 rounded-xl p-6 border border-slate-200 dark:border-slate-700">
+              <div className="bg-white/50 dark:bg-slate-800/50 rounded-xl p-3 sm:p-4 md:p-6 border border-slate-200 dark:border-slate-700">
                 {/* Sheet Music Notation */}
-                <div className={`p-6 bg-slate-50 dark:bg-slate-900/50 rounded-lg border border-slate-200 dark:border-slate-600 ${!isNotesOnly ? 'mb-6' : ''}`}>
+                <div className={`p-3 sm:p-4 md:p-6 bg-slate-50 dark:bg-slate-900/50 rounded-lg border border-slate-200 dark:border-slate-600 ${!isNotesOnly ? 'mb-4 md:mb-6' : ''}`}>
                   <SheetMusicDisplay
                     groove={groove}
                     visible={true}
@@ -518,15 +518,15 @@ export default function ProductionPage() {
                 {/* Drum Grid with time signature display - hidden in Notes Only mode */}
                 {!isNotesOnly && (
                   <div className="flex">
-                    {/* Time signature display */}
-                    <div className="flex flex-col items-center justify-center mr-8 text-slate-900 dark:text-white">
+                    {/* Time signature display - hidden on mobile, shown in sidebar */}
+                    <div className="hidden md:flex flex-col items-center justify-center mr-8 text-slate-900 dark:text-white">
                       <div className="text-4xl font-bold">{groove.timeSignature.beats}</div>
                       <div className="w-8 h-px bg-slate-900 dark:bg-white my-1"></div>
                       <div className="text-4xl font-bold">{groove.timeSignature.noteValue}</div>
                     </div>
 
                     {/* Drum grid */}
-                    <div className="flex-1">
+                    <div className="flex-1 overflow-x-auto">
                       <DrumGridDark
                         groove={groove}
                         onNoteToggle={handleNoteToggle}
