@@ -77,7 +77,7 @@ export function GrooveLibraryModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-2xl max-h-[80vh] flex flex-col">
+      <DialogContent className="sm:max-w-2xl max-h-[85vh] sm:max-h-[80vh] flex flex-col">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Library className="w-5 h-5" />
@@ -96,7 +96,7 @@ export function GrooveLibraryModal({
               variant={activeStyleId === style.id ? 'default' : 'ghost'}
               size="sm"
               onClick={() => handleStyleChange(style.id)}
-              className={`flex-shrink-0 ${
+              className={`flex-shrink-0 touch-target ${
                 activeStyleId === style.id
                   ? 'bg-purple-600 hover:bg-purple-700 text-white'
                   : 'text-slate-600 dark:text-slate-300'
@@ -114,7 +114,7 @@ export function GrooveLibraryModal({
               <div
                 key={groove.name}
                 onClick={() => handleLoad(groove)}
-                className="group flex items-center gap-3 p-3 rounded-lg border border-slate-200 dark:border-slate-700 hover:border-purple-300 dark:hover:border-purple-600 hover:bg-purple-50 dark:hover:bg-purple-900/20 cursor-pointer transition-all"
+                className="group flex items-center gap-3 p-3 rounded-lg border border-slate-200 dark:border-slate-700 hover:border-purple-300 dark:hover:border-purple-600 hover:bg-purple-50 dark:hover:bg-purple-900/20 cursor-pointer transition-all touch-target"
               >
                 <div className="flex-shrink-0 w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
                   <Play className="w-5 h-5 text-purple-600 dark:text-purple-400" />
@@ -136,15 +136,15 @@ export function GrooveLibraryModal({
                   variant="ghost"
                   size="sm"
                   onClick={(e) => handleSaveToMyGroovies(groove, e)}
-                  className={`flex-shrink-0 text-xs gap-1 ${
+                  className={`flex-shrink-0 text-xs gap-1 touch-target ${
                     copiedGroove === groove.name
                       ? 'text-green-600 bg-green-100 dark:bg-green-900/30'
-                      : 'text-slate-500 hover:text-purple-600 opacity-0 group-hover:opacity-100'
+                      : 'text-slate-500 hover:text-purple-600 opacity-100 sm:opacity-0 sm:group-hover:opacity-100'
                   } transition-all`}
                   title="Save to My Groovies for editing"
                 >
                   <Copy className="w-3 h-3" />
-                  {copiedGroove === groove.name ? 'Saved!' : 'Save Copy'}
+                  <span className="hidden sm:inline">{copiedGroove === groove.name ? 'Saved!' : 'Save Copy'}</span>
                 </Button>
               </div>
             ))}

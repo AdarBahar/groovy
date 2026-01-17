@@ -55,24 +55,36 @@ export function useMediaQuery(query: string): boolean {
  * Uses mobile-first approach matching Tailwind CSS
  */
 export function useResponsive() {
-  const isMobile = !useMediaQuery(`(min-width: ${BREAKPOINTS.md}px)`);
-  const isTablet = useMediaQuery(`(min-width: ${BREAKPOINTS.md}px)`) &&
-                   !useMediaQuery(`(min-width: ${BREAKPOINTS.lg}px)`);
-  const isDesktop = useMediaQuery(`(min-width: ${BREAKPOINTS.lg}px)`);
-  const isLargeDesktop = useMediaQuery(`(min-width: ${BREAKPOINTS.xl}px)`);
-
-  // Touch device detection
+  // All useMediaQuery calls MUST be at the top and called unconditionally
+  const isAboveMd = useMediaQuery(`(min-width: ${BREAKPOINTS.md}px)`);
+  const isAboveLg = useMediaQuery(`(min-width: ${BREAKPOINTS.lg}px)`);
+  const isAboveXl = useMediaQuery(`(min-width: ${BREAKPOINTS.xl}px)`);
   const isTouchDevice = useMediaQuery('(hover: none) and (pointer: coarse)');
-
-  // Orientation detection
   const isLandscape = useMediaQuery('(orientation: landscape)');
   const isPortrait = useMediaQuery('(orientation: portrait)');
+
+  // Derived values (not hooks)
+  const isMobile = !isAboveMd;
+  const isTablet = isAboveMd && !isAboveLg;
+  const isDesktop = isAboveLg;
+  const isLargeDesktop = isAboveXl;
 
   // Current breakpoint name
   const breakpoint: Breakpoint | 'xs' = isLargeDesktop ? 'xl' :
                                          isDesktop ? 'lg' :
                                          isTablet ? 'md' :
                                          isMobile ? 'sm' : 'xs';
+
+  // Utility functions - defined outside of return to ensure stable references
+  const isAbove = useCallback((bp: Breakpoint) => {
+    if (typeof window === 'undefined') return false;
+    return window.innerWidth >= BREAKPOINTS[bp];
+  }, []);
+
+  const isBelow = useCallback((bp: Breakpoint) => {
+    if (typeof window === 'undefined') return true;
+    return window.innerWidth < BREAKPOINTS[bp];
+  }, []);
 
   return {
     // Boolean flags
@@ -88,15 +100,8 @@ export function useResponsive() {
     breakpoint,
 
     // Utility functions
-    isAbove: useCallback((bp: Breakpoint) => {
-      if (typeof window === 'undefined') return false;
-      return window.innerWidth >= BREAKPOINTS[bp];
-    }, []),
-
-    isBelow: useCallback((bp: Breakpoint) => {
-      if (typeof window === 'undefined') return true;
-      return window.innerWidth < BREAKPOINTS[bp];
-    }, []),
+    isAbove,
+    isBelow,
   };
 }
 

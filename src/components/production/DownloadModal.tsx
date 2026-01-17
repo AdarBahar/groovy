@@ -128,7 +128,7 @@ export function DownloadModal({ groove, isOpen, onClose }: DownloadModalProps) {
             <label className="text-sm font-medium text-slate-900 dark:text-white">
               Select Format
             </label>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-2 gap-2">
               {ALL_EXPORT_FORMATS.map((format) => {
                 const info = getFormatInfo(format);
                 const isSelected = selectedFormat === format;
@@ -140,7 +140,7 @@ export function DownloadModal({ groove, isOpen, onClose }: DownloadModalProps) {
                     onClick={() => handleFormatChange(format)}
                     disabled={!isSupported}
                     className={`
-                      flex items-center gap-3 p-3 rounded-lg border text-left transition-all
+                      flex items-center gap-2 sm:gap-3 p-2 sm:p-3 rounded-lg border text-left transition-all touch-target
                       ${isSelected
                         ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20'
                         : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'

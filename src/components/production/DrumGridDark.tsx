@@ -476,7 +476,7 @@ export function DrumGridDark({
 
   // RENDER
   return (
-    <div className={`flex flex-wrap gap-6 mt-6 ${isDragging ? 'select-none' : ''}`}>
+    <div className={`flex flex-wrap gap-4 md:gap-6 mt-4 md:mt-6 ${isDragging ? 'select-none' : ''}`}>
       {groove.measures.map((measure, measureIndex) => {
         const positions = getPositionsForMeasure(measureIndex);
         const ts = measure.timeSignature || groove.timeSignature;
@@ -486,17 +486,17 @@ export function DrumGridDark({
         return (
           <div
             key={measureIndex}
-            className="inline-block bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4"
+            className="inline-block bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 md:p-4 min-w-0"
           >
             {/* Measure Header */}
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-lg font-semibold text-purple-600 dark:text-purple-400">
+            <div className="flex items-center justify-between mb-3 md:mb-4">
+              <span className="text-base md:text-lg font-semibold text-purple-600 dark:text-purple-400">
                 Measure {measureIndex + 1}
               </span>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1 md:gap-2">
                 <button
                   onClick={() => onMeasureClear?.(measureIndex)}
-                  className="w-8 h-8 flex items-center justify-center rounded hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors group"
+                  className="w-9 h-9 md:w-8 md:h-8 flex items-center justify-center rounded hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors group touch-target"
                   title="Clear measure"
                 >
                   <Trash2 className="w-4 h-4 text-slate-400 group-hover:text-slate-900 dark:group-hover:text-white" />
@@ -504,7 +504,7 @@ export function DrumGridDark({
                 <button
                   onClick={() => onMeasureDuplicate?.(measureIndex)}
                   disabled={!canAdd}
-                  className="w-8 h-8 flex items-center justify-center rounded hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed group"
+                  className="w-9 h-9 md:w-8 md:h-8 flex items-center justify-center rounded hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed group touch-target"
                   title="Duplicate measure"
                 >
                   <Copy className="w-4 h-4 text-slate-400 group-hover:text-slate-900 dark:group-hover:text-white" />
@@ -512,7 +512,7 @@ export function DrumGridDark({
                 <button
                   onClick={() => onMeasureAdd?.(measureIndex)}
                   disabled={!canAdd}
-                  className="w-8 h-8 flex items-center justify-center rounded hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed group"
+                  className="w-9 h-9 md:w-8 md:h-8 flex items-center justify-center rounded hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed group touch-target"
                   title="Add measure"
                 >
                   <Plus className="w-4 h-4 text-slate-400 group-hover:text-slate-900 dark:group-hover:text-white" />
@@ -520,7 +520,7 @@ export function DrumGridDark({
                 <button
                   onClick={() => onMeasureRemove?.(measureIndex)}
                   disabled={!canRemove}
-                  className="w-8 h-8 flex items-center justify-center rounded hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed group"
+                  className="w-9 h-9 md:w-8 md:h-8 flex items-center justify-center rounded hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed group touch-target"
                   title="Delete measure"
                 >
                   <X className="w-4 h-4 text-red-500 dark:text-red-400 group-hover:text-red-600 dark:group-hover:text-red-300" />
@@ -530,13 +530,13 @@ export function DrumGridDark({
 
             {/* Beat Labels Row */}
             <div className="flex items-center mb-2">
-              <div className="w-24 flex-shrink-0" />
+              <div className="w-16 sm:w-20 md:w-24 flex-shrink-0" />
               {positions.map((pos) => {
                 const countLabel = GrooveUtils.getCountLabel(pos, groove.division, ts.beats);
                 return (
                   <div
                     key={pos}
-                    className={`w-12 text-center text-xs font-medium ${
+                    className={`w-11 sm:w-12 text-center text-[10px] sm:text-xs font-medium ${
                       isDownbeat(pos) ? 'text-slate-700 dark:text-slate-300' : 'text-slate-400 dark:text-slate-500'
                     }`}
                   >
@@ -555,7 +555,7 @@ export function DrumGridDark({
                     e.preventDefault();
                     onPreview(row.defaultVoices[0]);
                   }}
-                  className="w-24 flex-shrink-0 px-3 py-2 text-right text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors"
+                  className="w-16 sm:w-20 md:w-24 flex-shrink-0 px-1 sm:px-2 md:px-3 py-2 text-right text-xs sm:text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors touch-target"
                   title="Click for patterns, right-click to preview"
                 >
                   {row.name}
@@ -573,7 +573,7 @@ export function DrumGridDark({
                   return (
                     <button
                       key={pos}
-                      className={`drum-cell w-12 h-10 border cursor-pointer transition-all duration-150 flex items-center justify-center relative
+                      className={`drum-cell w-11 h-11 sm:w-12 sm:h-10 border cursor-pointer transition-all duration-150 flex items-center justify-center relative touch-target
                         ${isActive ? 'bg-purple-600 hover:bg-purple-700 border-purple-500' : 'bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 border-slate-300 dark:border-slate-600'}
                         ${isDown ? 'border-l-slate-400 dark:border-l-slate-500' : ''}
                       `}
