@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
+import { visualizer } from 'rollup-plugin-visualizer'
 
 // ============================================================================
 // DEPLOYMENT CONFIGURATION
@@ -25,6 +26,14 @@ export default defineConfig({
   plugins: [
     react(),
     tailwindcss(),
+    // Bundle analyzer - generates stats.html after build
+    visualizer({
+      filename: 'dist/stats.html',
+      open: false, // Don't auto-open browser
+      gzipSize: true,
+      brotliSize: true,
+      template: 'treemap', // 'treemap', 'sunburst', 'network'
+    }),
   ],
 
   // Set base path for production deployment
@@ -46,8 +55,8 @@ export default defineConfig({
     // Minify for production
     minify: 'esbuild',
 
-    // Chunk size warnings
-    chunkSizeWarningLimit: 1000,
+    // Chunk size warnings (810 KB limit - main chunk is ~804 KB after optimization)
+    chunkSizeWarningLimit: 810,
 
     // Rollup options
     rollupOptions: {
@@ -62,6 +71,8 @@ export default defineConfig({
           'lamejs': ['@breezystack/lamejs'],
           // UI libraries
           'lucide': ['lucide-react'],
+          // Security/validation libraries
+          'validation': ['zod', 'dompurify'],
         },
       },
     },

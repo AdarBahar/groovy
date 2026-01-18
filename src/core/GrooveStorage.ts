@@ -7,6 +7,8 @@
 
 import { GrooveData } from '../types';
 import { encodeGrooveToURL, decodeURLToGroove } from './GrooveURLCodec';
+import { logger } from '../utils/logger';
+import { safeStorage } from '../utils/safeStorage';
 
 const STORAGE_KEY = 'groovy-my-grooves';
 
@@ -91,13 +93,32 @@ export function saveGroove(
       grooves.push(savedGroove);
     }
 
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(grooves));
+    const result = safeStorage.setItem(STORAGE_KEY, JSON.stringify(grooves));
+    if (!result.success) {
+      if (result.quotaExceeded) {
+        // Attempt cleanup and retry once
+        logger.warn('Storage quota exceeded, attempting cleanup...');
+        safeStorage.cleanup('groove-');
+        const retryResult = safeStorage.setItem(STORAGE_KEY, JSON.stringify(grooves));
+        if (!retryResult.success) {
+          return {
+            success: false,
+            error: 'Storage full. Please delete some saved grooves to make space.',
+          };
+        }
+      } else {
+        return {
+          success: false,
+          error: result.error || 'Failed to save groove',
+        };
+      }
+    }
     return { success: true, groove: savedGroove };
   } catch (error) {
-    console.error('Failed to save groove:', error);
-    return { 
-      success: false, 
-      error: error instanceof Error ? error.message : 'Failed to save groove' 
+    logger.error('Failed to save groove:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to save groove'
     };
   }
 }
@@ -107,19 +128,19 @@ export function saveGroove(
  */
 export function loadAllGrooves(): SavedGroove[] {
   try {
-    const data = localStorage.getItem(STORAGE_KEY);
+    const data = safeStorage.getItem(STORAGE_KEY);
     if (!data) return [];
     
     const parsed = JSON.parse(data);
     if (!Array.isArray(parsed)) {
-      console.warn('Invalid grooves data format, resetting');
+      logger.warn('Invalid grooves data format, resetting');
       return [];
     }
     
     // Sort by most recently modified first
     return parsed.sort((a, b) => b.modifiedAt - a.modifiedAt);
   } catch (error) {
-    console.error('Failed to load grooves:', error);
+    logger.error('Failed to load grooves:', error);
     return [];
   }
 }
@@ -145,10 +166,10 @@ export function decodeGroove(saved: SavedGroove): GrooveData {
 export function deleteGroove(id: string): boolean {
   try {
     const grooves = loadAllGrooves().filter(g => g.id !== id);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(grooves));
-    return true;
+    const result = safeStorage.setItem(STORAGE_KEY, JSON.stringify(grooves));
+    return result.success;
   } catch (error) {
-    console.error('Failed to delete groove:', error);
+    logger.error('Failed to delete groove:', error);
     return false;
   }
 }

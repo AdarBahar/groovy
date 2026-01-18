@@ -1,6 +1,7 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { X } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
+import { logger } from '../../utils/logger';
 
 interface AboutModalProps {
   isOpen: boolean;
@@ -9,6 +10,12 @@ interface AboutModalProps {
 
 export function AboutModal({ isOpen, onClose }: AboutModalProps) {
   const { isDark } = useTheme();
+  const [debugMode, setDebugMode] = useState(logger.isDebugMode());
+
+  const handleDebugToggle = () => {
+    const newMode = logger.toggleDebugMode();
+    setDebugMode(newMode);
+  };
 
   // Handle ESC key press
   useEffect(() => {
@@ -111,7 +118,19 @@ export function AboutModal({ isOpen, onClose }: AboutModalProps) {
           <div className={`pt-4 border-t ${isDark ? 'border-slate-700' : 'border-slate-200'} text-sm text-slate-400`}>
             <p>Version 1.0.0 • MIT License</p>
             <p className="mt-1">
-              © 2026 Groovy. Created by Adar Bahar
+              © 2026 Groovy. Created by{' '}
+              <button
+                onClick={handleDebugToggle}
+                className={`${isDark ? 'text-purple-400 hover:text-purple-300' : 'text-purple-600 hover:text-purple-700'} underline cursor-pointer transition-colors`}
+                title={debugMode ? 'Click to disable debug mode' : 'Click to enable debug mode'}
+              >
+                Adar Bahar
+              </button>
+              {debugMode && (
+                <span className="ml-2 text-xs px-2 py-1 rounded bg-purple-600 text-white">
+                  Debug Mode ON
+                </span>
+              )}
             </p>
           </div>
         </div>
