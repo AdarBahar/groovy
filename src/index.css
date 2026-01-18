@@ -23,6 +23,19 @@ html, body {
   min-height: 100vh;
   background-color: #0f172a; /* slate-900 */
   overflow-x: hidden;
+
+  /* Mobile: Disable tap highlight for app-like feel */
+  -webkit-tap-highlight-color: transparent;
+
+  /* Mobile: Prevent overscroll bounce */
+  overscroll-behavior: contain;
+
+  /* Mobile: Prevent text selection on UI elements */
+  -webkit-user-select: none;
+  user-select: none;
+
+  /* Mobile: Optimize touch scrolling */
+  -webkit-overflow-scrolling: touch;
 }
 
 #root {
@@ -30,5 +43,75 @@ html, body {
   height: 100%;
   margin: 0;
   padding: 0;
+
+  /* iOS Safe Area: Account for notch and home indicator */
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+
+/* Allow text selection in content areas */
+.selectable,
+input,
+textarea,
+[contenteditable="true"] {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+/* Touch interaction improvements */
+button,
+[role="button"],
+a,
+.clickable {
+  /* Ensure touch targets are responsive */
+  touch-action: manipulation;
+}
+
+/* Prevent pull-to-refresh on mobile */
+.no-pull-refresh {
+  overscroll-behavior-y: contain;
+}
+
+/* Mobile-specific utility classes */
+@media (hover: none) and (pointer: coarse) {
+  /* Touch device: Larger touch targets */
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Disable hover effects on touch */
+  .no-touch-hover:hover {
+    background-color: inherit;
+  }
+}
+
+/* Performance optimizations for animations */
+.will-change-transform {
+  will-change: transform;
+}
+
+.will-change-opacity {
+  will-change: opacity;
+}
+
+/* GPU acceleration for sliding elements */
+.gpu-accelerated {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 

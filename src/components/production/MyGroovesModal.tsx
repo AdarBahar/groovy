@@ -70,7 +70,7 @@ export function MyGroovesModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-lg max-h-[80vh] flex flex-col">
+      <DialogContent className="sm:max-w-lg max-h-[85vh] sm:max-h-[80vh] flex flex-col">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <FolderOpen className="w-5 h-5" />
@@ -96,7 +96,7 @@ export function MyGroovesModal({
                 <div
                   key={groove.id}
                   onClick={() => handleLoad(groove)}
-                  className="group flex items-center gap-3 p-3 rounded-lg border border-slate-200 dark:border-slate-700 hover:border-purple-300 dark:hover:border-purple-600 hover:bg-purple-50 dark:hover:bg-purple-900/20 cursor-pointer transition-all"
+                  className="group flex items-center gap-3 p-3 sm:p-3 rounded-lg border border-slate-200 dark:border-slate-700 hover:border-purple-300 dark:hover:border-purple-600 hover:bg-purple-50 dark:hover:bg-purple-900/20 cursor-pointer transition-all touch-target"
                 >
                   <div className="flex-shrink-0 w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
                     <Play className="w-5 h-5 text-purple-600 dark:text-purple-400" />
@@ -122,7 +122,7 @@ export function MyGroovesModal({
                     variant="ghost"
                     size="icon"
                     onClick={(e) => handleDelete(groove.id, e)}
-                    className={`flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity ${
+                    className={`flex-shrink-0 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity touch-target ${
                       deletingId === groove.id
                         ? 'text-red-600 bg-red-100 dark:bg-red-900/30 opacity-100'
                         : 'text-slate-400 hover:text-red-600'

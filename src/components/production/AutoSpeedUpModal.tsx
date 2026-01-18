@@ -42,7 +42,7 @@ export function AutoSpeedUpModal({
   const thumbBorderColor = isDark ? '#1e293b' : '#ffffff';
 
   return (
-    <div className={`absolute top-full right-0 mt-1 rounded-lg shadow-xl w-96 p-6 border z-50 ${
+    <div className={`absolute top-full right-0 mt-1 rounded-lg shadow-xl w-[calc(100vw-2rem)] sm:w-96 max-w-96 p-4 sm:p-6 border z-50 ${
       isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'
     }`}>
       {/* Title */}
@@ -108,7 +108,7 @@ export function AutoSpeedUpModal({
       <div className="flex justify-center">
         <Button
           onClick={handleSaveAndClose}
-          className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-2 rounded text-sm font-medium uppercase"
+          className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-3 sm:py-2 rounded text-sm font-medium uppercase touch-target"
         >
           Done
         </Button>
@@ -117,8 +117,8 @@ export function AutoSpeedUpModal({
       <style>{`
         .auto-speed-slider::-webkit-slider-thumb {
           appearance: none;
-          width: 18px;
-          height: 18px;
+          width: 24px;
+          height: 24px;
           border-radius: 50%;
           background: #a855f7;
           cursor: pointer;
@@ -126,13 +126,23 @@ export function AutoSpeedUpModal({
           box-shadow: 0 2px 4px rgba(0,0,0,0.3);
         }
         .auto-speed-slider::-moz-range-thumb {
-          width: 18px;
-          height: 18px;
+          width: 24px;
+          height: 24px;
           border-radius: 50%;
           background: #a855f7;
           cursor: pointer;
           border: 2px solid ${thumbBorderColor};
           box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        @media (min-width: 640px) {
+          .auto-speed-slider::-webkit-slider-thumb {
+            width: 18px;
+            height: 18px;
+          }
+          .auto-speed-slider::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+          }
         }
       `}</style>
     </div>

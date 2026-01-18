@@ -1,4 +1,5 @@
 import { DrumVoice } from '../types';
+import { logger } from '../utils/logger';
 
 /**
  * Drum sample player using Web Audio API
@@ -8,6 +9,10 @@ export class DrumSynth {
   private audioContext: AudioContext;
   private samples: Map<string, AudioBuffer> = new Map();
   private isLoaded = false;
+
+  // Rate limiting for audio playback (prevent spam/DoS)
+  private lastPlayTime = new Map<DrumVoice, number>();
+  private readonly MIN_PLAY_INTERVAL_MS = 10; // Minimum 10ms between same voice hits
 
   // Map drum voices to sample file names
   private sampleFiles: Record<DrumVoice, string> = {
@@ -62,7 +67,7 @@ export class DrumSynth {
           // Use relative path with import.meta.env.BASE_URL for correct base path
           const basePath = import.meta.env.BASE_URL || '/';
           const soundPath = `${basePath}sounds/${fileName}`;
-          console.log(`Loading sound: ${soundPath}`);
+          logger.log(`Loading sound: ${soundPath}`);
           const response = await fetch(soundPath);
 
           if (!response.ok) {
@@ -75,29 +80,38 @@ export class DrumSynth {
         })
       );
       this.isLoaded = true;
-      console.log('✅ Drum samples loaded successfully');
+      logger.log('✅ Drum samples loaded successfully');
     } catch (error) {
-      console.error('❌ Failed to load drum samples:', error);
+      logger.error('❌ Failed to load drum samples:', error);
       this.isLoaded = false;
     }
   }
 
   /**
-   * Play a drum hit
+   * Play a drum hit with rate limiting to prevent audio spam
    */
   playDrum(voice: DrumVoice, time: number = 0, velocity: number = 100) {
     if (!this.isLoaded) {
-      console.warn('Samples not loaded yet');
+      logger.warn('Samples not loaded yet');
       return;
     }
+
+    // Rate limiting: prevent rapid-fire calls for the same voice
+    const now = Date.now();
+    const lastPlay = this.lastPlayTime.get(voice) || 0;
+    if (now - lastPlay < this.MIN_PLAY_INTERVAL_MS) {
+      logger.warn(`Rate limit: Skipping ${voice} play (too soon after last hit)`);
+      return;
+    }
+    this.lastPlayTime.set(voice, now);
 
     const sample = this.samples.get(voice);
     if (!sample) {
-      console.warn(`No sample found for ${voice}`);
+      logger.warn(`No sample found for ${voice}`);
       return;
     }
 
-    const now = this.audioContext.currentTime + time;
+    const playTime = this.audioContext.currentTime + time;
 
     // Create buffer source
     const source = this.audioContext.createBufferSource();
@@ -118,7 +132,7 @@ export class DrumSynth {
     gainNode.connect(this.audioContext.destination);
 
     // Play
-    source.start(now);
+    source.start(playTime);
   }
 
   /**

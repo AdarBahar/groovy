@@ -1,6 +1,7 @@
 import { GrooveData, DrumVoice, ALL_DRUM_VOICES, getFlattenedNotes, MetronomeFrequency, MetronomeOffsetClick, MetronomeConfig, DEFAULT_METRONOME_CONFIG } from '../types';
 import { DrumSynth } from './DrumSynth';
 import { GrooveUtils } from './GrooveUtils';
+import { logger } from '../utils/logger';
 
 export type SyncMode = 'start' | 'middle' | 'end';
 
@@ -80,7 +81,7 @@ export class GrooveEngine {
   }
   
   /**
-   * Emit an event
+   * Emit an event with proper type safety
    */
   private emit<K extends keyof GrooveEngineEvents>(
     event: K,
@@ -88,8 +89,8 @@ export class GrooveEngine {
   ): void {
     const listener = this.listeners[event];
     if (listener) {
-      // @ts-ignore - TypeScript has trouble with spread args here
-      listener(...args);
+      // Type assertion for callback function with proper parameter types
+      (listener as (...callbackArgs: typeof args) => void)(...args);
     }
   }
   
@@ -211,7 +212,7 @@ export class GrooveEngine {
       groove.timeSignature.beats,
       groove.timeSignature.noteValue
     )) {
-      console.warn(
+      logger.warn(
         `Division ${groove.division} is incompatible with ${groove.timeSignature.beats}/${groove.timeSignature.noteValue} time. ` +
         `Auto-correcting to compatible division.`
       );
@@ -224,7 +225,7 @@ export class GrooveEngine {
     // Auto-disable swing for triplets and quarter notes
     if (!GrooveUtils.doesDivisionSupportSwing(groove.division)) {
       if (groove.swing > 0) {
-        console.info(`Swing disabled for division ${groove.division} (triplets/quarter notes don't support swing)`);
+        logger.info(`Swing disabled for division ${groove.division} (triplets/quarter notes don't support swing)`);
         groove.swing = 0;
       }
     }

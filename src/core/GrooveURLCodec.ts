@@ -1,13 +1,14 @@
 /**
  * GrooveURLCodec
- * 
+ *
  * Encodes and decodes GrooveData to/from URL parameters.
  * Compatible with GrooveScribe URL format.
- * 
+ *
  * URL Format:
  * ?TimeSig=4/4&Div=16&Tempo=120&Measures=1&H=|x-x-x-x-|&S=|----o---|&K=|o-------|
  */
 
+import { z } from 'zod';
 import {
   GrooveData,
   DrumVoice,
@@ -17,6 +18,83 @@ import {
   getFlattenedNotes,
 } from '../types';
 import { URL_TAB_CHARS } from './ABCConstants';
+
+/** Validation constraints for URL parameters */
+const VALIDATION = {
+  TEMPO: { MIN: 20, MAX: 400, DEFAULT: 120 },
+  SWING: { MIN: 0, MAX: 100, DEFAULT: 0 },
+  MEASURES: { MIN: 1, MAX: 32, DEFAULT: 1 },
+  BEATS: { MIN: 1, MAX: 16, DEFAULT: 4 },
+  TITLE_MAX_LENGTH: 200,
+  AUTHOR_MAX_LENGTH: 100,
+  COMMENTS_MAX_LENGTH: 1000,
+  PATTERN_MAX_LENGTH: 2000,
+} as const;
+
+/** Valid divisions - matches Division type in types.ts */
+const VALID_DIVISIONS = [4, 8, 12, 16, 24, 32, 48] as const;
+const VALID_NOTE_VALUES = [4, 8, 16] as const;
+
+/** Zod schema for time signature string (e.g., "4/4") */
+const timeSignatureSchema = z.string()
+  .regex(/^\d{1,2}\/\d{1,2}$/, 'Invalid time signature format')
+  .transform((str): { beats: number; noteValue: number } => {
+    const [beats, noteValue] = str.split('/').map(Number);
+    return { beats, noteValue };
+  })
+  .refine(
+    (ts) => ts.beats >= VALIDATION.BEATS.MIN && ts.beats <= VALIDATION.BEATS.MAX,
+    { message: `Beats must be between ${VALIDATION.BEATS.MIN} and ${VALIDATION.BEATS.MAX}` }
+  )
+  .refine(
+    (ts) => VALID_NOTE_VALUES.includes(ts.noteValue as 4 | 8 | 16),
+    { message: `Note value must be one of: ${VALID_NOTE_VALUES.join(', ')}` }
+  );
+
+/** Zod schema for division */
+const divisionSchema = z.coerce.number()
+  .refine(
+    (n) => VALID_DIVISIONS.includes(n as Division),
+    { message: `Division must be one of: ${VALID_DIVISIONS.join(', ')}` }
+  )
+  .transform((n) => n as Division);
+
+/** Zod schema for tempo */
+const tempoSchema = z.coerce.number()
+  .min(VALIDATION.TEMPO.MIN, `Tempo must be at least ${VALIDATION.TEMPO.MIN}`)
+  .max(VALIDATION.TEMPO.MAX, `Tempo must be at most ${VALIDATION.TEMPO.MAX}`)
+  .default(VALIDATION.TEMPO.DEFAULT);
+
+/** Zod schema for swing */
+const swingSchema = z.coerce.number()
+  .min(VALIDATION.SWING.MIN, `Swing must be at least ${VALIDATION.SWING.MIN}`)
+  .max(VALIDATION.SWING.MAX, `Swing must be at most ${VALIDATION.SWING.MAX}`)
+  .default(VALIDATION.SWING.DEFAULT);
+
+/** Zod schema for measures count */
+const measuresSchema = z.coerce.number()
+  .min(VALIDATION.MEASURES.MIN, `Measures must be at least ${VALIDATION.MEASURES.MIN}`)
+  .max(VALIDATION.MEASURES.MAX, `Measures must be at most ${VALIDATION.MEASURES.MAX}`)
+  .default(VALIDATION.MEASURES.DEFAULT);
+
+/** Zod schema for text fields (title, author, comments) */
+const titleSchema = z.string()
+  .max(VALIDATION.TITLE_MAX_LENGTH, `Title must be at most ${VALIDATION.TITLE_MAX_LENGTH} characters`)
+  .optional();
+
+const authorSchema = z.string()
+  .max(VALIDATION.AUTHOR_MAX_LENGTH, `Author must be at most ${VALIDATION.AUTHOR_MAX_LENGTH} characters`)
+  .optional();
+
+const commentsSchema = z.string()
+  .max(VALIDATION.COMMENTS_MAX_LENGTH, `Comments must be at most ${VALIDATION.COMMENTS_MAX_LENGTH} characters`)
+  .optional();
+
+/** Zod schema for voice patterns - validates format and length */
+const patternSchema = z.string()
+  .max(VALIDATION.PATTERN_MAX_LENGTH, `Pattern too long`)
+  .regex(/^[|a-zA-Z0-9\-]*$/, 'Invalid characters in pattern')
+  .optional();
 
 /** URL parameter names */
 const PARAM = {
@@ -191,44 +269,45 @@ export function encodeGrooveToURL(groove: GrooveData): string {
 }
 
 /**
- * Parse time signature string (e.g., "4/4") to TimeSignature
+ * Safe parse helper - returns default value on validation failure
  */
-function parseTimeSignature(str: string): TimeSignature {
-  const [beats, noteValue] = str.split('/').map(Number);
-  if (isNaN(beats) || isNaN(noteValue)) {
-    return { beats: 4, noteValue: 4 };
+function safeParse<T>(
+  schema: z.ZodType<T>,
+  value: string | null | undefined,
+  defaultValue: T
+): T {
+  if (value === null || value === undefined) {
+    return defaultValue;
   }
-  return { beats, noteValue: noteValue as 4 | 8 | 16 };
+  const result = schema.safeParse(value);
+  return result.success ? result.data : defaultValue;
 }
 
 /**
  * Decode URL search params to GrooveData
+ * All parameters are validated and sanitized using Zod schemas.
+ * Invalid values fall back to safe defaults.
  */
 export function decodeURLToGroove(urlOrParams: string | URLSearchParams): GrooveData {
   const params = typeof urlOrParams === 'string'
     ? new URLSearchParams(urlOrParams.startsWith('?') ? urlOrParams.slice(1) : urlOrParams)
     : urlOrParams;
 
-  // Parse basic params
-  const timeSig = params.get(PARAM.TIME_SIG) || '4/4';
-  const timeSignature = parseTimeSignature(timeSig);
+  // Parse and validate basic params with Zod schemas
+  const timeSigResult = timeSignatureSchema.safeParse(params.get(PARAM.TIME_SIG) || '4/4');
+  const timeSignature: TimeSignature = timeSigResult.success
+    ? { beats: timeSigResult.data.beats, noteValue: timeSigResult.data.noteValue as 4 | 8 | 16 }
+    : { beats: 4, noteValue: 4 };
 
-  const divParam = params.get(PARAM.DIV);
-  const division = (divParam ? parseInt(divParam, 10) : 16) as Division;
+  const division = safeParse(divisionSchema, params.get(PARAM.DIV), 16 as Division);
+  const tempo = safeParse(tempoSchema, params.get(PARAM.TEMPO), VALIDATION.TEMPO.DEFAULT);
+  const swing = safeParse(swingSchema, params.get(PARAM.SWING), VALIDATION.SWING.DEFAULT);
+  const numMeasures = safeParse(measuresSchema, params.get(PARAM.MEASURES), VALIDATION.MEASURES.DEFAULT);
 
-  const tempoParam = params.get(PARAM.TEMPO);
-  const tempo = tempoParam ? parseInt(tempoParam, 10) : 120;
-
-  const swingParam = params.get(PARAM.SWING);
-  const swing = swingParam ? parseInt(swingParam, 10) : 0;
-
-  const measuresParam = params.get(PARAM.MEASURES);
-  const numMeasures = measuresParam ? parseInt(measuresParam, 10) : 1;
-
-  // Parse metadata
-  const title = params.get(PARAM.TITLE) || undefined;
-  const author = params.get(PARAM.AUTHOR) || undefined;
-  const comments = params.get(PARAM.COMMENTS) || undefined;
+  // Parse and validate metadata with length limits
+  const title = safeParse(titleSchema, params.get(PARAM.TITLE), undefined);
+  const author = safeParse(authorSchema, params.get(PARAM.AUTHOR), undefined);
+  const comments = safeParse(commentsSchema, params.get(PARAM.COMMENTS), undefined);
 
   // Calculate notes per measure: (division / noteValue) * beats
   // e.g., 4/4 with 16ths: (16/4) * 4 = 16
@@ -240,9 +319,11 @@ export function decodeURLToGroove(urlOrParams: string | URLSearchParams): Groove
     measures.push({ notes: createEmptyNotesRecord(notesPerMeasure) });
   }
 
-  // Decode voice patterns
+  // Decode voice patterns with validation
   for (const [param, voices] of Object.entries(VOICE_GROUPS)) {
-    const pattern = params.get(param);
+    const rawPattern = params.get(param);
+    // Validate pattern format before processing
+    const pattern = safeParse(patternSchema, rawPattern, undefined);
     if (pattern) {
       // Split pattern by measure separator (|)
       const measurePatterns = pattern.split(MEASURE_SEP).filter(p => p.length > 0);
@@ -392,5 +473,7 @@ export const GrooveURLCodec = {
   validateURLLength,
   hasGrooveParams,
   URL_LENGTH_LIMITS,
+  /** Validation constraints for URL parameters */
+  VALIDATION,
 };
 

@@ -61,13 +61,17 @@ RewriteRule ^login$ /MyTrips/login [R=302,L]
 
 # === SPA fallback for root React app (tightened) ===
 # Serve index.html only for client-side routes (no extension), not for missing assets.
-# Do not touch images/assets/api/MyTrips/fantasybroker-staging or the 404 page itself.
+# Do not touch images/assets/api/MyTrips/fantasybroker-staging/drums or the 404 page itself.
 RewriteCond %{REQUEST_URI} !^/images/
 RewriteCond %{REQUEST_URI} !^/assets/
 RewriteCond %{REQUEST_URI} !^/api/
+RewriteCond %{REQUEST_URI} !^/scribe/
+RewriteCond %{REQUEST_URI} !^/scribe2/
+RewriteCond %{REQUEST_URI} !^/Scribe/
 RewriteCond %{REQUEST_URI} !^/MyTrips/
 RewriteCond %{REQUEST_URI} !^/fantasybroker-staging/
 RewriteCond %{REQUEST_URI} !^/fantasybroker/
+RewriteCond %{REQUEST_URI} !^/drums/
 RewriteCond %{REQUEST_URI} !^/404\.html$
 # If the URL contains a dot, treat it as an asset -> do NOT rewrite (allows proper 404)
 RewriteCond %{REQUEST_URI} !\.[^/]+$
@@ -140,7 +144,7 @@ SetEnvIf Request_URI "^/images/" IS_IMAGES
   Header always set X-Content-Type-Options "nosniff"
   Header always set Referrer-Policy "strict-origin-when-cross-origin"
   Header always set X-Frame-Options "SAMEORIGIN"
-  Header set Content-Security-Policy "default-src 'self'; img-src * data: blob:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.amplitude.com https://accounts.google.com https://apis.google.com https:; style-src 'self' 'unsafe-inline' https://accounts.google.com https:; font-src 'self' https: data:; frame-src https://accounts.google.com; connect-src 'self' https://www.bahar.co.il https://bahar.co.il https://mytrips-api.bahar.co.il https://fantasybroker-api.bahar.co.il https://fantasytrader-api.bahar.co.il https://fantasytrader-api-staging.bahar.co.il https://www.bahar.co.il/fantasybroker-api/ https://api.amplitude.com https://api.eu.amplitude.com https://sr-client-cfg.eu.amplitude.com https://api.brevo.com https://accounts.google.com https://cloudflareinsights.com wss://www.bahar.co.il/fantasybroker-api/ws wss://fantasytrader-api.bahar.co.il wss://fantasytrader-api-staging.bahar.co.il; object-src 'none'; base-uri 'self'; form-action 'self';"
+  Header set Content-Security-Policy "default-src 'self'; img-src * data: blob:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.amplitude.com https://accounts.google.com https://apis.google.com https:; style-src 'self' 'unsafe-inline' https://accounts.google.com https:; font-src 'self' https: data:; frame-src https://accounts.google.com; connect-src 'self' https://www.bahar.co.il https://bahar.co.il https://mytrips-api.bahar.co.il https://fantasybroker-api.bahar.co.il https://fantasytrader-api.bahar.co.il https://fantasytrader-api-staging.bahar.co.il https://drums-api.bahar.co.il https://www.bahar.co.il/fantasybroker-api/ https://api.amplitude.com https://api.eu.amplitude.com https://sr-client-cfg.eu.amplitude.com https://cdn.amplitude.com https://api.brevo.com https://accounts.google.com https://cloudflareinsights.com wss://www.bahar.co.il/fantasybroker-api/ws wss://fantasytrader-api.bahar.co.il wss://fantasytrader-api-staging.bahar.co.il wss://drums-api.bahar.co.il; object-src 'none'; base-uri 'self'; form-action 'self';"
   Header set Permissions-Policy "geolocation=(), microphone=(), camera=()"
 </IfModule>
 
@@ -150,33 +154,3 @@ AddType image/svg+xml .svg
 AddType image/avif .avif
 AddType image/webp .webp
 AddType font/woff2 .woff2
-
-# BEGIN cPanel-generated php ini directives, do not edit
-# Manual editing of this file may result in unexpected behavior.
-# To make changes to this file, use the cPanel MultiPHP INI Editor (Home >> Software >> MultiPHP INI Editor)
-# For more information, read our documentation (https://go.cpanel.net/EA4ModifyINI)
-<IfModule php8_module>
-   php_flag display_errors Off
-   php_value max_execution_time 120
-   php_value max_input_time 90
-   php_value max_input_vars 3000
-   php_value memory_limit 512M
-   php_value post_max_size 256M
-   php_value session.gc_maxlifetime 1440
-   php_value session.save_path "/var/cpanel/php/sessions/ea-php81"
-   php_value upload_max_filesize 2M
-   php_flag zlib.output_compression Off
-</IfModule>
-<IfModule lsapi_module>
-   php_flag display_errors Off
-   php_value max_execution_time 120
-   php_value max_input_time 90
-   php_value max_input_vars 3000
-   php_value memory_limit 512M
-   php_value post_max_size 256M
-   php_value session.gc_maxlifetime 1440
-   php_value session.save_path "/var/cpanel/php/sessions/ea-php81"
-   php_value upload_max_filesize 2M
-   php_flag zlib.output_compression Off
-</IfModule>
-# END cPanel-generated php ini directives, do not edit

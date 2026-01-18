@@ -30,6 +30,38 @@ Groovy is a **modern drum notation editor and player** built with strict separat
 
 ## Recent Changes
 
+### 2026-01-17: Security Fixes (Issues #60, #61)
+- ✅ **SVG Sanitization (Issue #60)**: DOMPurify sanitizes all SVG export output
+  - Added `sanitizeSVG()` function using DOMPurify with SVG profile
+  - Enhanced `escapeXml()` to remove control characters and null bytes
+  - All user content properly escaped before embedding in SVG
+- ✅ **URL Parameter Validation (Issue #61)**: Zod schema validation for all URL params
+  - Tempo, swing, measures, division all have range validation
+  - Text fields (title, author, comments) have length limits
+  - Voice patterns validated with character whitelist regex
+  - Invalid values silently fall back to safe defaults
+- ✅ **New Dependencies**: `dompurify`, `zod` (security libraries)
+- ✅ **Bundle Optimization**: New `validation` chunk (77 kB) for zod/dompurify
+  - Main bundle reduced from 882 kB to 804 kB (~9% reduction)
+
+### 2026-01-17: Mobile & Adaptive View (Issue #57)
+- ✅ **Responsive Components**: All modals, dialogs, and UI elements mobile-optimized
+- ✅ **Touch Targets**: 44px minimum touch targets for accessibility
+- ✅ **useResponsive Hook**: Fixed React hooks order violation causing crash
+- ✅ **GPU Acceleration**: CSS classes for smooth animations on mobile
+
+### 2026-01-14: Security Hardening & Code Quality Improvements
+- ✅ **React Router CVEs Fixed**: Updated to 7.12.0, resolved 3 vulnerabilities (XSS, CSRF)
+- ✅ **XSS Prevention**: Eliminated all innerHTML usage with safe DOM methods
+- ✅ **CSP Headers**: Added Content-Security-Policy, Referrer-Policy, Permissions-Policy
+- ✅ **localStorage Safety**: Quota handling with auto-cleanup at 5MB limit
+- ✅ **Audio Rate Limiting**: 10ms minimum interval prevents spam/DoS
+- ✅ **Debug Mode**: Toggle in About modal, logger replaces console.log
+- ✅ **Error Boundary**: React error boundary with fallback UI
+- ✅ **Type Safety**: Removed @ts-ignore, proper type assertions
+- ✅ **Bundle Analyzer**: rollup-plugin-visualizer, `npm run build:analyze`
+- ✅ **Environment Variables**: VITE_ANALYTICS_DOMAIN configurable
+
 ### 2026-01-13: Bundle Size Optimization
 - ✅ **Manual chunk splitting**: Heavy libraries split into separate chunks
 - ✅ **Main bundle**: Reduced from 1,407 kB to 787 kB (44% smaller)

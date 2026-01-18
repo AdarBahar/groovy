@@ -1,5 +1,5 @@
-# Groovy - Apache Configuration for /scribe2/
-# Upload this file to the /scribe2/ directory on your server
+# Groovy - Apache Configuration for /scribe/
+# Upload this file to the /scribe/ directory on your server
 
 # Enable rewrite engine
 RewriteEngine On
@@ -43,12 +43,22 @@ RewriteRule ^ index.html [L]
 <IfModule mod_headers.c>
   # Prevent clickjacking
   Header always set X-Frame-Options "SAMEORIGIN"
-  
+
   # Prevent MIME type sniffing
   Header always set X-Content-Type-Options "nosniff"
-  
+
   # Enable XSS protection
   Header always set X-XSS-Protection "1; mode=block"
+
+  # Content Security Policy
+  # Allows self-hosted content, analytics from bahar.co.il, and necessary inline styles
+  Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' https://www.bahar.co.il; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self'; connect-src 'self' https://www.bahar.co.il https://bahar.co.il https://api.amplitude.com https://api.eu.amplitude.com; font-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'self';"
+
+  # Referrer Policy
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+
+  # Permissions Policy (restrict features)
+  Header always set Permissions-Policy "geolocation=(), microphone=(), camera=()"
 </IfModule>
 
 # Set correct MIME types
@@ -57,4 +67,3 @@ RewriteRule ^ index.html [L]
   AddType application/javascript .js
   AddType text/css .css
 </IfModule>
-

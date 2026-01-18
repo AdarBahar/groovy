@@ -2,6 +2,20 @@
 
 Modern drum notation editor and player with clean separation of core logic and UI.
 
+## Features
+
+- **Interactive Drum Grid** - Click to add/remove notes with drag-to-paint support
+- **Sheet Music Display** - Real-time ABC notation rendering with playback cursor
+- **Mobile Support** - Fully responsive design with touch-friendly controls
+- **Export Options** - PDF, PNG, SVG, MIDI, MP3, and JSON formats
+- **Sharing** - URL-based sharing, social media, QR codes, and embed codes
+- **Groove Library** - 25+ preset patterns across Rock, Funk, Jazz, Latin, World, and Practice styles
+- **My Grooves** - Save and manage your custom patterns locally
+- **Metronome** - Built-in metronome with count-in and frequency options
+- **Auto Speed-Up** - Practice mode with automatic tempo increases
+- **Undo/Redo** - Full history with keyboard shortcuts (Ctrl+Z, Ctrl+Shift+Z)
+- **Bulk Operations** - Apply patterns to voice rows with one click
+
 ## Architecture Principles
 
 This project is built with **strict separation of concerns**:
@@ -152,36 +166,41 @@ engine.dispose();
 - [x] Audio synthesis
 - [x] Playback timing
 - [x] Swing calculation
-- [ ] React adapter hook
-- [ ] Basic UI components
+- [x] React adapter hook
+- [x] Basic UI components
 
-### Phase 2: Essential Features
-- [ ] Interactive drum grid
-- [ ] Tempo and swing controls
-- [ ] Preset patterns
-- [ ] Visual playback indicator
-- [ ] Sound preview
+### Phase 2: Essential Features ✅
+- [x] Interactive drum grid
+- [x] Tempo and swing controls
+- [x] Preset patterns
+- [x] Visual playback indicator
+- [x] Sound preview
 
-### Phase 3: Advanced Features
-- [ ] More drum voices (toms, cymbals, percussion)
-- [ ] Multi-measure support
-- [ ] Velocity control
-- [ ] Articulations (accents, ghost notes, flams)
-- [ ] Undo/redo
+### Phase 3: Advanced Features ✅
+- [x] More drum voices (toms, cymbals, percussion)
+- [x] Multi-measure support
+- [x] Velocity control (ghost notes, accents)
+- [x] Articulations (accents, ghost notes, flams, drags, buzz)
+- [x] Undo/redo
 
-### Phase 4: Notation & Export
-- [ ] ABC notation rendering
-- [ ] Sheet music display
-- [ ] MIDI export
+### Phase 4: Notation & Export ✅
+- [x] ABC notation rendering
+- [x] Sheet music display
+- [x] MIDI export
 - [ ] MIDI import
-- [ ] Audio export
+- [x] Audio export (MP3)
 
-### Phase 5: Collaboration & Storage
-- [ ] Save/load grooves
+### Phase 5: Collaboration & Storage ✅
+- [x] Save/load grooves (localStorage)
 - [ ] Cloud storage
 - [ ] User accounts
-- [ ] Groove library
-- [ ] Sharing
+- [x] Groove library (25+ presets)
+- [x] Sharing (URL, social, embed, QR)
+
+### Phase 6: Mobile & Polish ✅
+- [x] Responsive mobile design
+- [x] Touch-friendly controls (44px targets)
+- [x] Security hardening (CSP, SVG sanitization, input validation)
 
 ## Tech Stack
 

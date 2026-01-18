@@ -7,6 +7,7 @@
  * when the user actually triggers an export.
  */
 
+import DOMPurify from 'dompurify';
 import { GrooveData, DrumVoice, ALL_DRUM_VOICES, getFlattenedNotes } from '../types';
 import { grooveToABC } from './ABCTranscoder';
 import { renderABC } from './ABCRenderer';
@@ -148,6 +149,7 @@ export function downloadAsJSON(
 
 /**
  * Generate the sheet music SVG content only (without header/footer)
+ * Returns sanitized SVG content
  */
 function renderSheetMusicToSVG(groove: GrooveData, width: number): string {
   // Create a temporary container for rendering
@@ -173,7 +175,8 @@ function renderSheetMusicToSVG(groove: GrooveData, width: number): string {
       throw new Error('Failed to generate SVG');
     }
 
-    return svgElement.outerHTML;
+    // Sanitize the SVG content before returning
+    return sanitizeSVG(svgElement.outerHTML);
   } finally {
     document.body.removeChild(container);
   }
@@ -266,14 +269,34 @@ export async function generateSheetMusicSVG(
 
 /**
  * Helper to escape XML special characters
+ * Handles all XML special chars plus control characters that could cause issues
  */
 function escapeXml(str: string): string {
+  if (!str || typeof str !== 'string') return '';
+
   return str
+    // Remove null bytes and control characters (except tab, newline, carriage return)
+    .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '')
+    // Escape XML special characters
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
-    .replace(/'/g, '&apos;');
+    .replace(/'/g, '&apos;')
+    // Escape backticks to prevent template literal injection
+    .replace(/`/g, '&#96;');
+}
+
+/**
+ * Sanitize SVG content using DOMPurify
+ * Removes potentially dangerous elements and attributes
+ */
+function sanitizeSVG(svgContent: string): string {
+  return DOMPurify.sanitize(svgContent, {
+    USE_PROFILES: { svg: true, svgFilters: true },
+    ADD_TAGS: ['use'],
+    ADD_ATTR: ['xlink:href'],
+  });
 }
 
 /**

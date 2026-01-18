@@ -9,7 +9,8 @@ export function KeyboardShortcuts() {
   ];
 
   return (
-    <div className="bg-slate-100/50 dark:bg-slate-800/50 border-t border-slate-200 dark:border-slate-700 py-3 px-6">
+    // Hidden on mobile - keyboard shortcuts not relevant for touch devices
+    <div className="hidden md:block bg-slate-100/50 dark:bg-slate-800/50 border-t border-slate-200 dark:border-slate-700 py-3 px-6">
       <div className="flex items-center justify-center gap-8 flex-wrap">
         {shortcuts.map((shortcut, index) => (
           <div key={index} className="flex items-center gap-2 text-xs">

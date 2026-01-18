@@ -194,14 +194,21 @@ export function PrintPreviewModal({ groove, isOpen, onClose, onAddTitle }: Print
     // Generate QR code in iframe
     const qrPlaceholder = iframeDoc.getElementById('qr-placeholder');
     if (qrPlaceholder) {
-      // Create a simple QR code using the same library's SVG output
-      const qrContainer = document.createElement('div');
-      qrContainer.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64"></svg>`;
-
-      // Copy the QR code from our preview
+      // Copy the QR code from our preview using safe DOM manipulation
       const qrSvg = printContainerRef.current?.querySelector('.flex.items-center.gap-4 svg');
       if (qrSvg) {
-        qrPlaceholder.innerHTML = qrSvg.outerHTML;
+        // Clone the node instead of using innerHTML
+        const clonedSvg = qrSvg.cloneNode(true) as SVGElement;
+        qrPlaceholder.appendChild(clonedSvg);
+      } else {
+        // Fallback: create placeholder SVG using DOM methods
+        const svgNS = 'http://www.w3.org/2000/svg';
+        const svg = iframeDoc.createElementNS(svgNS, 'svg');
+        svg.setAttribute('xmlns', svgNS);
+        svg.setAttribute('viewBox', '0 0 64 64');
+        svg.setAttribute('width', '64');
+        svg.setAttribute('height', '64');
+        qrPlaceholder.appendChild(svg);
       }
     }
 
