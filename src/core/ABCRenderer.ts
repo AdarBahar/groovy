@@ -118,7 +118,14 @@ export function renderABCToString(
     if (!result.success) {
       return null;
     }
-    return container.innerHTML;
+    // Safely extract SVG using DOM traversal instead of innerHTML
+    const svgElement = container.querySelector('svg');
+    if (!svgElement) {
+      return null;
+    }
+    // Use XMLSerializer to safely convert SVG to string
+    const serializer = new XMLSerializer();
+    return serializer.serializeToString(svgElement);
   } finally {
     document.body.removeChild(container);
   }
@@ -128,11 +135,14 @@ export function renderABCToString(
  * Clear the rendered notation from an element
  */
 export function clearRenderedABC(element: HTMLElement | string): void {
-  const el = typeof element === 'string' 
-    ? document.querySelector(element) 
+  const el = typeof element === 'string'
+    ? document.querySelector(element)
     : element;
   if (el) {
-    el.innerHTML = '';
+    // Safely remove all child nodes instead of using innerHTML
+    while (el.firstChild) {
+      el.removeChild(el.firstChild);
+    }
   }
 }
 

@@ -69,8 +69,8 @@
   line-height: 1;
   cursor: pointer;
   padding: 0;
-  width: 32px;
-  height: 32px;
+  width: 44px;
+  height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -107,6 +107,7 @@
   cursor: pointer;
   transition: all 0.2s;
   text-align: left;
+  min-height: 44px;
 }
 
 .pattern-button:hover {

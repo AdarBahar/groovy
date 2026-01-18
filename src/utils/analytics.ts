@@ -6,9 +6,9 @@
  * For other deployments, all tracking functions are no-ops.
  */
 
-// Production domain where analytics should be enabled
-const ANALYTICS_DOMAIN = 'bahar.co.il';
-const ANALYTICS_SCRIPT_URL = 'https://www.bahar.co.il/assets/universal-analytics.js';
+// Production domain where analytics should be enabled (configurable via env)
+const ANALYTICS_DOMAIN = import.meta.env.VITE_ANALYTICS_DOMAIN || 'bahar.co.il';
+const ANALYTICS_SCRIPT_URL = import.meta.env.VITE_ANALYTICS_SCRIPT_URL || 'https://www.bahar.co.il/assets/universal-analytics.js';
 
 // Check if we're on the production domain
 const isAnalyticsEnabled = (): boolean => {
