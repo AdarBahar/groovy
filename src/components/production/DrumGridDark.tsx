@@ -1,9 +1,81 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback, memo } from 'react';
 import { Copy, Plus, Trash2, X } from 'lucide-react';
 import { GrooveData, DrumVoice, MAX_MEASURES } from '../../types';
 import { GrooveUtils, HI_HAT_PATTERNS, SNARE_PATTERNS, KICK_PATTERNS, BulkPattern } from '../../core';
 import BulkOperationsDialog from '../BulkOperationsDialog';
 import NoteIcon from '../NoteIcon';
+
+/**
+ * Memoized drum cell component for performance optimization
+ * Only re-renders when its specific props change
+ */
+interface DrumCellProps {
+  measureIndex: number;
+  rowIndex: number;
+  pos: number;
+  absolutePos: number;
+  isActive: boolean;
+  isDownbeat: boolean;
+  variationLabel: string;
+  activeVoices: DrumVoice[];
+  hasVariations: boolean;
+  isNonDefault: boolean;
+  rowName: string;
+  onLeftClick: (e: React.MouseEvent) => void;
+  onMouseDown: (e: React.MouseEvent) => void;
+  onMouseEnter: () => void;
+  onRightClick: (e: React.MouseEvent) => void;
+  onTouchStart: (e: React.TouchEvent) => void;
+  onTouchMove: (e: React.TouchEvent) => void;
+  onTouchEnd: (e: React.TouchEvent) => void;
+}
+
+const DrumCell = memo(function DrumCell({
+  measureIndex,
+  rowIndex,
+  pos,
+  absolutePos,
+  isActive,
+  isDownbeat,
+  variationLabel,
+  activeVoices,
+  hasVariations,
+  isNonDefault,
+  rowName,
+  onLeftClick,
+  onMouseDown,
+  onMouseEnter,
+  onRightClick,
+  onTouchStart,
+  onTouchMove,
+  onTouchEnd,
+}: DrumCellProps) {
+  return (
+    <button
+      className={`drum-cell w-11 h-11 sm:w-12 sm:h-10 border cursor-pointer transition-all duration-150 flex items-center justify-center relative touch-target
+        ${isActive ? 'bg-purple-600 hover:bg-purple-700 border-purple-500' : 'bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 border-slate-300 dark:border-slate-600'}
+        ${isDownbeat ? 'border-l-slate-400 dark:border-l-slate-500' : ''}
+      `}
+      data-measure-index={measureIndex}
+      data-row-index={rowIndex}
+      data-position={pos}
+      data-absolute-pos={absolutePos}
+      onClick={onLeftClick}
+      onMouseDown={onMouseDown}
+      onMouseEnter={onMouseEnter}
+      onContextMenu={onRightClick}
+      onTouchStart={onTouchStart}
+      onTouchMove={onTouchMove}
+      onTouchEnd={onTouchEnd}
+      title={`${rowName} - ${variationLabel} at position ${pos + 1}${hasVariations ? ' (right-click for options)' : ''}`}
+    >
+      <NoteIcon voices={activeVoices} isActive={isActive} />
+      {isActive && isNonDefault && hasVariations && (
+        <span className="absolute top-0 right-0.5 text-xs text-white/70">*</span>
+      )}
+    </button>
+  );
+});
 
 /** A single note change for batch operations */
 export interface NoteChange {
@@ -305,7 +377,7 @@ export function DrumGridDark({
     applyDragAction('paint', measureIndex, rowIndex, position, sourceVoices);
   };
 
-  const handleTouchMove = (event: React.TouchEvent) => {
+  const handleTouchMove = useCallback((event: React.TouchEvent) => {
     setTouchMoved(true);
     if (!isDragging) return;
     const touch = event.touches[0];
@@ -319,7 +391,7 @@ export function DrumGridDark({
         applyDragAction(dragMode, mIdx, rIdx, pos, dragSourceVoices || undefined);
       }
     }
-  };
+  }, [isDragging, dragMode, dragMeasureIndex, dragSourceVoices]);
 
   const handleTouchEnd = (event: React.TouchEvent, measureIndex: number, rowIndex: number, position: number) => {
     const touchDuration = Date.now() - touchStartTime;
@@ -571,30 +643,27 @@ export function DrumGridDark({
                   const activeVoices = getActiveVoices(measureIndex, rowIndex, pos);
 
                   return (
-                    <button
+                    <DrumCell
                       key={pos}
-                      className={`drum-cell w-11 h-11 sm:w-12 sm:h-10 border cursor-pointer transition-all duration-150 flex items-center justify-center relative touch-target
-                        ${isActive ? 'bg-purple-600 hover:bg-purple-700 border-purple-500' : 'bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 border-slate-300 dark:border-slate-600'}
-                        ${isDown ? 'border-l-slate-400 dark:border-l-slate-500' : ''}
-                      `}
-                      data-measure-index={measureIndex}
-                      data-row-index={rowIndex}
-                      data-position={pos}
-                      data-absolute-pos={absolutePos}
-                      onClick={(e) => handleLeftClick(e, measureIndex, rowIndex, pos)}
+                      measureIndex={measureIndex}
+                      rowIndex={rowIndex}
+                      pos={pos}
+                      absolutePos={absolutePos}
+                      isActive={isActive}
+                      isDownbeat={isDown}
+                      variationLabel={variationLabel}
+                      activeVoices={activeVoices}
+                      hasVariations={hasVariations}
+                      isNonDefault={isNonDefault}
+                      rowName={row.name}
+                      onLeftClick={(e) => handleLeftClick(e, measureIndex, rowIndex, pos)}
                       onMouseDown={(e) => handleMouseDown(e, measureIndex, rowIndex, pos)}
                       onMouseEnter={() => handleMouseEnter(measureIndex, rowIndex, pos)}
-                      onContextMenu={(e) => handleRightClick(e, measureIndex, rowIndex, pos)}
+                      onRightClick={(e) => handleRightClick(e, measureIndex, rowIndex, pos)}
                       onTouchStart={(e) => handleTouchStart(e, measureIndex, rowIndex, pos)}
                       onTouchMove={handleTouchMove}
                       onTouchEnd={(e) => handleTouchEnd(e, measureIndex, rowIndex, pos)}
-                      title={`${row.name} - ${variationLabel} at position ${pos + 1}${hasVariations ? ' (right-click for options)' : ''}`}
-                    >
-                      <NoteIcon voices={activeVoices} isActive={isActive} />
-                      {isActive && isNonDefault && hasVariations && (
-                        <span className="absolute top-0 right-0.5 text-xs text-white/70">*</span>
-                      )}
-                    </button>
+                    />
                   );
                 })}
               </div>

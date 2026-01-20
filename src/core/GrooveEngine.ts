@@ -40,7 +40,6 @@ function calculateSwingOffset(
 export class GrooveEngine {
   private synth: DrumSynth;
   private scheduledNotes: number[] = [];
-  private scheduledVisuals = new Set<number>();
   private isPlaying = false;
   private startTime = 0;
   private currentPosition = 0;
@@ -50,6 +49,10 @@ export class GrooveEngine {
   private currentGroove: GrooveData | null = null;
   private pendingGroove: GrooveData | null = null;
   private loopEnabled = true;
+
+  // Visual update state (RAF-based for performance)
+  private visualRAFId: number | null = null;
+  private lastEmittedPosition: number = -1;
 
   // Metronome state
   private metronomeConfig: MetronomeConfig = { ...DEFAULT_METRONOME_CONFIG };
@@ -275,7 +278,9 @@ export class GrooveEngine {
 
     this.emit('playbackStateChange', true);
 
+    // Start audio scheduling and visual update loops
     this.scheduleLoop();
+    this.startVisualLoop();
   }
 
   /**
@@ -448,8 +453,7 @@ export class GrooveEngine {
         }
       }
 
-      // Schedule visual update based on sync mode (using absolute position)
-      this.scheduleVisualUpdate(playTime, currentTime, noteDuration, absolutePosition);
+      // Visual updates are handled by RAF loop (startVisualLoop)
 
       this.currentPosition++;
 
@@ -487,38 +491,77 @@ export class GrooveEngine {
   }
 
   /**
-   * Schedule visual position update
+   * Start the RAF-based visual update loop
+   * Uses requestAnimationFrame for smooth 60fps visual updates
+   * instead of scheduling individual timeouts for each position
    */
-  private scheduleVisualUpdate(
-    playTime: number,
-    currentTime: number,
-    noteDuration: number,
-    position: number
-  ): void {
-    let visualTime: number;
-
-    switch (this.syncMode) {
-      case 'start':
-        visualTime = playTime;
-        break;
-      case 'middle':
-        visualTime = playTime - (noteDuration / 2);
-        break;
-      case 'end':
-        visualTime = playTime - noteDuration;
-        break;
-    }
-
-    const visualDelay = (visualTime - currentTime) * 1000;
-    const timeoutId = window.setTimeout(() => {
-      // Self-clean: remove from set after execution to prevent memory leak
-      this.scheduledVisuals.delete(timeoutId);
-      if (this.isPlaying) {
-        this.emit('positionChange', position);
+  private startVisualLoop(): void {
+    const update = () => {
+      if (!this.isPlaying || !this.currentGroove) {
+        return;
       }
-    }, Math.max(0, visualDelay));
 
-    this.scheduledVisuals.add(timeoutId);
+      const currentTime = this.synth.getCurrentTime();
+      const groove = this.currentGroove;
+
+      // Calculate note duration
+      const beatDuration = 60 / groove.tempo;
+      const noteDuration = beatDuration / (groove.division / 4);
+      const totalPositions = GrooveUtils.getTotalPositions(groove);
+
+      // Calculate elapsed time since playback started
+      const elapsed = currentTime - this.startTime;
+
+      // Apply sync mode offset to visual timing
+      let syncOffset = 0;
+      switch (this.syncMode) {
+        case 'middle':
+          syncOffset = noteDuration / 2;
+          break;
+        case 'end':
+          syncOffset = noteDuration;
+          break;
+        // 'start' has no offset
+      }
+
+      // Calculate current visual position
+      const adjustedElapsed = elapsed + syncOffset;
+      let visualPosition = Math.floor(adjustedElapsed / noteDuration);
+
+      // Handle looping - wrap position within total positions
+      if (this.loopEnabled && visualPosition >= 0) {
+        visualPosition = visualPosition % totalPositions;
+      } else if (visualPosition >= totalPositions) {
+        // Non-looping mode and past end
+        visualPosition = totalPositions - 1;
+      }
+
+      // Clamp to valid range
+      visualPosition = Math.max(0, Math.min(visualPosition, totalPositions - 1));
+
+      // Only emit if position changed
+      if (visualPosition !== this.lastEmittedPosition) {
+        this.lastEmittedPosition = visualPosition;
+        this.emit('positionChange', visualPosition);
+      }
+
+      // Continue the loop
+      this.visualRAFId = requestAnimationFrame(update);
+    };
+
+    // Start the RAF loop
+    this.visualRAFId = requestAnimationFrame(update);
+  }
+
+  /**
+   * Stop the RAF-based visual update loop
+   */
+  private stopVisualLoop(): void {
+    if (this.visualRAFId !== null) {
+      cancelAnimationFrame(this.visualRAFId);
+      this.visualRAFId = null;
+    }
+    this.lastEmittedPosition = -1;
   }
 
   /**
@@ -533,13 +576,12 @@ export class GrooveEngine {
       this.timerID = null;
     }
 
+    // Stop visual update loop
+    this.stopVisualLoop();
+
     // Clear scheduled notes
     this.scheduledNotes.forEach((id) => clearTimeout(id));
     this.scheduledNotes = [];
-
-    // Clear scheduled visual updates
-    this.scheduledVisuals.forEach((id) => clearTimeout(id));
-    this.scheduledVisuals.clear();
 
     this.emit('playbackStateChange', false);
     this.emit('positionChange', -1);
