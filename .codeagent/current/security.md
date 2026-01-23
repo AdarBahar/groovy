@@ -89,26 +89,56 @@ Security considerations, authentication, permissions, secrets handling, and thre
 
 ## Content Security Policy (CSP)
 
-### Current (Implemented 2026-01-14)
+### Current (Updated 2026-01-23)
 
-**Location**: `.htaccess` file
+**Location**: CSP is managed at the **root level** (`/public_html/.htaccess`) to avoid conflicts between multiple CSP headers.
 
-**Policy**:
+The project's `.htaccess` (in `/scribe/`) does NOT include a CSP directive - it inherits from the root.
+
+**Important**: When adding new external services that require API calls, you must update the **root** `/public_html/.htaccess` file on the server.
+
+### Adding New External Services
+
+When integrating a new external API or service:
+
+1. **Identify required domains** - Check browser console for CSP violations
+2. **Update root `.htaccess`** - Add domains to the appropriate directive in `/public_html/.htaccess`
+3. **Test thoroughly** - Clear browser cache and verify no CSP errors
+
+**Example**: To add URL shortener service `go.bahar.co.il`:
 ```apache
-Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' https://www.bahar.co.il; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self'; connect-src 'self' https://www.bahar.co.il https://bahar.co.il https://api.amplitude.com https://api.eu.amplitude.com; font-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'self';"
+connect-src 'self' ... https://go.bahar.co.il ...
 ```
 
-**Directives**:
-- `default-src 'self'` - Only allow resources from same origin
-- `script-src 'self' 'unsafe-inline' https://www.bahar.co.il` - Scripts from self and analytics
-- `style-src 'self' 'unsafe-inline'` - Styles with inline support for Tailwind
-- `img-src 'self' data: blob:` - Images including data URIs and blobs
-- `media-src 'self'` - Audio/video from same origin
-- `connect-src 'self' https://...` - API connections to analytics
-- `font-src 'self' data:` - Fonts including data URIs
-- `object-src 'none'` - No Flash/plugins
-- `base-uri 'self'` - Prevent base tag injection
-- `form-action 'self'` - Forms only submit to same origin
+### Current Root CSP Includes
+
+The root `/public_html/.htaccess` CSP includes:
+
+**connect-src** (API connections):
+- `'self'`
+- `https://www.bahar.co.il`, `https://bahar.co.il`
+- `https://go.bahar.co.il` (URL shortener)
+- `https://api.amplitude.com`, `https://api.eu.amplitude.com`, `https://sr-client-cfg.eu.amplitude.com`, `https://cdn.amplitude.com`
+- Various other bahar.co.il subdomains
+
+**script-src** (JavaScript):
+- `'self'`, `'unsafe-inline'`, `'unsafe-eval'`
+- `https://cdn.amplitude.com`
+- `https://accounts.google.com`, `https://apis.google.com`
+
+**style-src** (CSS):
+- `'self'`, `'unsafe-inline'`
+- `https://accounts.google.com`
+
+**font-src** (Fonts):
+- `'self'`, `https:`, `data:`
+
+### Project-Level `.htaccess`
+
+The project's `.htaccess` handles:
+- React Router rewrites
+- Caching headers
+- Other security headers (X-Frame-Options, X-Content-Type-Options, etc.)
 
 **Note**: `'unsafe-inline'` required for Tailwind CSS and React inline styles. Consider migrating to nonce-based CSP in future.
 

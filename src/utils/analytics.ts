@@ -160,7 +160,7 @@ export function trackShareModalOpen() {
   analytics.track('Share Modal Opened');
 }
 
-export function trackShareMethod(method: 'link' | 'twitter' | 'facebook' | 'reddit' | 'embed' | 'qr' | 'email') {
+export function trackShareMethod(method: 'link' | 'twitter' | 'facebook' | 'reddit' | 'embed' | 'qr' | 'email' | 'shorten') {
   analytics.track('Share Method Used', { method });
 }
 
