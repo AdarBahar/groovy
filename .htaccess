@@ -39,7 +39,7 @@ RewriteRule ^ index.html [L]
   ExpiresByType text/html "access plus 0 seconds"
 </IfModule>
 
-# Security headers
+# Security headers (CSP is managed at the root /public_html/.htaccess level)
 <IfModule mod_headers.c>
   # Prevent clickjacking
   Header always set X-Frame-Options "SAMEORIGIN"
@@ -50,9 +50,8 @@ RewriteRule ^ index.html [L]
   # Enable XSS protection
   Header always set X-XSS-Protection "1; mode=block"
 
-  # Content Security Policy
-  # Allows self-hosted content, analytics from bahar.co.il, and necessary inline styles
-  Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' https://www.bahar.co.il; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self'; connect-src 'self' https://www.bahar.co.il https://bahar.co.il https://api.amplitude.com https://api.eu.amplitude.com; font-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'self';"
+  # Note: Content-Security-Policy is inherited from root .htaccess
+  # to avoid conflicts with the more comprehensive site-wide CSP
 
   # Referrer Policy
   Header always set Referrer-Policy "strict-origin-when-cross-origin"

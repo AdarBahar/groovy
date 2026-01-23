@@ -9,8 +9,8 @@
  * - Email
  */
 
-import { useState, useMemo } from 'react';
-import { Share2, Link, Copy, Check, Code, QrCode, Mail, AlertTriangle } from 'lucide-react';
+import { useState, useMemo, useEffect } from 'react';
+import { Share2, Link, Copy, Check, Code, QrCode, Mail, AlertTriangle, Loader2, Minimize2 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import {
   Dialog,
@@ -24,6 +24,7 @@ import { Input } from '../ui/input';
 import { GrooveData } from '../../types';
 import { getShareableURLWithValidation, URLValidationResult } from '../../core';
 import { trackShareMethod } from '../../utils/analytics';
+import { shortenURL, isShortenerConfigured, getShortenerErrorMessage } from '../../services/urlShortener';
 
 type ShareTab = 'link' | 'social' | 'embed' | 'qr' | 'email';
 
@@ -43,7 +44,12 @@ const TABS: { id: ShareTab; label: string; icon: React.ReactNode }[] = [
 
 export function ShareModal({ groove, isOpen, onClose }: ShareModalProps) {
   const [activeTab, setActiveTab] = useState<ShareTab>('link');
-  const [copied, setCopied] = useState<'url' | 'embed' | null>(null);
+  const [copied, setCopied] = useState<'url' | 'embed' | 'shortUrl' | null>(null);
+
+  // URL shortener state
+  const [isShortening, setIsShortening] = useState(false);
+  const [shortURL, setShortURL] = useState<string | null>(null);
+  const [shortenError, setShortenError] = useState<string | null>(null);
 
   // Generate shareable URL with validation
   const { url: shareableURL, validation } = useMemo(
@@ -53,9 +59,41 @@ export function ShareModal({ groove, isOpen, onClose }: ShareModalProps) {
 
   const grooveTitle = groove.title || 'Drum Groove';
 
-  // Generate embed code
+  // Reset short URL when groove changes
+  useEffect(() => {
+    setShortURL(null);
+    setShortenError(null);
+  }, [shareableURL]);
+
+  // Handle URL shortening
+  const handleShortenURL = async () => {
+    setIsShortening(true);
+    setShortenError(null);
+
+    try {
+      const shortened = await shortenURL(shareableURL);
+      setShortURL(shortened);
+      trackShareMethod('shorten');
+    } catch (error) {
+      setShortenError(getShortenerErrorMessage(error));
+    } finally {
+      setIsShortening(false);
+    }
+  };
+
+  // Copy short URL to clipboard
+  const handleCopyShortURL = async () => {
+    if (!shortURL) return;
+    await navigator.clipboard.writeText(shortURL);
+    setCopied('shortUrl');
+    trackShareMethod('link');
+    setTimeout(() => setCopied(null), 2000);
+  };
+
+  // Generate embed code with embed=true parameter for minimal view
   const embedCode = useMemo(() => {
-    return `<iframe src="${shareableURL}" width="100%" height="400" frameborder="0" title="${grooveTitle}"></iframe>`;
+    const embedURL = `${shareableURL}&embed=true`;
+    return `<iframe src="${embedURL}" width="600" height="400" frameborder="0" title="${grooveTitle}"></iframe>`;
   }, [shareableURL, grooveTitle]);
 
   const handleCopyURL = async () => {
@@ -102,6 +140,12 @@ export function ShareModal({ groove, isOpen, onClose }: ShareModalProps) {
   const renderURLWarning = (validation: URLValidationResult) => {
     if (validation.status === 'ok') return null;
 
+    // For error status (very long URLs), show stronger warning with shorten suggestion
+    const showShortenSuggestion = validation.status === 'error' && isShortenerConfigured();
+    const warningMessage = showShortenSuggestion
+      ? 'This URL is longer than most browsers support. It is highly recommended to use the "Shorten URL" option below.'
+      : validation.message;
+
     return (
       <div className={`flex items-start gap-2 p-3 rounded-lg text-sm ${
         validation.status === 'error'
@@ -112,7 +156,7 @@ export function ShareModal({ groove, isOpen, onClose }: ShareModalProps) {
           validation.status === 'error' ? 'text-red-600 dark:text-red-400' : 'text-amber-600 dark:text-amber-400'
         }`} />
         <p className={validation.status === 'error' ? 'text-red-800 dark:text-red-200' : 'text-amber-800 dark:text-amber-200'}>
-          {validation.message}
+          {warningMessage}
         </p>
       </div>
     );
@@ -123,18 +167,83 @@ export function ShareModal({ groove, isOpen, onClose }: ShareModalProps) {
       <p className="text-sm text-slate-600 dark:text-slate-400">
         Copy the link below to share your groove with anyone.
       </p>
-      <div className="flex gap-2">
-        <Input
-          value={shareableURL}
-          readOnly
-          className="flex-1 font-mono text-xs"
-          onClick={(e) => (e.target as HTMLInputElement).select()}
-        />
-        <Button onClick={handleCopyURL} className="bg-purple-600 hover:bg-purple-700 text-white">
-          {copied === 'url' ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-        </Button>
-      </div>
-      {renderURLWarning(validation)}
+
+      {/* Short URL display (when available) */}
+      {shortURL ? (
+        <div className="space-y-3">
+          <div className="flex gap-2">
+            <Input
+              value={shortURL}
+              readOnly
+              className="flex-1 font-mono text-xs bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800"
+              onClick={(e) => (e.target as HTMLInputElement).select()}
+            />
+            <Button onClick={handleCopyShortURL} className="bg-purple-600 hover:bg-purple-700 text-white">
+              {copied === 'shortUrl' ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+            </Button>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setShortURL(null)}
+            className="text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300"
+          >
+            <Minimize2 className="w-3 h-3 mr-1" />
+            Show original URL
+          </Button>
+        </div>
+      ) : (
+        <>
+          {/* Original URL */}
+          <div className="flex gap-2">
+            <Input
+              value={shareableURL}
+              readOnly
+              className="flex-1 font-mono text-xs"
+              onClick={(e) => (e.target as HTMLInputElement).select()}
+            />
+            <Button onClick={handleCopyURL} className="bg-purple-600 hover:bg-purple-700 text-white">
+              {copied === 'url' ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+            </Button>
+          </div>
+
+          {/* URL Warning */}
+          {renderURLWarning(validation)}
+
+          {/* Shorten button (always available when shortener is configured) */}
+          {isShortenerConfigured() && (
+            <div className="pt-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleShortenURL}
+                disabled={isShortening}
+                className="text-purple-600 border-purple-200 hover:bg-purple-50 dark:text-purple-400 dark:border-purple-800 dark:hover:bg-purple-900/20"
+              >
+                {isShortening ? (
+                  <>
+                    <Loader2 className="w-3 h-3 mr-1.5 animate-spin" />
+                    Shortening...
+                  </>
+                ) : (
+                  <>
+                    <Minimize2 className="w-3 h-3 mr-1.5" />
+                    Shorten URL
+                  </>
+                )}
+              </Button>
+            </div>
+          )}
+
+          {/* Shorten error */}
+          {shortenError && (
+            <div className="flex items-start gap-2 p-3 rounded-lg text-sm bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
+              <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5 text-red-600 dark:text-red-400" />
+              <p className="text-red-800 dark:text-red-200">{shortenError}</p>
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
 
@@ -162,42 +271,63 @@ export function ShareModal({ groove, isOpen, onClose }: ShareModalProps) {
 
   const renderEmbedTab = () => (
     <div className="space-y-4">
-      <p className="text-sm text-slate-600 dark:text-slate-400">
-        Embed this groove on your website or blog.
-      </p>
-      <div className="relative">
-        <textarea
-          value={embedCode}
-          readOnly
-          rows={3}
-          className="w-full p-3 font-mono text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg resize-none"
-          onClick={(e) => (e.target as HTMLTextAreaElement).select()}
-        />
+      <div className="flex items-center justify-between">
+        <p className="text-sm text-slate-600 dark:text-slate-400">
+          Embed this groove on your website or blog.
+        </p>
         <Button
           size="sm"
           onClick={handleCopyEmbed}
-          className="absolute top-2 right-2 bg-purple-600 hover:bg-purple-700 text-white"
+          className="bg-purple-600 hover:bg-purple-700 text-white flex-shrink-0"
         >
-          {copied === 'embed' ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+          {copied === 'embed' ? <Check className="w-3 h-3 mr-1" /> : <Copy className="w-3 h-3 mr-1" />}
+          {copied === 'embed' ? 'Copied' : 'Copy'}
         </Button>
       </div>
+      <textarea
+        value={embedCode}
+        readOnly
+        rows={5}
+        className="w-full p-3 font-mono text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg resize-none"
+        onClick={(e) => (e.target as HTMLTextAreaElement).select()}
+      />
     </div>
   );
+
+  // QR codes have a maximum capacity (~2953 bytes for alphanumeric at level L)
+  // URLs over ~2000 chars will likely fail
+  const MAX_QR_URL_LENGTH = 2000;
+  const isURLTooLongForQR = shareableURL.length > MAX_QR_URL_LENGTH;
 
   const renderQRTab = () => (
     <div className="space-y-4">
       <p className="text-sm text-slate-600 dark:text-slate-400">
         Scan this QR code to open the groove on any device.
       </p>
-      <div className="flex justify-center p-6 bg-white rounded-lg border border-slate-200 dark:border-slate-700">
-        <QRCodeSVG
-          value={shareableURL}
-          size={200}
-          level="M"
-          includeMargin
-          className="rounded"
-        />
-      </div>
+      {isURLTooLongForQR ? (
+        <div className="flex flex-col items-center gap-4 p-6 bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
+          <AlertTriangle className="w-12 h-12 text-amber-500" />
+          <div className="text-center">
+            <p className="font-medium text-slate-700 dark:text-slate-300">URL too long for QR code</p>
+            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+              This groove has too much data ({shareableURL.length.toLocaleString()} characters).
+              {isShortenerConfigured() && (
+                <> Use the <button onClick={() => setActiveTab('link')} className="text-purple-600 dark:text-purple-400 underline">Link tab</button> to shorten it first.</>
+              )}
+            </p>
+          </div>
+        </div>
+      ) : (
+        <div className="flex justify-center p-6 bg-white rounded-lg border border-slate-200 dark:border-slate-700">
+          <QRCodeSVG
+            value={shareableURL}
+            size={200}
+            level="M"
+            includeMargin
+            className="rounded"
+          />
+        </div>
+      )}
       <p className="text-xs text-center text-slate-500 dark:text-slate-400">
         {grooveTitle}
       </p>
@@ -240,19 +370,19 @@ export function ShareModal({ groove, isOpen, onClose }: ShareModalProps) {
         </DialogHeader>
 
         {/* Tab navigation */}
-        <div className="flex border-b border-slate-200 dark:border-slate-700 -mx-4 sm:-mx-6 px-4 sm:px-6 overflow-x-auto">
+        <div className="flex border-b border-slate-200 dark:border-slate-700 -mx-4 sm:-mx-6 px-4 sm:px-6">
           {TABS.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-1.5 px-2 sm:px-3 py-3 sm:py-2 text-sm font-medium border-b-2 -mb-px transition-colors touch-target flex-shrink-0 ${
+              className={`flex items-center justify-center gap-1 px-2 py-2 text-sm font-medium border-b-2 -mb-px transition-colors flex-1 min-w-0 ${
                 activeTab === tab.id
                   ? 'border-purple-600 text-purple-600 dark:text-purple-400'
                   : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300'
               }`}
             >
               {tab.icon}
-              <span className="hidden sm:inline">{tab.label}</span>
+              <span className="hidden sm:inline text-xs">{tab.label}</span>
             </button>
           ))}
         </div>
