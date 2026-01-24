@@ -103,7 +103,8 @@ export const MetadataFields = forwardRef<MetadataFieldsRef, MetadataFieldsProps>
   if (isEditing) {
     return (
       <div className="space-y-3">
-        <div className="grid grid-cols-3 gap-4">
+        {/* Grid: 1 column on mobile, 3 columns on tablet+ */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="space-y-2">
             <label className="text-xs text-slate-600 dark:text-slate-400 block">Title</label>
             <Input
@@ -113,7 +114,7 @@ export const MetadataFields = forwardRef<MetadataFieldsRef, MetadataFieldsProps>
               onChange={(e) => setTempTitle(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder="My New Groove"
-              className="bg-slate-50 dark:bg-slate-800/50 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500"
+              className="bg-slate-50 dark:bg-slate-800/50 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 text-base selectable"
             />
           </div>
           <div className="space-y-2">
@@ -124,7 +125,7 @@ export const MetadataFields = forwardRef<MetadataFieldsRef, MetadataFieldsProps>
               onChange={(e) => setTempAuthor(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder="Drummer One"
-              className="bg-slate-50 dark:bg-slate-800/50 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500"
+              className="bg-slate-50 dark:bg-slate-800/50 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 text-base selectable"
             />
           </div>
           <div className="space-y-2">
@@ -135,7 +136,7 @@ export const MetadataFields = forwardRef<MetadataFieldsRef, MetadataFieldsProps>
               onChange={(e) => setTempComments(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder="Add notes..."
-              className="bg-slate-50 dark:bg-slate-800/50 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500"
+              className="bg-slate-50 dark:bg-slate-800/50 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 text-base selectable"
             />
           </div>
         </div>
@@ -143,7 +144,7 @@ export const MetadataFields = forwardRef<MetadataFieldsRef, MetadataFieldsProps>
           <Button
             size="sm"
             onClick={handleSave}
-            className="bg-purple-600 hover:bg-purple-700 text-white text-xs uppercase px-3 py-1 h-auto flex items-center gap-1"
+            className="bg-purple-600 hover:bg-purple-700 text-white text-xs uppercase px-3 py-2 h-auto flex items-center gap-1 touch-target"
           >
             <Check className="w-3 h-3" />
             Save
@@ -152,7 +153,7 @@ export const MetadataFields = forwardRef<MetadataFieldsRef, MetadataFieldsProps>
             variant="ghost"
             size="sm"
             onClick={handleCancel}
-            className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white text-xs uppercase px-3 py-1 h-auto flex items-center gap-1"
+            className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white text-xs uppercase px-3 py-2 h-auto flex items-center gap-1 touch-target"
           >
             <X className="w-3 h-3" />
             Cancel
@@ -169,15 +170,15 @@ export const MetadataFields = forwardRef<MetadataFieldsRef, MetadataFieldsProps>
         variant="ghost"
         size="sm"
         onClick={handleEdit}
-        className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center gap-2 mt-1"
+        className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center gap-2 mt-1 touch-target"
       >
         <Edit2 className="w-4 h-4" />
-        <span className="text-xs uppercase">Edit</span>
+        <span className="text-xs uppercase hidden sm:inline">Edit</span>
       </Button>
-      <div className="space-y-1">
-        <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">{displayTitle}</h1>
+      <div className="space-y-1 flex-1 min-w-0">
+        <h1 className="text-xl sm:text-2xl font-semibold text-slate-900 dark:text-white truncate">{displayTitle}</h1>
         {displayAuthor && (
-          <p className="text-sm text-slate-500 dark:text-slate-400">{displayAuthor}</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400 truncate">{displayAuthor}</p>
         )}
       </div>
     </div>
