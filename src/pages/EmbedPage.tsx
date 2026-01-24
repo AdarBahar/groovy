@@ -129,13 +129,13 @@ export default function EmbedPage() {
   return (
     <div className="h-screen flex flex-col bg-white dark:bg-slate-900 text-slate-900 dark:text-white overflow-hidden">
       {/* Compact Header with Title */}
-      <header className="px-3 py-2 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between bg-slate-50 dark:bg-slate-800/50">
+      <header className="px-3 py- flex items-center justify-between ">
         <h1 className="text-sm font-semibold truncate">{grooveTitle}</h1>
         <a
           href={fullURL}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-1 text-xs text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 hover:underline flex-shrink-0"
+          className="inline-flex items-center gap-1 text-xs hover:underline flex-shrink-0"
         >
           <span>Edit/Open in Groovy</span>
           <ExternalLink className="w-3 h-3" />
@@ -143,7 +143,7 @@ export default function EmbedPage() {
       </header>
 
       {/* Playback Controls - Full toolbar */}
-      <div className="px-3 py-3 border-b border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/30">
+      <div className="px-3 py-3 ">
         <PlaybackControls
           isPlaying={isPlaying}
           onPlay={handlePlay}
