@@ -17,7 +17,7 @@ import {
   createEmptyNotesRecord,
   getFlattenedNotes,
 } from '../types';
-import { URL_TAB_CHARS } from './ABCConstants';
+import { URL_TAB_CHARS, URL_VOICE_GROUPS } from './DrumVoiceConfig';
 
 /** Validation constraints for URL parameters */
 const VALIDATION = {
@@ -126,30 +126,10 @@ const REST_CHAR = '-';
 const MEASURE_SEP = '|';
 
 /**
- * Map of URL param keys to their associated DrumVoice groups
- * Each group is ordered by priority (first match wins when decoding)
+ * Voice groups for URL encoding/decoding
+ * Imported from centralized DrumVoiceConfig
  */
-const VOICE_GROUPS: Record<string, DrumVoice[]> = {
-  [PARAM.HIHAT]: ['hihat-closed', 'hihat-open', 'hihat-accent', 'hihat-foot', 'hihat-metronome-normal', 'hihat-metronome-accent', 'hihat-cross'],
-  [PARAM.SNARE]: ['snare-normal', 'snare-accent', 'snare-ghost', 'snare-cross-stick', 'snare-flam', 'snare-rim', 'snare-drag', 'snare-buzz'],
-  [PARAM.KICK]: ['kick'],
-  [PARAM.TOM1]: ['tom-rack'],
-  [PARAM.TOM2]: ['tom-floor'],
-  [PARAM.TOM3]: ['tom-10'],
-  [PARAM.TOM4]: ['tom-16'],
-  [PARAM.CRASH]: ['crash'],
-  [PARAM.RIDE]: ['ride', 'ride-bell'],
-};
-
-/**
- * Reverse lookup: DrumVoice → URL param key
- */
-const VOICE_TO_PARAM: Record<DrumVoice, string> = {} as Record<DrumVoice, string>;
-for (const [param, voices] of Object.entries(VOICE_GROUPS)) {
-  for (const voice of voices) {
-    VOICE_TO_PARAM[voice] = param;
-  }
-}
+const VOICE_GROUPS = URL_VOICE_GROUPS as Record<string, DrumVoice[]>;
 
 /**
  * Encode a single voice group to URL pattern string
