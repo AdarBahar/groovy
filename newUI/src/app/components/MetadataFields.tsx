@@ -1,6 +1,8 @@
 import { Input } from './ui/input';
 import { Button } from './ui/button';
 import { ChevronDown, ChevronUp } from 'lucide-react';
+import { PressPlay, play } from 'lucide-react';
+import { Ellipsis } from 'lucide-react';
 import { useState } from 'react';
 
 export function MetadataFields() {

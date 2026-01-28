@@ -238,7 +238,7 @@ export function encodeGrooveToURL(groove: GrooveData): string {
   params.set(PARAM.DIV, String(groove.division));
   params.set(PARAM.TEMPO, String(groove.tempo));
   params.set(PARAM.MEASURES, String(groove.measures.length));
-
+  
   if (groove.swing > 0) {
     params.set(PARAM.SWING, String(groove.swing));
   }

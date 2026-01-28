@@ -69,6 +69,7 @@
   text-align: center;
 }
 
+
 /* Dark mode support - using class-based theming */
 .dark .sheet-music-display {
   background: #2d2d2d;
@@ -89,6 +90,13 @@
   border-color: #665500;
   color: #ffd700;
 }
+
+/* Embed mode support - using class-based theming */
+.embed .sheet-music-display {
+  background: white;
+  border-color: white;
+}
+
 
 /* Light mode - ensure notes are black (no filter) */
 .light .sheet-music-container svg {

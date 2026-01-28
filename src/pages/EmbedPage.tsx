@@ -7,7 +7,7 @@
  */
 
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { ExternalLink } from 'lucide-react';
+import { ExternalLink, ChevronDown, Ellipsis } from 'lucide-react';
 import { GrooveData, DEFAULT_GROOVE } from '../types';
 import { useGrooveEngine } from '../hooks/useGrooveEngine';
 import { useURLSync } from '../hooks/useURLSync';
@@ -18,6 +18,7 @@ import { PlaybackControls } from '../components/production/PlaybackControls';
 
 export default function EmbedPage() {
   const [elapsedTime, setElapsedTime] = useState('0:00');
+  const [isControlsExpanded, setIsControlsExpanded] = useState(false);
   const playStartTimeRef = useRef<number | null>(null);
 
   // Use history hook for state management (required by useURLSync)
@@ -122,52 +123,84 @@ export default function EmbedPage() {
   }, []);
 
   const grooveTitle = groove.title || 'Drum Groove';
-
+  const grooveAuthor = groove.author ? `by ${groove.author}` : 'Anonymous';
+  const grooveDescription = groove.description || 'description';
   // No-op for speed up (not available in embed)
   const handlePlayWithSpeedUp = handlePlay;
 
   return (
-    <div className="h-screen flex flex-col bg-white dark:bg-slate-900 text-slate-900 dark:text-white overflow-hidden">
+    <div className="h-screen flex flex-col embed  overflow-hidden">
       {/* Compact Header with Title */}
-      <header className="px-3 py- flex items-center justify-between ">
-        <h1 className="text-sm font-semibold truncate">{grooveTitle}</h1>
-        <a
-          href={fullURL}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-1 text-xs hover:underline flex-shrink-0"
-        >
-          <span>Edit/Open in Groovy</span>
-          <ExternalLink className="w-3 h-3" />
+      <header className="px-3 py-2 flex flex-col embed:text-black">
+        <div className="flex items-center justify-between">
+          {/* Always visible: play button and elapsed time */}
+          <div className="flex items-left gap-3">
+              {!isControlsExpanded && (<span>
+                <button
+                  onClick={handlePlay}
+                  className="px-3 py-1 bg-slate-500 embed:text-white   text-sm font-medium hover:opacity-80 transition-opacity">
+                  {isPlaying ? ' ⏸ ' : '▶ '}
+                </button>
+              <span className="px-3 text-sm text-slate-500 ">{elapsedTime}</span>
+              </span>
+          )}
+                {/* Expand/collapse button and title */}
+          <div className="flex items-center gap-2">   
+          <button
+            onClick={() => setIsControlsExpanded(!isControlsExpanded)}
+            className="flex items-center gap-2 text-sm font-medium text-slate-500 embed group"
+          >
+            <Ellipsis
+              className={`w-4 h-4 transition-transform text-lg text-black duration-200  ${
+                isControlsExpanded ? 'rotate-0' : '-rotate-90'
+              }`}
+            />
+            <span className="hidden group-hover:inline text-black text-xs">Set Tempo & Swing</span>
+          </button>
+                    </div>
+        </div>
+        <h2 className=" truncate">{grooveTitle}</h2>
+          <a
+            href={fullURL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1 text-xs  flex-shrink-0 light group"
+            >
+          <span className="hidden group-hover:inline text-xs">Edit Groove</span>
+          <ExternalLink className="w-3 h-3 group-hover:hidden" />
         </a>
+        </div>
+         <div className="flex items-center justify-between text-s">
+        <div>{grooveAuthor}</div><div>{grooveDescription}</div>
+        </div>
       </header>
-
-      {/* Playback Controls - Full toolbar */}
-      <div className="px-3 py-3 ">
-        <PlaybackControls
-          isPlaying={isPlaying}
-          onPlay={handlePlay}
-          onPlayWithSpeedUp={handlePlayWithSpeedUp}
-          isAutoSpeedUpActive={false}
-          timeSignature={groove.timeSignature}
-          tempo={groove.tempo}
-          swing={groove.swing}
-          onTempoChange={handleTempoChange}
-          onSwingChange={handleSwingChange}
-          elapsedTime={elapsedTime}
-        />
-      </div>
-
       {/* Sheet Music */}
-      <div className="flex-1 overflow-auto p-3">
-        <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-600 p-3">
+      <div className="flex-1 overflow-auto embed ">
           <SheetMusicDisplay
             groove={groove}
             visible={true}
             currentPosition={visualPosition}
             isPlaying={isPlaying}
           />
-        </div>
+       {/* Playback Controls - Full toolbar */}
+      {isControlsExpanded && (
+          <div className="mt-3 embed:text-black">
+            <PlaybackControls
+              isPlaying={isPlaying}
+              onPlay={handlePlay}
+              onPlayWithSpeedUp={handlePlayWithSpeedUp}
+              isAutoSpeedUpActive={false}
+              timeSignature={groove.timeSignature}
+              tempo={groove.tempo}
+              swing={groove.swing}
+              onTempoChange={handleTempoChange}
+              onSwingChange={handleSwingChange}
+              elapsedTime={elapsedTime}
+              isEmbedded={true}
+            />
+          </div>
+          
+        )}
       </div>
     </div>
   );
