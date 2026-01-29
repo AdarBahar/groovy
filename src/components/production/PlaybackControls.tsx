@@ -16,6 +16,7 @@ interface PlaybackControlsProps {
   elapsedTime?: string;
   countdownNumber?: number | null;
   countingInButton?: 'play' | 'playPlus' | null;
+  isEmbedded?: boolean;
 }
 
 export function PlaybackControls({

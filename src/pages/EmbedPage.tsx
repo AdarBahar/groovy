@@ -7,7 +7,7 @@
  */
 
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { ExternalLink, ChevronDown, Ellipsis } from 'lucide-react';
+import { ExternalLink,  Ellipsis } from 'lucide-react';  //ChevronDown,
 import { GrooveData, DEFAULT_GROOVE } from '../types';
 import { useGrooveEngine } from '../hooks/useGrooveEngine';
 import { useURLSync } from '../hooks/useURLSync';
@@ -124,7 +124,7 @@ export default function EmbedPage() {
 
   const grooveTitle = groove.title || 'Drum Groove';
   const grooveAuthor = groove.author ? `by ${groove.author}` : 'Anonymous';
-  const grooveDescription = groove.description || 'description';
+  const grooveDescription = groove.comments || 'description';
   // No-op for speed up (not available in embed)
   const handlePlayWithSpeedUp = handlePlay;
 
