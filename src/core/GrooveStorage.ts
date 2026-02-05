@@ -1,16 +1,31 @@
 /**
  * GrooveStorage
- * 
+ *
  * Manages saved grooves in localStorage with CRUD operations.
  * Framework-agnostic core storage logic.
  */
 
+import { z } from 'zod';
 import { GrooveData } from '../types';
 import { encodeGrooveToURL, decodeURLToGroove } from './GrooveURLCodec';
 import { logger } from '../utils/logger';
 import { safeStorage } from '../utils/safeStorage';
 
 const STORAGE_KEY = 'groovy-my-grooves';
+
+/**
+ * Zod schema for SavedGroove validation
+ */
+const SavedGrooveSchema = z.object({
+  id: z.string().min(1),
+  name: z.string().min(1).max(200),
+  url: z.string().min(1),
+  createdAt: z.number().positive(),
+  modifiedAt: z.number().positive(),
+  tempo: z.number().min(20).max(400),
+  timeSignature: z.string().regex(/^\d{1,2}\/\d{1,2}$/),
+  measureCount: z.number().int().min(1).max(32),
+});
 
 /**
  * Saved groove metadata stored in localStorage
@@ -125,20 +140,32 @@ export function saveGroove(
 
 /**
  * Load all saved grooves from localStorage
+ * Validates each groove and filters out any invalid entries
  */
 export function loadAllGrooves(): SavedGroove[] {
   try {
     const data = safeStorage.getItem(STORAGE_KEY);
     if (!data) return [];
-    
+
     const parsed = JSON.parse(data);
     if (!Array.isArray(parsed)) {
       logger.warn('Invalid grooves data format, resetting');
       return [];
     }
-    
+
+    // Validate each groove and filter out invalid ones
+    const validGrooves: SavedGroove[] = [];
+    for (const item of parsed) {
+      const result = SavedGrooveSchema.safeParse(item);
+      if (result.success) {
+        validGrooves.push(result.data);
+      } else {
+        logger.warn('Skipping invalid saved groove:', result.error.message);
+      }
+    }
+
     // Sort by most recently modified first
-    return parsed.sort((a, b) => b.modifiedAt - a.modifiedAt);
+    return validGrooves.sort((a, b) => b.modifiedAt - a.modifiedAt);
   } catch (error) {
     logger.error('Failed to load grooves:', error);
     return [];
