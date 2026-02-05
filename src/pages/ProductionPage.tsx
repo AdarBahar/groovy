@@ -568,6 +568,10 @@ export default function ProductionPage() {
 
       <BottomToolbar
         onShare={() => { analytics.trackShareModalOpen(); setIsShareModalOpen(true); }}
+        onSave={() => {
+          console.log('Bottom toolbar onSave called, setting modal open to true');
+          setIsSaveGrooveModalOpen(true);
+        }}
         onDownload={() => { analytics.trackDownloadOpen(); setIsDownloadModalOpen(true); }}
         onPrint={() => { analytics.trackPrintOpen(); setIsPrintModalOpen(true); }}
       />
