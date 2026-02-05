@@ -3,6 +3,8 @@
  * These types are shared between core logic and UI
  */
 
+import { z } from 'zod';
+
 export type DrumVoice =
   // Hi-Hat variations
   | 'hihat-closed'
@@ -282,4 +284,94 @@ export const DEFAULT_METRONOME_CONFIG: MetronomeConfig = {
   offsetClick: '1',
   volume: 80,
 };
+
+// ==========================================================================
+// Zod Schemas for Runtime Validation
+// ==========================================================================
+
+/** All valid drum voices as an array for Zod enum */
+const DRUM_VOICE_VALUES = [
+  'hihat-closed', 'hihat-open', 'hihat-accent', 'hihat-foot',
+  'hihat-metronome-normal', 'hihat-metronome-accent', 'hihat-cross',
+  'snare-normal', 'snare-accent', 'snare-ghost', 'snare-cross-stick',
+  'snare-flam', 'snare-rim', 'snare-drag', 'snare-buzz',
+  'kick',
+  'tom-rack', 'tom-floor', 'tom-10', 'tom-16',
+  'crash', 'ride', 'ride-bell',
+  'cowbell', 'stacker',
+] as const;
+
+/** Zod schema for DrumVoice */
+export const DrumVoiceSchema = z.enum(DRUM_VOICE_VALUES);
+
+/** Zod schema for TimeSignature */
+export const TimeSignatureSchema = z.object({
+  beats: z.number().int().min(1).max(16),
+  noteValue: z.union([z.literal(4), z.literal(8), z.literal(16)]),
+});
+
+/** Zod schema for Division */
+export const DivisionSchema = z.union([
+  z.literal(4),
+  z.literal(8),
+  z.literal(12),
+  z.literal(16),
+  z.literal(24),
+  z.literal(32),
+  z.literal(48),
+]);
+
+/** Zod schema for notes record (voice -> boolean array) */
+const NotesRecordSchema = z.record(
+  DrumVoiceSchema,
+  z.array(z.boolean())
+);
+
+/** Zod schema for MeasureConfig */
+export const MeasureConfigSchema = z.object({
+  timeSignature: TimeSignatureSchema.optional(),
+  notes: NotesRecordSchema,
+});
+
+/** Zod schema for GrooveData */
+export const GrooveDataSchema = z.object({
+  timeSignature: TimeSignatureSchema,
+  division: DivisionSchema,
+  tempo: z.number().min(MIN_TEMPO).max(MAX_TEMPO),
+  swing: z.number().min(0).max(100),
+  measures: z.array(MeasureConfigSchema).min(1).max(MAX_MEASURES),
+  title: z.string().max(200).optional(),
+  author: z.string().max(100).optional(),
+  comments: z.string().max(1000).optional(),
+});
+
+/** Type inferred from GrooveDataSchema for runtime-validated data */
+export type ValidatedGrooveData = z.infer<typeof GrooveDataSchema>;
+
+/**
+ * Validate GrooveData at runtime
+ * Returns the validated data or null if invalid
+ */
+export function validateGrooveData(data: unknown): GrooveData | null {
+  const result = GrooveDataSchema.safeParse(data);
+  if (result.success) {
+    return result.data as GrooveData;
+  }
+  return null;
+}
+
+/**
+ * Validate GrooveData and return detailed errors
+ */
+export function validateGrooveDataWithErrors(data: unknown): {
+  success: boolean;
+  data?: GrooveData;
+  errors?: z.ZodError;
+} {
+  const result = GrooveDataSchema.safeParse(data);
+  if (result.success) {
+    return { success: true, data: result.data as GrooveData };
+  }
+  return { success: false, errors: result.error };
+}
 

@@ -13,6 +13,7 @@ import { grooveToABC } from './ABCTranscoder';
 import { renderABC } from './ABCRenderer';
 import { getShareableURL } from './GrooveURLCodec';
 import { GrooveUtils } from './GrooveUtils';
+import { DRUM_VOICE_TO_MIDI, getVelocityForVoice } from './DrumVoiceConfig';
 
 // Lazy-loaded heavy dependencies (loaded on demand)
 // These are dynamically imported to reduce initial bundle size
@@ -47,6 +48,33 @@ async function getMp3Encoder() {
     LamejsModule = await import('@breezystack/lamejs');
   }
   return LamejsModule.Mp3Encoder;
+}
+
+// ==========================================================================
+// Non-blocking utilities for UI responsiveness during export
+// ==========================================================================
+
+/**
+ * Export progress callback for UI updates
+ */
+export interface ExportProgress {
+  stage: 'preparing' | 'generating' | 'rendering' | 'encoding' | 'finalizing';
+  percent: number;
+  message?: string;
+}
+
+/**
+ * Yield to the main thread to keep UI responsive
+ * Uses requestIdleCallback when available, falls back to setTimeout
+ */
+function yieldToMain(): Promise<void> {
+  return new Promise((resolve) => {
+    if ('requestIdleCallback' in window) {
+      requestIdleCallback(() => resolve(), { timeout: 50 });
+    } else {
+      setTimeout(resolve, 0);
+    }
+  });
 }
 
 /** Export format types */
@@ -185,16 +213,31 @@ function renderSheetMusicToSVG(groove: GrooveData, width: number): string {
 /**
  * Generate complete SVG document with header, sheet music, and footer
  * Matches the print preview structure: title, metadata, sheet music, QR code, URL
+ *
+ * @param groove - The groove data to export
+ * @param options - Export options
+ * @param onProgress - Optional callback for progress updates
  */
 export async function generateSheetMusicSVG(
   groove: GrooveData,
-  options: ImageExportOptions = {}
+  options: ImageExportOptions = {},
+  onProgress?: (progress: ExportProgress) => void
 ): Promise<string> {
   const { width = 800 } = options;
+
+  onProgress?.({ stage: 'preparing', percent: 0, message: 'Preparing export...' });
+  await yieldToMain();
+
   const shareableURL = getShareableURL(groove);
+
+  onProgress?.({ stage: 'generating', percent: 20, message: 'Generating sheet music...' });
+  await yieldToMain();
 
   // Generate sheet music SVG
   const sheetMusicSVG = renderSheetMusicToSVG(groove, width);
+
+  onProgress?.({ stage: 'rendering', percent: 50, message: 'Creating QR code...' });
+  await yieldToMain();
 
   // Generate QR code as data URL (lazy load qrcode library)
   const QRCode = await getQRCode();
@@ -203,6 +246,9 @@ export async function generateSheetMusicSVG(
     margin: 0,
     color: { dark: '#000000', light: '#ffffff' },
   });
+
+  onProgress?.({ stage: 'finalizing', percent: 80, message: 'Finalizing SVG...' });
+  await yieldToMain();
 
   // Parse the sheet music SVG to get dimensions
   const parser = new DOMParser();
@@ -264,6 +310,8 @@ export async function generateSheetMusicSVG(
   </g>
 </svg>`;
 
+  onProgress?.({ stage: 'finalizing', percent: 100, message: 'Complete!' });
+
   return svg;
 }
 
@@ -321,10 +369,16 @@ export async function downloadAsSVG(groove: GrooveData, options: ImageExportOpti
  */
 export async function exportToPNG(
   groove: GrooveData,
-  options: ImageExportOptions = {}
+  options: ImageExportOptions = {},
+  onProgress?: (progress: ExportProgress) => void
 ): Promise<Blob> {
   const { backgroundColor = '#ffffff' } = options;
-  const svgString = await generateSheetMusicSVG(groove, options);
+
+  onProgress?.({ stage: 'generating', percent: 0, message: 'Generating SVG...' });
+  const svgString = await generateSheetMusicSVG(groove, options, onProgress);
+
+  onProgress?.({ stage: 'encoding', percent: 70, message: 'Converting to PNG...' });
+  await yieldToMain();
 
   return new Promise((resolve, reject) => {
     const img = new Image();
@@ -361,6 +415,7 @@ export async function exportToPNG(
       canvas.toBlob(
         (blob) => {
           if (blob) {
+            onProgress?.({ stage: 'finalizing', percent: 100, message: 'Complete!' });
             resolve(blob);
           } else {
             reject(new Error('Failed to create PNG blob'));
@@ -398,10 +453,16 @@ export async function downloadAsPNG(
  */
 export async function exportToPDF(
   groove: GrooveData,
-  options: ImageExportOptions = {}
+  options: ImageExportOptions = {},
+  onProgress?: (progress: ExportProgress) => void
 ): Promise<Blob> {
+  onProgress?.({ stage: 'generating', percent: 0, message: 'Generating SVG...' });
+
   // Generate the complete SVG with all elements
-  const svgString = await generateSheetMusicSVG(groove, options);
+  const svgString = await generateSheetMusicSVG(groove, options, onProgress);
+
+  onProgress?.({ stage: 'rendering', percent: 60, message: 'Loading PDF library...' });
+  await yieldToMain();
 
   // Lazy load jsPDF
   const jsPDF = await getJsPDF();
@@ -453,12 +514,15 @@ export async function exportToPDF(
 
       URL.revokeObjectURL(url);
 
+      onProgress?.({ stage: 'encoding', percent: 80, message: 'Creating PDF...' });
+
       // Add image to PDF
       const imgData = canvas.toDataURL('image/png');
       pdf.addImage(imgData, 'PNG', xPos, yPos, imgWidth, imgHeight);
 
       // Return as blob
       const pdfBlob = pdf.output('blob');
+      onProgress?.({ stage: 'finalizing', percent: 100, message: 'Complete!' });
       resolve(pdfBlob);
     };
 
@@ -487,53 +551,7 @@ export async function downloadAsPDF(
 // MIDI Export
 // ============================================================================
 
-/**
- * General MIDI drum note mapping
- * Channel 10 (index 9) is the standard drum channel
- */
-const DRUM_VOICE_TO_MIDI: Record<DrumVoice, number> = {
-  // Hi-Hat variations
-  'hihat-closed': 42, // Closed Hi-Hat
-  'hihat-open': 46, // Open Hi-Hat
-  'hihat-accent': 42, // Closed Hi-Hat (with higher velocity)
-  'hihat-foot': 44, // Pedal Hi-Hat
-  'hihat-metronome-normal': 37, // Side Stick (as metronome click)
-  'hihat-metronome-accent': 37, // Side Stick (as metronome accent)
-  'hihat-cross': 42, // Closed Hi-Hat
-  // Snare variations
-  'snare-normal': 38, // Acoustic Snare
-  'snare-accent': 38, // Acoustic Snare (with higher velocity)
-  'snare-ghost': 38, // Acoustic Snare (with lower velocity)
-  'snare-cross-stick': 37, // Side Stick
-  'snare-flam': 38, // Acoustic Snare
-  'snare-rim': 37, // Side Stick
-  'snare-drag': 38, // Acoustic Snare
-  'snare-buzz': 38, // Acoustic Snare
-  // Kick
-  kick: 36, // Bass Drum 1
-  // Toms
-  'tom-rack': 48, // Hi-Mid Tom
-  'tom-floor': 43, // Low Floor Tom
-  'tom-10': 45, // Low Tom
-  'tom-16': 41, // Low Floor Tom
-  // Cymbals
-  crash: 49, // Crash Cymbal 1
-  ride: 51, // Ride Cymbal 1
-  'ride-bell': 53, // Ride Bell
-  // Percussion
-  cowbell: 56, // Cowbell
-  stacker: 52, // Chinese Cymbal (closest to stacker)
-};
-
-/**
- * Get velocity for drum voice (0-127)
- */
-function getVelocityForVoice(voice: DrumVoice): number {
-  if (voice.includes('ghost')) return 50;
-  if (voice.includes('accent')) return 120;
-  if (voice.includes('metronome')) return 80;
-  return 100;
-}
+// MIDI note mapping and velocity imported from DrumVoiceConfig
 
 /**
  * Export groove as MIDI file
