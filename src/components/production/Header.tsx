@@ -1,13 +1,15 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Info, Sun, Moon, Save, FolderOpen, Library, Settings, Menu, MoreVertical } from 'lucide-react';
+import { Info, Sun, Moon, Save, FolderOpen, Library, Settings, Menu, MoreVertical, Cable } from 'lucide-react';
 import { Button } from '../ui/button';
 import { useTheme } from '../../contexts/ThemeContext';
 import { AutoSpeedUpModal } from './AutoSpeedUpModal';
 import { AboutModal } from './AboutModal';
 import { MetronomeOptionsMenu } from './MetronomeOptionsMenu';
 import { MobileMoreMenu } from './MobileMoreMenu';
+import { MIDISettingsModal } from './MIDISettingsModal';
 import { AutoSpeedUpConfig, MetronomeConfig, MetronomeFrequency, MetronomeOffsetClick } from '../../types';
+import { MIDIConfig, MIDIDeviceInfo } from '../../midi/types';
 import { trackThemeToggle, trackAutoSpeedUpConfigOpen } from '../../utils/analytics';
 
 interface HeaderProps {
@@ -30,6 +32,12 @@ interface HeaderProps {
   onOpenMyGrooves?: () => void;
   onOpenGrooveLibrary?: () => void;
   savedGroovesCount?: number;
+  // MIDI props
+  midiConfig?: MIDIConfig;
+  midiDevices?: MIDIDeviceInfo[];
+  midiCurrentDevice?: MIDIDeviceInfo | null;
+  onMIDIConfigChange?: (updates: Partial<MIDIConfig>) => void;
+  onMIDIConnectDevice?: (deviceId: string) => void;
   // Mobile sidebar control
   onToggleSidebar?: () => void;
 }
@@ -52,6 +60,11 @@ export function Header({
   onOpenMyGrooves,
   onOpenGrooveLibrary,
   savedGroovesCount = 0,
+  midiConfig,
+  midiDevices = [],
+  midiCurrentDevice = null,
+  onMIDIConfigChange,
+  onMIDIConnectDevice,
   onToggleSidebar,
 }: HeaderProps) {
   const metronomeOptions: Array<'off' | '4th' | '8th' | '16th'> = ['off', '4th', '8th', '16th'];
@@ -60,6 +73,7 @@ export function Header({
   const [showAboutModal, setShowAboutModal] = useState(false);
   const [showMetronomeOptions, setShowMetronomeOptions] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const [showMIDIModal, setShowMIDIModal] = useState(false);
 
   return (
     <header className="flex items-center justify-between px-4 md:px-6 py-3 md:py-4 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
@@ -219,6 +233,23 @@ export function Header({
             <Info className="w-4 h-4 mr-2" />
             About
           </Button>
+
+          {/* MIDI Settings Button */}
+          {midiConfig && onMIDIConfigChange && onMIDIConnectDevice && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowMIDIModal(true)}
+              className={`transition-colors ${
+                midiCurrentDevice
+                  ? 'text-purple-600 dark:text-purple-400'
+                  : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
+              }`}
+            >
+              <Cable className="w-4 h-4 mr-2" />
+              MIDI
+            </Button>
+          )}
         </div>
 
         {/* Theme toggle - always visible */}
@@ -274,6 +305,19 @@ export function Header({
         isOpen={showAboutModal}
         onClose={() => setShowAboutModal(false)}
       />
+
+      {/* MIDI Settings Modal */}
+      {midiConfig && onMIDIConfigChange && onMIDIConnectDevice && (
+        <MIDISettingsModal
+          isOpen={showMIDIModal}
+          onClose={() => setShowMIDIModal(false)}
+          config={midiConfig}
+          onConfigChange={onMIDIConfigChange}
+          devices={midiDevices}
+          currentDevice={midiCurrentDevice}
+          onConnectDevice={onMIDIConnectDevice}
+        />
+      )}
     </header>
   );
 }
