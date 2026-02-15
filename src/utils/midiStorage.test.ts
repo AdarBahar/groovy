@@ -4,7 +4,7 @@
  * Verifies localStorage persistence of MIDI settings
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { loadMIDIConfig, saveMIDIConfig, clearMIDIConfig } from './midiStorage';
 import { DEFAULT_MIDI_CONFIG } from '../midi/types';
 
