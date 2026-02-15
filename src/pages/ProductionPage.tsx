@@ -35,6 +35,7 @@ import { MyGroovesModal } from '../components/production/MyGroovesModal';
 import { SaveGrooveModal } from '../components/production/SaveGrooveModal';
 import { GrooveLibraryModal } from '../components/production/GrooveLibraryModal';
 import { ShareModal } from '../components/production/ShareModal';
+import { MIDITrackingDebug } from '../components/production/MIDITrackingDebug';
 import { Button } from '../components/ui/button';
 
 import './ProductionPage.css';
@@ -648,6 +649,9 @@ export default function ProductionPage() {
         isOpen={isShareModalOpen}
         onClose={() => setIsShareModalOpen(false)}
       />
+
+      {/* MIDI Tracking Debug POC - Remove this component when visualization is working */}
+      <MIDITrackingDebug />
     </div>
   );
 }
