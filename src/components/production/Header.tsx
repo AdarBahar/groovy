@@ -234,21 +234,26 @@ export function Header({
             About
           </Button>
 
-          {/* MIDI Settings Button */}
+          {/* MIDI Settings Button - Beta */}
           {midiConfig && onMIDIConfigChange && onMIDIConnectDevice && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setShowMIDIModal(true)}
-              className={`transition-colors ${
-                midiCurrentDevice
-                  ? 'text-purple-600 dark:text-purple-400'
-                  : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
-              }`}
-            >
-              <Cable className="w-4 h-4 mr-2" />
-              MIDI
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowMIDIModal(true)}
+                className={`transition-colors ${
+                  midiCurrentDevice
+                    ? 'text-purple-600 dark:text-purple-400'
+                    : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
+                }`}
+              >
+                <Cable className="w-4 h-4 mr-2" />
+                MIDI
+              </Button>
+              <span className="text-xs font-semibold px-2 py-1 rounded bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300">
+                Beta
+              </span>
+            </div>
           )}
         </div>
 
