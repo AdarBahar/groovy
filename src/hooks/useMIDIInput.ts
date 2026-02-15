@@ -71,6 +71,11 @@ export function useMIDIInput(synth: DrumSynth): UseMIDIInputReturn {
         setCurrentDevice(null);
       }
     };
+
+    // Cleanup: Reset callback on unmount
+    return () => {
+      midiAccess.onDeviceListChange = null;
+    };
   }, [isConnected, config.selectedDeviceId]);
 
   // Handle drum kit changes
