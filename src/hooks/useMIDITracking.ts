@@ -16,19 +16,30 @@ export function useMIDITracking(
   currentPosition: number
 ) {
   const playStartTimeRef = useRef<number | null>(null);
+  const lastStateRef = useRef<{ isPlaying: boolean; trackingEnabled: boolean }>({
+    isPlaying: false,
+    trackingEnabled: false,
+  });
 
   // Enable/disable tracker based on playback state
   useEffect(() => {
-    if (isPlaying && trackingEnabled) {
-      // Start tracking
+    const lastState = lastStateRef.current;
+    const shouldEnable = isPlaying && trackingEnabled;
+    const wasEnabled = lastState.isPlaying && lastState.trackingEnabled;
+
+    // Only enable if transitioning from disabled to enabled
+    if (shouldEnable && !wasEnabled) {
       playStartTimeRef.current = Date.now();
       const pattern = groove.measures[0]; // TODO: Handle multi-measure patterns
       performanceTracker.enable(pattern, groove.tempo, playStartTimeRef.current);
-    } else {
-      // Stop tracking
+    }
+    // Only disable if transitioning from enabled to disabled
+    else if (!shouldEnable && wasEnabled) {
       performanceTracker.disable();
       playStartTimeRef.current = null;
     }
+
+    lastStateRef.current = { isPlaying, trackingEnabled };
   }, [isPlaying, trackingEnabled, groove]);
 
   // Listen for MIDI hits and analyze them
