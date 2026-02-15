@@ -71,6 +71,13 @@ export function MIDISettingsModal({
           <DialogDescription>Configure your MIDI input device and playback options</DialogDescription>
         </DialogHeader>
 
+        {/* Beta Notice */}
+        <div className="p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-md">
+          <p className="text-sm text-amber-800 dark:text-amber-200">
+            <span className="font-semibold">⚠️ Beta Feature:</span> MIDI support is experimental. Please report any issues you encounter.
+          </p>
+        </div>
+
         <div className="space-y-4">
           {/* Device Selector */}
           <div className="space-y-2">
