@@ -135,3 +135,33 @@
     }
   }
 }
+
+/* Sheet Music Note Highlighting - Good Hit (green glow) */
+.abcjs-note.midi-tracking-good {
+  animation: midi-note-good-glow 500ms ease-out !important;
+  filter: drop-shadow(0 0 4px rgba(34, 197, 94, 0.8)) !important;
+}
+
+@keyframes midi-note-good-glow {
+  0%, 100% {
+    filter: drop-shadow(0 0 0px rgba(34, 197, 94, 0));
+  }
+  50% {
+    filter: drop-shadow(0 0 8px rgba(34, 197, 94, 1));
+  }
+}
+
+/* Sheet Music Note Highlighting - Bad Hit (red glow) */
+.abcjs-note.midi-tracking-bad {
+  animation: midi-note-bad-glow 500ms ease-out !important;
+  filter: drop-shadow(0 0 4px rgba(239, 68, 68, 0.8)) !important;
+}
+
+@keyframes midi-note-bad-glow {
+  0%, 100% {
+    filter: drop-shadow(0 0 0px rgba(239, 68, 68, 0));
+  }
+  50% {
+    filter: drop-shadow(0 0 8px rgba(239, 68, 68, 1));
+  }
+}
