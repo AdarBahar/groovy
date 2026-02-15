@@ -50,17 +50,6 @@ export function useMIDIInput(synth: DrumSynth): UseMIDIInputReturn {
         if (config.selectedDeviceId && initialDevices.some((d) => d.id === config.selectedDeviceId)) {
           connectDevice(config.selectedDeviceId);
         }
-
-        // Listen for device list changes
-        midiAccess.onDeviceListChange = (updatedDevices) => {
-          setDevices(updatedDevices);
-
-          // If current device disconnected, clear connection
-          if (isConnected && !updatedDevices.some((d) => d.id === config.selectedDeviceId)) {
-            setIsConnected(false);
-            setCurrentDevice(null);
-          }
-        };
       }
     };
 
@@ -69,7 +58,20 @@ export function useMIDIInput(synth: DrumSynth): UseMIDIInputReturn {
     return () => {
       midiAccess.disconnect();
     };
-  }, [config.selectedDeviceId]);
+  }, []);
+
+  // Handle device list changes and device disconnections
+  useEffect(() => {
+    midiAccess.onDeviceListChange = (updatedDevices) => {
+      setDevices(updatedDevices);
+
+      // If current device disconnected, clear connection
+      if (isConnected && config.selectedDeviceId && !updatedDevices.some((d) => d.id === config.selectedDeviceId)) {
+        setIsConnected(false);
+        setCurrentDevice(null);
+      }
+    };
+  }, [isConnected, config.selectedDeviceId]);
 
   // Handle drum kit changes
   useEffect(() => {
@@ -81,18 +83,22 @@ export function useMIDIInput(synth: DrumSynth): UseMIDIInputReturn {
     midiHandler.setNoteOnHandler((note, velocity, _currentVoice, timestamp) => {
       const voice = midiDrumMapping.getVoiceFromNote(note);
 
-      if (voice && config.throughEnabled) {
-        // Play sound immediately (time=0)
-        synth.playDrum(voice, 0, velocity);
+      if (voice) {
+        if (config.throughEnabled) {
+          // Resume AudioContext if suspended (required for user interaction on Web Audio API)
+          synth.resume();
 
-        // Emit event for UI feedback
+          // Play sound immediately (time=0)
+          synth.playDrum(voice, 0, velocity);
+          console.log(`MIDI: Note ${note} → ${voice} (velocity: ${velocity})`);
+        }
+
+        // Emit event for UI feedback (always emit, independent of audio playback)
         window.dispatchEvent(
           new CustomEvent('midi-note-hit', {
             detail: { voice, velocity, timestamp },
           })
         );
-
-        console.log(`MIDI: Note ${note} → ${voice} (velocity: ${velocity})`);
       }
     });
 

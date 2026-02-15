@@ -5,7 +5,7 @@
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
-import { performanceTracker, type PerformanceStats } from './PerformanceTracker';
+import { performanceTracker } from './PerformanceTracker';
 import type { GroovePattern } from './PerformanceTracker';
 
 describe('PerformanceTracker', () => {
@@ -14,7 +14,7 @@ describe('PerformanceTracker', () => {
       'kick': [true, false, true, false],
       'snare-normal': [false, true, false, true],
       'hihat-closed': [true, true, true, true],
-    },
+    } as any,
   };
 
   beforeEach(() => {
@@ -90,7 +90,7 @@ describe('PerformanceTracker', () => {
 
     it('penalizes voices not in the pattern', () => {
       // Voices not in pattern get 30 note accuracy
-      const result = performanceTracker.analyzeHit('tom-low', Date.now());
+      const result = performanceTracker.analyzeHit('tom-floor', Date.now());
 
       expect(result!.noteAccuracy).toBeLessThan(50); // Lower score for off-pattern voice
     });

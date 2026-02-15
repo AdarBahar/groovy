@@ -297,6 +297,9 @@ export function Header({
             onMetronomeCountInChange={onMetronomeCountInChange}
             onMetronomeVolumeChange={onMetronomeVolumeChange}
             onMetronomeOffsetClickChange={onMetronomeOffsetClickChange}
+            // MIDI props for mobile menu
+            midiCurrentDevice={midiCurrentDevice}
+            onShowMIDISettings={() => setShowMIDIModal(true)}
           />
         </div>
       </div>
