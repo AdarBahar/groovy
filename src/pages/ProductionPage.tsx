@@ -11,6 +11,8 @@ import { usePlaybackHighlight } from '../hooks/usePlaybackHighlight';
 import { useResponsive } from '../hooks/useMediaQuery';
 import { useMIDIInput } from '../hooks/useMIDIInput';
 import { useMIDIFeedback } from '../hooks/useMIDIFeedback';
+import { useMIDITracking } from '../hooks/useMIDITracking';
+import { useMIDITrackingFeedback } from '../hooks/useMIDITrackingFeedback';
 import * as analytics from '../utils/analytics';
 import { DrumSynth } from '../core/DrumSynth';
 import '../styles/midi.css';
@@ -73,6 +75,7 @@ export default function ProductionPage() {
   const [countdownNumber, setCountdownNumber] = useState<number | null>(null);
   const [countingInButton, setCountingInButton] = useState<'play' | 'playPlus' | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [midiTrackingEnabled, setMidiTrackingEnabled] = useState(false);
   const playStartTimeRef = useRef<number | null>(null);
   const countInTimeoutRef = useRef<number | null>(null);
   const metadataFieldsRef = useRef<MetadataFieldsRef>(null);
@@ -132,6 +135,12 @@ export default function ProductionPage() {
 
   // Use MIDI Feedback hook for visual feedback
   useMIDIFeedback();
+
+  // Use MIDI Tracking hook to analyze MIDI hits
+  useMIDITracking(midiTrackingEnabled, isPlaying, groove, currentPosition);
+
+  // Use MIDI Tracking Feedback hook for green/red cell visualization
+  useMIDITrackingFeedback();
 
   // URL sync
   useURLSync(groove, setGroove);
@@ -508,6 +517,9 @@ export default function ProductionPage() {
                 elapsedTime={elapsedTime}
                 countdownNumber={countdownNumber}
                 countingInButton={countingInButton}
+                midiConnected={!!midiInput.currentDevice}
+                trackingEnabled={midiTrackingEnabled}
+                onTrackingToggle={() => setMidiTrackingEnabled(!midiTrackingEnabled)}
               />
 
               {/* Metadata Details - Title, Author, Comments */}

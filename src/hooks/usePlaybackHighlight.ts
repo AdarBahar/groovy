@@ -9,8 +9,8 @@ import { useEffect, useRef } from 'react';
  */
 export function usePlaybackHighlight(currentPosition: number, isPlaying: boolean) {
   const prevPositionRef = useRef<number>(-1);
-  const prevCellRef = useRef<Element | null>(null);
-  const prevIconContainerRef = useRef<Element | null>(null);
+  const prevCellsRef = useRef<Element[]>([]);
+  const prevIconContainersRef = useRef<Element[]>([]);
 
   useEffect(() => {
     // Skip if position hasn't changed
@@ -18,36 +18,42 @@ export function usePlaybackHighlight(currentPosition: number, isPlaying: boolean
       return;
     }
 
-    // Remove highlight from previous cell
-    if (prevCellRef.current) {
-      prevCellRef.current.classList.remove('ring-2', 'ring-purple-400', 'ring-opacity-50');
-    }
-    if (prevIconContainerRef.current) {
-      prevIconContainerRef.current.classList.remove('playing');
-    }
+    // Remove highlight from previous cells (entire column)
+    prevCellsRef.current.forEach(cell => {
+      cell.classList.remove('ring-2', 'ring-purple-400', 'ring-opacity-50');
+    });
+    prevIconContainersRef.current.forEach(container => {
+      container.classList.remove('playing');
+    });
 
-    // Add highlight to new cell if playing and position is valid
+    // Add highlight to new cells if playing and position is valid
     if (isPlaying && currentPosition >= 0) {
-      const newCell = document.querySelector(`[data-absolute-pos="${currentPosition}"]`);
-      if (newCell) {
-        newCell.classList.add('ring-2', 'ring-purple-400', 'ring-opacity-50');
-        prevCellRef.current = newCell;
+      const newCells = document.querySelectorAll(`[data-absolute-pos="${currentPosition}"]`);
+      if (newCells.length > 0) {
+        // Convert NodeList to Array
+        const cellArray = Array.from(newCells);
+        cellArray.forEach(cell => {
+          cell.classList.add('ring-2', 'ring-purple-400', 'ring-opacity-50');
+        });
+        prevCellsRef.current = cellArray;
 
-        // Also highlight the note icon container inside the cell
-        const iconContainer = newCell.querySelector('.note-icon-container');
-        if (iconContainer) {
-          iconContainer.classList.add('playing');
-          prevIconContainerRef.current = iconContainer;
-        } else {
-          prevIconContainerRef.current = null;
-        }
+        // Also highlight the note icon containers inside each cell
+        const iconContainers: Element[] = [];
+        cellArray.forEach(cell => {
+          const iconContainer = cell.querySelector('.note-icon-container');
+          if (iconContainer) {
+            iconContainer.classList.add('playing');
+            iconContainers.push(iconContainer);
+          }
+        });
+        prevIconContainersRef.current = iconContainers;
       } else {
-        prevCellRef.current = null;
-        prevIconContainerRef.current = null;
+        prevCellsRef.current = [];
+        prevIconContainersRef.current = [];
       }
     } else {
-      prevCellRef.current = null;
-      prevIconContainerRef.current = null;
+      prevCellsRef.current = [];
+      prevIconContainersRef.current = [];
     }
 
     prevPositionRef.current = currentPosition;
@@ -56,14 +62,14 @@ export function usePlaybackHighlight(currentPosition: number, isPlaying: boolean
   // Cleanup on unmount or when playback stops
   useEffect(() => {
     if (!isPlaying) {
-      if (prevCellRef.current) {
-        prevCellRef.current.classList.remove('ring-2', 'ring-purple-400', 'ring-opacity-50');
-        prevCellRef.current = null;
-      }
-      if (prevIconContainerRef.current) {
-        prevIconContainerRef.current.classList.remove('playing');
-        prevIconContainerRef.current = null;
-      }
+      prevCellsRef.current.forEach(cell => {
+        cell.classList.remove('ring-2', 'ring-purple-400', 'ring-opacity-50');
+      });
+      prevIconContainersRef.current.forEach(container => {
+        container.classList.remove('playing');
+      });
+      prevCellsRef.current = [];
+      prevIconContainersRef.current = [];
       prevPositionRef.current = -1;
     }
   }, [isPlaying]);
@@ -71,12 +77,12 @@ export function usePlaybackHighlight(currentPosition: number, isPlaying: boolean
   // Cleanup on unmount
   useEffect(() => {
     return () => {
-      if (prevCellRef.current) {
-        prevCellRef.current.classList.remove('ring-2', 'ring-purple-400', 'ring-opacity-50');
-      }
-      if (prevIconContainerRef.current) {
-        prevIconContainerRef.current.classList.remove('playing');
-      }
+      prevCellsRef.current.forEach(cell => {
+        cell.classList.remove('ring-2', 'ring-purple-400', 'ring-opacity-50');
+      });
+      prevIconContainersRef.current.forEach(container => {
+        container.classList.remove('playing');
+      });
     };
   }, []);
 }

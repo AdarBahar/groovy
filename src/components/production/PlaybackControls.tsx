@@ -16,6 +16,9 @@ interface PlaybackControlsProps {
   elapsedTime?: string;
   countdownNumber?: number | null;
   countingInButton?: 'play' | 'playPlus' | null;
+  midiConnected?: boolean;
+  trackingEnabled?: boolean;
+  onTrackingToggle?: () => void;
 }
 
 export function PlaybackControls({
@@ -31,6 +34,9 @@ export function PlaybackControls({
   elapsedTime = '0:00',
   countdownNumber,
   countingInButton,
+  midiConnected = false,
+  trackingEnabled = false,
+  onTrackingToggle,
 }: PlaybackControlsProps) {
   return (
     <div className="flex flex-col lg:flex-row lg:items-center gap-4 lg:gap-8">
@@ -87,6 +93,23 @@ export function PlaybackControls({
             {isPlaying ? 'Loop Active' : 'Stopped'}
           </div>
         </div>
+
+        {/* MIDI Tracking Toggle - only visible when MIDI device is connected */}
+        {midiConnected && (
+          <div className="flex items-center gap-2 px-3 py-2 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+            <label className="flex items-center gap-2 text-sm cursor-pointer">
+              <input
+                type="checkbox"
+                checked={trackingEnabled}
+                onChange={onTrackingToggle}
+                className="w-4 h-4 text-purple-600 rounded focus:ring-purple-500 cursor-pointer"
+              />
+              <span className="text-slate-700 dark:text-slate-300">
+                MIDI Tracking
+              </span>
+            </label>
+          </div>
+        )}
       </div>
 
       {/* Sliders - stacked on mobile, side by side on desktop */}

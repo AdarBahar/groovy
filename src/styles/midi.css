@@ -70,3 +70,68 @@
     }
   }
 }
+
+/* MIDI Tracking Feedback - Good Hit (score > 70) */
+.midi-tracking-good {
+  animation: midi-good-flash 500ms ease-out;
+}
+
+@keyframes midi-good-flash {
+  0%, 100% {
+    background-color: transparent;
+    transform: scale(1);
+  }
+  50% {
+    background-color: rgba(34, 197, 94, 0.5); /* green-500 */
+    transform: scale(1.05);
+  }
+}
+
+/* MIDI Tracking Feedback - Bad Hit (score <= 70) */
+.midi-tracking-bad {
+  animation: midi-bad-flash 500ms ease-out;
+}
+
+@keyframes midi-bad-flash {
+  0%, 100% {
+    background-color: transparent;
+    transform: scale(1);
+  }
+  50% {
+    background-color: rgba(239, 68, 68, 0.5); /* red-500 */
+    transform: scale(1.05);
+  }
+}
+
+/* Dark mode support for MIDI tracking feedback */
+@media (prefers-color-scheme: dark) {
+  .midi-tracking-good {
+    animation: midi-good-flash-dark 500ms ease-out;
+  }
+
+  @keyframes midi-good-flash-dark {
+    0%, 100% {
+      background-color: transparent;
+      transform: scale(1);
+    }
+    50% {
+      background-color: rgba(34, 197, 94, 0.4); /* Slightly darker for dark mode */
+      transform: scale(1.05);
+    }
+  }
+
+  .midi-tracking-bad {
+    animation: midi-bad-flash-dark 500ms ease-out;
+  }
+
+  @keyframes midi-bad-flash-dark {
+    0%, 100% {
+      background-color: transparent;
+      transform: scale(1);
+    }
+    50% {
+      background-color: rgba(239, 68, 68, 0.4);
+      transform: scale(1.05);
+    }
+  }
+}
