@@ -136,32 +136,34 @@
   }
 }
 
-/* Sheet Music Note Highlighting - Good Hit (green glow) */
+/* Sheet Music Note Highlighting - Good Hit (green outline) */
 .abcjs-note.midi-tracking-good {
-  animation: midi-note-good-glow 500ms ease-out !important;
-  filter: drop-shadow(0 0 4px rgba(34, 197, 94, 0.8)) !important;
+  animation: midi-note-good-highlight 500ms ease-out !important;
 }
 
-@keyframes midi-note-good-glow {
+@keyframes midi-note-good-highlight {
   0%, 100% {
-    filter: drop-shadow(0 0 0px rgba(34, 197, 94, 0));
+    stroke: none;
+    stroke-width: 0;
   }
   50% {
-    filter: drop-shadow(0 0 8px rgba(34, 197, 94, 1));
+    stroke: #22c55e;
+    stroke-width: 2;
   }
 }
 
-/* Sheet Music Note Highlighting - Bad Hit (red glow) */
+/* Sheet Music Note Highlighting - Bad Hit (red outline) */
 .abcjs-note.midi-tracking-bad {
-  animation: midi-note-bad-glow 500ms ease-out !important;
-  filter: drop-shadow(0 0 4px rgba(239, 68, 68, 0.8)) !important;
+  animation: midi-note-bad-highlight 500ms ease-out !important;
 }
 
-@keyframes midi-note-bad-glow {
+@keyframes midi-note-bad-highlight {
   0%, 100% {
-    filter: drop-shadow(0 0 0px rgba(239, 68, 68, 0));
+    stroke: none;
+    stroke-width: 0;
   }
   50% {
-    filter: drop-shadow(0 0 8px rgba(239, 68, 68, 1));
+    stroke: #ef4444;
+    stroke-width: 2;
   }
 }
