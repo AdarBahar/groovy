@@ -21,11 +21,17 @@ export function useMIDITrackingFeedback() {
         // Fallback: if no sheet music container, try to find any SVG in the page
         // This handles cases where the attribute might not be set
         const anyContainer = document.querySelector('div:has(> svg)');
-        if (!anyContainer) return;
+        if (!anyContainer) {
+          console.log('[useMIDITrackingFeedback] No SVG container found');
+          return;
+        }
       }
 
       const svg = (svgContainer || document.querySelector('div:has(> svg)'))?.querySelector('svg');
-      if (!svg) return;
+      if (!svg) {
+        console.log('[useMIDITrackingFeedback] No SVG element found');
+        return;
+      }
 
       // Determine color based on overall score
       const isGoodHit = analysis.overall > 70;
@@ -36,26 +42,37 @@ export function useMIDITrackingFeedback() {
       // We'll apply the highlight to currently visible notes that match the voice timing
       const notes = Array.from(svg.querySelectorAll('.abcjs-note'));
 
-      if (notes.length === 0) return;
+      console.log(`[useMIDITrackingFeedback] Position: ${position}, Found ${notes.length} notes, Score: ${analysis.overall}, Class: ${className}`);
+
+      if (notes.length === 0) {
+        console.log('[useMIDITrackingFeedback] No notes found in SVG!');
+        return;
+      }
 
       // Calculate which note index corresponds to this position
       // This is approximate since rests don't have elements, but it's a good heuristic
       const noteIndex = Math.floor(position / 2); // Adjust divisor based on your time signature
       const targetNote = notes[noteIndex];
 
+      console.log(`[useMIDITrackingFeedback] Calculated noteIndex: ${noteIndex}, Target exists: ${!!targetNote}`);
+
       if (targetNote) {
+        console.log(`[useMIDITrackingFeedback] Adding class "${className}" to note ${noteIndex}`);
         targetNote.classList.add(className);
 
         // Remove after 500ms animation completes
         setTimeout(() => {
+          console.log(`[useMIDITrackingFeedback] Removing class "${className}" from note ${noteIndex}`);
           targetNote.classList.remove(className);
         }, 500);
       } else {
         // If we can't find the exact note, highlight the last visible note as feedback
         const lastNote = notes[notes.length - 1];
         if (lastNote) {
+          console.log(`[useMIDITrackingFeedback] Adding class "${className}" to last note (index ${notes.length - 1})`);
           lastNote.classList.add(className);
           setTimeout(() => {
+            console.log(`[useMIDITrackingFeedback] Removing class "${className}" from last note`);
             lastNote.classList.remove(className);
           }, 500);
         }
