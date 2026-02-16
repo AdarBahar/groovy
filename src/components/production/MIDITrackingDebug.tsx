@@ -99,14 +99,21 @@ export function MIDITrackingDebug() {
     const className = isGood ? 'midi-tracking-good' : 'midi-tracking-bad';
 
     console.log(`Highlighting note ${noteIndex} as ${className}`);
+    console.log('Note element:', note.element);
+    console.log('Element tag:', note.element.tagName);
+    console.log('Element classes before:', note.element.className);
 
     // Add highlight
     note.element.classList.add(className);
+    console.log('Element classes after add:', note.element.className);
+    console.log('Computed style stroke:', window.getComputedStyle(note.element).stroke);
+
     setIsHighlighting(true);
 
     // Remove after animation
     setTimeout(() => {
       note.element.classList.remove(className);
+      console.log('Element classes after remove:', note.element.className);
       setIsHighlighting(false);
     }, 500);
   };
@@ -163,7 +170,7 @@ export function MIDITrackingDebug() {
 
       {/* Test Controls */}
       <div className="mb-4 p-3 bg-slate-50 dark:bg-slate-700/30 rounded">
-        <p className="text-sm font-semibold mb-2 text-slate-700 dark:text-slate-300">Test Highlighting</p>
+        <p className="text-sm font-semibold mb-2 text-slate-700 dark:text-slate-300">Test Highlighting (CSS)</p>
         <div className="space-y-2">
           {foundNotes.length > 0 ? (
             <>
@@ -204,6 +211,33 @@ export function MIDITrackingDebug() {
             </>
           ) : (
             <p className="text-xs text-slate-500 dark:text-slate-400">No notes found to test</p>
+          )}
+        </div>
+
+        {/* Inline Style Test */}
+        <p className="text-sm font-semibold mb-2 mt-3 text-slate-700 dark:text-slate-300">Test Inline Styles (Fallback)</p>
+        <div className="space-y-2">
+          {foundNotes.length > 0 ? (
+            <Button
+              onClick={() => {
+                const note = foundNotes[0]?.element;
+                if (note) {
+                  console.log('Testing inline style...');
+                  note.style.stroke = '#22c55e';
+                  note.style.strokeWidth = '3';
+                  setTimeout(() => {
+                    note.style.stroke = '';
+                    note.style.strokeWidth = '';
+                  }, 500);
+                }
+              }}
+              size="sm"
+              className="w-full bg-blue-600 hover:bg-blue-700"
+            >
+              Test Inline Stroke on N0 (Blue)
+            </Button>
+          ) : (
+            <p className="text-xs text-slate-500 dark:text-slate-400">No notes found</p>
           )}
         </div>
       </div>
