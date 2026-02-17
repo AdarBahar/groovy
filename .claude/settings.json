@@ -4,7 +4,8 @@
       "Bash(wc:*)",
       "Bash(grep:*)",
       "Bash(du:*)",
-      "Bash(gh issue view:*)"
+      "Bash(gh issue view:*)",
+      "Bash(GIT_SSH_COMMAND=\"echo ''test''\" git push -u origin feature/issues-65-66-performance-code-quality)"
     ]
   }
 }

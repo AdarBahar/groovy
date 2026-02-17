@@ -1,0 +1,72 @@
+/**
+ * MIDI Visual Feedback Styles
+ *
+ * Styles for visual feedback when MIDI notes are received and played
+ */
+
+/* MIDI hit animation - highlights the drum voice when a note is triggered */
+.midi-hit {
+  animation: midi-hit-flash 0.2s ease-out;
+}
+
+@keyframes midi-hit-flash {
+  0% {
+    background-color: rgba(168, 85, 247, 0.3);
+    transform: scale(1);
+  }
+  50% {
+    background-color: rgba(168, 85, 247, 0.5);
+    transform: scale(1.02);
+  }
+  100% {
+    background-color: transparent;
+    transform: scale(1);
+  }
+}
+
+/* MIDI status indicator pulse animation */
+.midi-status-pulse {
+  animation: midi-pulse 2s infinite;
+}
+
+@keyframes midi-pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* MIDI connection indicator */
+.midi-connected {
+  color: #10b981;
+  font-weight: 500;
+}
+
+.midi-disconnected {
+  color: #6b7280;
+  font-weight: 400;
+}
+
+/* Dark mode support for MIDI feedback */
+@media (prefers-color-scheme: dark) {
+  .midi-hit {
+    animation: midi-hit-flash-dark 0.2s ease-out;
+  }
+
+  @keyframes midi-hit-flash-dark {
+    0% {
+      background-color: rgba(168, 85, 247, 0.4);
+      transform: scale(1);
+    }
+    50% {
+      background-color: rgba(168, 85, 247, 0.6);
+      transform: scale(1.02);
+    }
+    100% {
+      background-color: transparent;
+      transform: scale(1);
+    }
+  }
+}

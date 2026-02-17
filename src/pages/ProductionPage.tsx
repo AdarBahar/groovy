@@ -9,7 +9,11 @@ import { useGrooveActions } from '../hooks/useGrooveActions';
 import { useMyGrooves } from '../hooks/useMyGrooves';
 import { usePlaybackHighlight } from '../hooks/usePlaybackHighlight';
 import { useResponsive } from '../hooks/useMediaQuery';
+import { useMIDIInput } from '../hooks/useMIDIInput';
+import { useMIDIFeedback } from '../hooks/useMIDIFeedback';
 import * as analytics from '../utils/analytics';
+import { DrumSynth } from '../core/DrumSynth';
+import '../styles/midi.css';
 
 // Core components - drum grid and sheet music
 import { DrumGridDark } from '../components/production/DrumGridDark';
@@ -118,6 +122,16 @@ export default function ProductionPage() {
     setMetronomeVolume,
     setMetronomeOffsetClick,
   } = useGrooveEngine();
+
+  // Create synth instance for MIDI input
+  // Note: useRef to prevent re-initialization on every render
+  const synthRef = useRef(new DrumSynth());
+
+  // Use MIDI Input hook
+  const midiInput = useMIDIInput(synthRef.current);
+
+  // Use MIDI Feedback hook for visual feedback
+  useMIDIFeedback();
 
   // URL sync
   useURLSync(groove, setGroove);
@@ -454,6 +468,11 @@ export default function ProductionPage() {
         onOpenMyGrooves={() => { analytics.trackMyGroovesOpen(); setIsMyGroovesModalOpen(true); }}
         onOpenGrooveLibrary={() => { analytics.trackLibraryOpen(); setIsGrooveLibraryModalOpen(true); }}
         savedGroovesCount={myGrooves.grooves.length}
+        midiConfig={midiInput.config}
+        midiDevices={midiInput.devices}
+        midiCurrentDevice={midiInput.currentDevice}
+        onMIDIConfigChange={midiInput.updateConfig}
+        onMIDIConnectDevice={midiInput.connectDevice}
         onToggleSidebar={handleToggleSidebar}
       />
 
