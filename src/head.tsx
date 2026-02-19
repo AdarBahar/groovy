@@ -2,6 +2,9 @@ export const Head = () => (
   <>
     <meta charSet="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+     <meta  property="og:image" content="URL_of_SVG" />
+    <meta  property="og:title" content="{grooveTitle}" />
+     <meta  property="og:description" content="{grooveDescription}" />
     <title>Groovy - Drum Notation Editor</title>
     {/* Google Fonts - Inter */}
     <link rel="preconnect" href="https://fonts.googleapis.com" />
