@@ -97,12 +97,13 @@ export function ShareModal({ groove, isOpen, onClose }: ShareModalProps) {
   }, [shareableURL, grooveTitle]);
 
   const handleCopyURL = async () => {
-    await navigator.clipboard.writeText(shareableURL);
+    await navigator.clipboard.writeText('${shareableURL}&embed=true');
     setCopied('url');
     trackShareMethod('link');
     setTimeout(() => setCopied(null), 2000);
   };
 
+  
   const handleCopyEmbed = async () => {
     await navigator.clipboard.writeText(embedCode);
     setCopied('embed');
