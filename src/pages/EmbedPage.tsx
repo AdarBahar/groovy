@@ -130,9 +130,6 @@ export default function EmbedPage() {
 
   return (
     <div className="h-screen flex flex-col embed  overflow-hidden">
-      <meta name="image" property="og:image" content="URL_of_SVG" />
-      <meta name="title" property="og:title" content="{grooveTitle}" />
-      <meta name="description" property="og:description" content="{grooveDescription}" />
 
       {/* Compact Header with Title */}
       <header className="px-3 py-2 flex flex-col embed:text-black">
