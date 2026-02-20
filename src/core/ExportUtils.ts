@@ -228,7 +228,7 @@ export async function generateSheetMusicSVG(
   onProgress?.({ stage: 'preparing', percent: 0, message: 'Preparing export...' });
   await yieldToMain();
 
-  const shareableURL = getShareableURL(groove);
+  const shareableURL = getShareableURL(groove, undefined, 'embed');
 
   onProgress?.({ stage: 'generating', percent: 20, message: 'Generating sheet music...' });
   await yieldToMain();

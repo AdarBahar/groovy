@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { encodeGrooveToURL, decodeURLToGroove, hasGrooveParams } from './GrooveURLCodec';
+import { encodeGrooveToURL, decodeURLToGroove, hasGrooveParams, getShareableURL, getShareableURLWithValidation } from './GrooveURLCodec';
 import { GrooveData, DrumVoice, createEmptyNotesRecord, createMeasureFromNotes, getFlattenedNotes } from '../types';
 
 // Helper to create an empty groove
@@ -202,6 +202,77 @@ describe('GrooveURLCodec', () => {
     it('returns false for URL without groove params', () => {
       expect(hasGrooveParams('')).toBe(false);
       expect(hasGrooveParams('foo=bar')).toBe(false);
+    });
+  });
+
+  describe('getShareableURL', () => {
+    const testBaseURL = 'https://example.com/';
+
+    it('generates embed URL by default', () => {
+      const groove = createEmptyGroove();
+      const url = getShareableURL(groove, testBaseURL);
+      expect(url).toContain('embed=true');
+    });
+
+    it('generates editor URL when mode is editor', () => {
+      const groove = createEmptyGroove();
+      const url = getShareableURL(groove, testBaseURL, 'editor');
+      expect(url).not.toContain('embed=true');
+    });
+
+    it('generates embed URL when mode is embed explicitly', () => {
+      const groove = createEmptyGroove();
+      const url = getShareableURL(groove, testBaseURL, 'embed');
+      expect(url).toContain('embed=true');
+    });
+
+    it('includes all groove data in the URL', () => {
+      const groove = createEmptyGroove();
+      const url = getShareableURL(groove, testBaseURL);
+
+      expect(url).toContain('TimeSig=4%2F4');
+      expect(url).toContain('Div=16');
+      expect(url).toContain('Tempo=120');
+      expect(url).toContain('Measures=1');
+      expect(url).toContain('embed=true');
+    });
+
+    it('uses custom baseURL when provided', () => {
+      const groove = createEmptyGroove();
+      const customBase = 'https://custom.com/groove/';
+      const url = getShareableURL(groove, customBase, 'embed');
+
+      expect(url).toMatch(/^https:\/\/custom\.com\/groove\//);
+      expect(url).toContain('embed=true');
+    });
+  });
+
+  describe('getShareableURLWithValidation', () => {
+    const testBaseURL = 'https://example.com/';
+
+    it('returns URL with validation for embed mode', () => {
+      const groove = createEmptyGroove();
+      const { url, validation } = getShareableURLWithValidation(groove, testBaseURL, 'embed');
+
+      expect(url).toContain('embed=true');
+      expect(validation).toBeDefined();
+      expect(validation.status).toBe('ok');
+    });
+
+    it('returns URL with validation for editor mode', () => {
+      const groove = createEmptyGroove();
+      const { url, validation } = getShareableURLWithValidation(groove, testBaseURL, 'editor');
+
+      expect(url).not.toContain('embed=true');
+      expect(validation).toBeDefined();
+      expect(validation.status).toBe('ok');
+    });
+
+    it('defaults to embed mode when not specified', () => {
+      const groove = createEmptyGroove();
+      const { url } = getShareableURLWithValidation(groove, testBaseURL);
+
+      expect(url).toContain('embed=true');
     });
   });
 });
