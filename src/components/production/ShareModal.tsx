@@ -22,8 +22,8 @@ import {
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { GrooveData } from '../../types';
-import { getShareableURLWithValidation, URLValidationResult } from '../../core';
-import { trackShareMethod } from '../../utils/analytics';
+import { getShareableURL, getShareableURLWithValidation, URLValidationResult } from '../../core';
+import { trackShareMethod, trackShareModeToggle } from '../../utils/analytics';
 import { shortenURL, isShortenerConfigured, getShortenerErrorMessage } from '../../services/urlShortener';
 
 type ShareTab = 'link' | 'social' | 'embed' | 'qr' | 'email';
@@ -45,6 +45,7 @@ const TABS: { id: ShareTab; label: string; icon: React.ReactNode }[] = [
 export function ShareModal({ groove, isOpen, onClose }: ShareModalProps) {
   const [activeTab, setActiveTab] = useState<ShareTab>('link');
   const [copied, setCopied] = useState<'url' | 'embed' | 'shortUrl' | null>(null);
+  const [urlMode, setUrlMode] = useState<'embed' | 'editor'>('embed');
 
   // URL shortener state
   const [isShortening, setIsShortening] = useState(false);
@@ -53,8 +54,8 @@ export function ShareModal({ groove, isOpen, onClose }: ShareModalProps) {
 
   // Generate shareable URL with validation
   const { url: shareableURL, validation } = useMemo(
-    () => getShareableURLWithValidation(groove),
-    [groove]
+    () => getShareableURLWithValidation(groove, undefined, urlMode),
+    [groove, urlMode]
   );
 
   const grooveTitle = groove.title || 'Drum Groove';
@@ -73,7 +74,7 @@ export function ShareModal({ groove, isOpen, onClose }: ShareModalProps) {
     try {
       const shortened = await shortenURL(shareableURL);
       setShortURL(shortened);
-      trackShareMethod('shorten');
+      trackShareMethod('shorten', { urlMode });
     } catch (error) {
       setShortenError(getShortenerErrorMessage(error));
     } finally {
@@ -86,27 +87,27 @@ export function ShareModal({ groove, isOpen, onClose }: ShareModalProps) {
     if (!shortURL) return;
     await navigator.clipboard.writeText(shortURL);
     setCopied('shortUrl');
-    trackShareMethod('link');
+    trackShareMethod('link', { urlMode });
     setTimeout(() => setCopied(null), 2000);
   };
 
   // Generate embed code with embed=true parameter for minimal view
   const embedCode = useMemo(() => {
-    const embedURL = `${shareableURL}&embed=true`;
+    const embedURL = getShareableURL(groove, undefined, 'embed');
     return `<iframe src="${embedURL}" width="600" height="400" frameborder="0" title="${grooveTitle}"></iframe>`;
-  }, [shareableURL, grooveTitle]);
+  }, [groove, grooveTitle]);
 
   const handleCopyURL = async () => {
     await navigator.clipboard.writeText(shareableURL);
     setCopied('url');
-    trackShareMethod('link');
+    trackShareMethod('link', { urlMode });
     setTimeout(() => setCopied(null), 2000);
   };
 
   const handleCopyEmbed = async () => {
     await navigator.clipboard.writeText(embedCode);
     setCopied('embed');
-    trackShareMethod('embed');
+    trackShareMethod('embed', { urlMode });
     setTimeout(() => setCopied(null), 2000);
   };
 
@@ -127,14 +128,14 @@ export function ShareModal({ groove, isOpen, onClose }: ShareModalProps) {
     }
 
     window.open(url, '_blank', 'width=600,height=400');
-    trackShareMethod(platform);
+    trackShareMethod(platform, { urlMode });
   };
 
   const handleEmailShare = () => {
     const subject = `Check out this drum groove: ${grooveTitle}`;
     const body = `I created this drum groove using Groovy!\n\n${shareableURL}`;
     window.location.href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-    trackShareMethod('email');
+    trackShareMethod('email', { urlMode });
   };
 
   const renderURLWarning = (validation: URLValidationResult) => {
@@ -368,6 +369,42 @@ export function ShareModal({ groove, isOpen, onClose }: ShareModalProps) {
             Share your drum pattern with others.
           </DialogDescription>
         </DialogHeader>
+
+        {/* Share mode toggle */}
+        <div className="flex items-center justify-between px-3 py-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
+          <div className="text-sm">
+            <p className="font-medium text-slate-700 dark:text-slate-300">Share as:</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              {urlMode === 'embed'
+                ? 'Embed view (optimized for viewing)'
+                : 'Editor view (allows editing)'}
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <Button
+              variant={urlMode === 'embed' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => {
+                setUrlMode('embed');
+                trackShareModeToggle('embed');
+              }}
+              className={urlMode === 'embed' ? 'bg-purple-600 hover:bg-purple-700' : ''}
+            >
+              Embed
+            </Button>
+            <Button
+              variant={urlMode === 'editor' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => {
+                setUrlMode('editor');
+                trackShareModeToggle('editor');
+              }}
+              className={urlMode === 'editor' ? 'bg-purple-600 hover:bg-purple-700' : ''}
+            >
+              Editor
+            </Button>
+          </div>
+        </div>
 
         {/* Tab navigation */}
         <div className="flex border-b border-slate-200 dark:border-slate-700 -mx-4 sm:-mx-6 px-4 sm:px-6">
