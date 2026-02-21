@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { GrooveData, DEFAULT_GROOVE, DrumVoice, Division, ALL_DRUM_VOICES, MetronomeFrequency } from '../types';
+import { GrooveData, DEFAULT_GROOVE, DrumVoice, Division, ALL_DRUM_VOICES, MetronomeFrequency, TimeSignature } from '../types';
 import { GrooveUtils, decodeGroove, SavedGroove } from '../core';
 import { useGrooveEngine } from '../hooks/useGrooveEngine';
 import { useHistory } from '../hooks/useHistory';
@@ -35,6 +35,7 @@ import { MyGroovesModal } from '../components/production/MyGroovesModal';
 import { SaveGrooveModal } from '../components/production/SaveGrooveModal';
 import { GrooveLibraryModal } from '../components/production/GrooveLibraryModal';
 import { ShareModal } from '../components/production/ShareModal';
+import { TimeSignatureSelectorModal } from '../components/production/TimeSignatureSelectorModal';
 import { MIDITrackingDebug } from '../components/production/MIDITrackingDebug';
 import { Button } from '../components/ui/button';
 
@@ -71,6 +72,7 @@ export default function ProductionPage() {
   const [isSaveGrooveModalOpen, setIsSaveGrooveModalOpen] = useState(false);
   const [isGrooveLibraryModalOpen, setIsGrooveLibraryModalOpen] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [isTimeSignatureModalOpen, setIsTimeSignatureModalOpen] = useState(false);
   const [elapsedTime, setElapsedTime] = useState('0:00');
   const [isCountingIn, setIsCountingIn] = useState(false);
   const [countdownNumber, setCountdownNumber] = useState<number | null>(null);
@@ -401,6 +403,12 @@ export default function ProductionPage() {
     if (wasPlaying) await play(newGroove);
   };
 
+  const handleTimeSignatureChange = (timeSignature: TimeSignature) => {
+    const newGroove = { ...groove, timeSignature };
+    setGroove(newGroove);
+    // Engine sync handled by centralized useEffect
+  };
+
   // My Grooves handlers
   const handleSaveGroove = (name: string, existingId?: string) => {
     analytics.trackGrooveSave(name, !!existingId);
@@ -491,6 +499,7 @@ export default function ProductionPage() {
           isNotesOnly={isNotesOnly}
           onToggleNotesOnly={handleNotesOnlyToggle}
           timeSignature={groove.timeSignature}
+          onTimeSignatureClick={() => setIsTimeSignatureModalOpen(true)}
           division={groove.division}
           onDivisionChange={handleDivisionChange}
           canUndo={canUndo}
@@ -648,6 +657,13 @@ export default function ProductionPage() {
         groove={groove}
         isOpen={isShareModalOpen}
         onClose={() => setIsShareModalOpen(false)}
+      />
+
+      <TimeSignatureSelectorModal
+        timeSignature={groove.timeSignature}
+        isOpen={isTimeSignatureModalOpen}
+        onClose={() => setIsTimeSignatureModalOpen(false)}
+        onTimeSignatureChange={handleTimeSignatureChange}
       />
 
       {/* MIDI Tracking Debug POC - Remove this component when visualization is working */}
