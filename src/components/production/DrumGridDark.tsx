@@ -186,7 +186,7 @@ export function DrumGridDark({
 
             {/* Drum Rows */}
             {DRUM_ROWS.map((row, rowIndex) => (
-              <div key={rowIndex} className="flex items-center mb-1 last:mb-0">
+              <div key={rowIndex} className="flex items-center mb-1 last:mb-0" data-voice-group={row.defaultVoices[0]}>
                 <button
                   onClick={() => grid.handleVoiceLabelClick(rowIndex, measureIndex)}
                   onContextMenu={(e) => {

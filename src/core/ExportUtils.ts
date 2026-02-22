@@ -228,7 +228,7 @@ export async function generateSheetMusicSVG(
   onProgress?.({ stage: 'preparing', percent: 0, message: 'Preparing export...' });
   await yieldToMain();
 
-  const shareableURL = getShareableURL(groove);
+  const shareableURL = getShareableURL(groove, undefined, 'embed');
 
   onProgress?.({ stage: 'generating', percent: 20, message: 'Generating sheet music...' });
   await yieldToMain();
@@ -317,9 +317,26 @@ export async function generateSheetMusicSVG(
 
 /**
  * Helper to escape XML special characters
- * Handles all XML special chars plus control characters that could cause issues
+ *
+ * Escapes all XML special characters to prevent injection attacks in SVG/PDF exports.
+ * This function is used to sanitize metadata fields (title, author, comments, URL)
+ * that come from untrusted sources (URL parameters) before embedding them in SVG output.
+ *
+ * Handles:
+ * - XML special characters: &, <, >, ", '
+ * - Control characters (null bytes and other dangerous chars)
+ * - Backticks (for template literal injection prevention)
+ *
+ * Security notes:
+ * - This function converts raw text to XML-safe text entities
+ * - It does NOT remove all special characters, only escapes them
+ * - The result is safe to embed in SVG text elements
+ * - It is NOT suitable for use outside of XML/SVG contexts
+ *
+ * @param str - The string to escape
+ * @returns Escaped string safe for XML/SVG embedding
  */
-function escapeXml(str: string): string {
+export function escapeXml(str: string): string {
   if (!str || typeof str !== 'string') return '';
 
   return str
