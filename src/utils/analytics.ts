@@ -219,3 +219,11 @@ export function trackUndoRedo(action: 'undo' | 'redo') {
   analytics.track('Undo/Redo', { action });
 }
 
+/**
+ * Generic track function for custom events
+ * Useful for one-off tracking that doesn't have a specific wrapper
+ */
+export function track(eventName: string, properties?: Record<string, unknown>) {
+  analytics.track(eventName, properties);
+}
+
