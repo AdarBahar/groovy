@@ -160,8 +160,15 @@ export function trackShareModalOpen() {
   analytics.track('Share Modal Opened');
 }
 
-export function trackShareMethod(method: 'link' | 'twitter' | 'facebook' | 'reddit' | 'embed' | 'qr' | 'email' | 'shorten') {
-  analytics.track('Share Method Used', { method });
+export function trackShareMethod(
+  method: 'link' | 'twitter' | 'facebook' | 'reddit' | 'embed' | 'qr' | 'email' | 'shorten',
+  properties?: Record<string, unknown>
+) {
+  analytics.track('Share Method Used', { method, ...properties });
+}
+
+export function trackShareModeToggle(mode: 'embed' | 'editor') {
+  analytics.track('Share Mode Toggled', { mode });
 }
 
 export function trackDownloadOpen() {
@@ -210,5 +217,13 @@ export function trackAutoSpeedUpConfigSave(config: { bpmIncrease: number; everyN
 
 export function trackUndoRedo(action: 'undo' | 'redo') {
   analytics.track('Undo/Redo', { action });
+}
+
+/**
+ * Generic track function for custom events
+ * Useful for one-off tracking that doesn't have a specific wrapper
+ */
+export function track(eventName: string, properties?: Record<string, unknown>) {
+  analytics.track(eventName, properties);
 }
 
