@@ -6,6 +6,7 @@ interface SidebarProps {
   isNotesOnly: boolean;
   onToggleNotesOnly: () => void;
   timeSignature: TimeSignature;
+  onTimeSignatureClick: () => void;
   division: Division;
   onDivisionChange: (division: Division) => void;
   canUndo: boolean;
@@ -21,6 +22,7 @@ export function Sidebar({
   isNotesOnly,
   onToggleNotesOnly,
   timeSignature,
+  onTimeSignatureClick,
   division,
   onDivisionChange,
   canUndo,
@@ -105,12 +107,16 @@ export function Sidebar({
 
         {!isNotesOnly && (
           <>
-            {/* Time signature display */}
-            <div className="flex flex-col items-center justify-center text-slate-900 dark:text-white mb-2">
+            {/* Time signature button - clickable to open selector */}
+            <button
+              onClick={onTimeSignatureClick}
+              className="flex flex-col items-center justify-center text-slate-900 dark:text-white mb-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg p-2 transition-colors cursor-pointer"
+              title="Click to change time signature"
+            >
               <div className="text-3xl font-bold">{timeSignature.beats}</div>
               <div className="w-8 h-px bg-slate-900 dark:bg-white my-1"></div>
               <div className="text-3xl font-bold">{timeSignature.noteValue}</div>
-            </div>
+            </button>
 
             {/* Division selectors */}
             <div className="flex flex-col gap-2 w-full px-2">

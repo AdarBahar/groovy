@@ -36,7 +36,7 @@ export function PrintPreviewModal({ groove, isOpen, onClose, onAddTitle }: Print
   const isUntitled = !groove.title || groove.title.trim() === '';
 
   // Generate shareable URL
-  const shareableURL = useMemo(() => getShareableURL(groove), [groove]);
+  const shareableURL = useMemo(() => getShareableURL(groove, undefined, 'embed'), [groove]);
 
   // Function to render the sheet music
   const renderSheetMusic = useCallback(() => {

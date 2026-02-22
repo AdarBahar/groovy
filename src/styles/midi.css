@@ -1,0 +1,169 @@
+/**
+ * MIDI Visual Feedback Styles
+ *
+ * Styles for visual feedback when MIDI notes are received and played
+ */
+
+/* MIDI hit animation - highlights the drum voice when a note is triggered */
+.midi-hit {
+  animation: midi-hit-flash 0.2s ease-out;
+}
+
+@keyframes midi-hit-flash {
+  0% {
+    background-color: rgba(168, 85, 247, 0.3);
+    transform: scale(1);
+  }
+  50% {
+    background-color: rgba(168, 85, 247, 0.5);
+    transform: scale(1.02);
+  }
+  100% {
+    background-color: transparent;
+    transform: scale(1);
+  }
+}
+
+/* MIDI status indicator pulse animation */
+.midi-status-pulse {
+  animation: midi-pulse 2s infinite;
+}
+
+@keyframes midi-pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* MIDI connection indicator */
+.midi-connected {
+  color: #10b981;
+  font-weight: 500;
+}
+
+.midi-disconnected {
+  color: #6b7280;
+  font-weight: 400;
+}
+
+/* Dark mode support for MIDI feedback */
+@media (prefers-color-scheme: dark) {
+  .midi-hit {
+    animation: midi-hit-flash-dark 0.2s ease-out;
+  }
+
+  @keyframes midi-hit-flash-dark {
+    0% {
+      background-color: rgba(168, 85, 247, 0.4);
+      transform: scale(1);
+    }
+    50% {
+      background-color: rgba(168, 85, 247, 0.6);
+      transform: scale(1.02);
+    }
+    100% {
+      background-color: transparent;
+      transform: scale(1);
+    }
+  }
+}
+
+/* MIDI Tracking Feedback - Good Hit (score > 70) */
+.midi-tracking-good {
+  animation: midi-good-flash 500ms ease-out;
+}
+
+@keyframes midi-good-flash {
+  0%, 100% {
+    background-color: transparent;
+    transform: scale(1);
+  }
+  50% {
+    background-color: rgba(34, 197, 94, 0.5); /* green-500 */
+    transform: scale(1.05);
+  }
+}
+
+/* MIDI Tracking Feedback - Bad Hit (score <= 70) */
+.midi-tracking-bad {
+  animation: midi-bad-flash 500ms ease-out;
+}
+
+@keyframes midi-bad-flash {
+  0%, 100% {
+    background-color: transparent;
+    transform: scale(1);
+  }
+  50% {
+    background-color: rgba(239, 68, 68, 0.5); /* red-500 */
+    transform: scale(1.05);
+  }
+}
+
+/* Dark mode support for MIDI tracking feedback */
+@media (prefers-color-scheme: dark) {
+  .midi-tracking-good {
+    animation: midi-good-flash-dark 500ms ease-out;
+  }
+
+  @keyframes midi-good-flash-dark {
+    0%, 100% {
+      background-color: transparent;
+      transform: scale(1);
+    }
+    50% {
+      background-color: rgba(34, 197, 94, 0.4); /* Slightly darker for dark mode */
+      transform: scale(1.05);
+    }
+  }
+
+  .midi-tracking-bad {
+    animation: midi-bad-flash-dark 500ms ease-out;
+  }
+
+  @keyframes midi-bad-flash-dark {
+    0%, 100% {
+      background-color: transparent;
+      transform: scale(1);
+    }
+    50% {
+      background-color: rgba(239, 68, 68, 0.4);
+      transform: scale(1.05);
+    }
+  }
+}
+
+/* Sheet Music Note Highlighting - Good Hit (green outline) */
+.abcjs-note.midi-tracking-good {
+  animation: midi-note-good-highlight 500ms ease-out !important;
+}
+
+@keyframes midi-note-good-highlight {
+  0%, 100% {
+    stroke: none;
+    stroke-width: 0;
+  }
+  50% {
+    stroke: #22c55e;
+    stroke-width: 2;
+  }
+}
+
+/* Sheet Music Note Highlighting - Bad Hit (red outline) */
+.abcjs-note.midi-tracking-bad {
+  animation: midi-note-bad-highlight 500ms ease-out !important;
+}
+
+@keyframes midi-note-bad-highlight {
+  0%, 100% {
+    stroke: none;
+    stroke-width: 0;
+  }
+  50% {
+    stroke: #ef4444;
+    stroke-width: 2;
+  }
+}

@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
-import { Save, FolderOpen, Library, Info, Zap } from 'lucide-react';
+import { Save, FolderOpen, Library, Info, Zap, Cable } from 'lucide-react';
 import { AutoSpeedUpConfig, MetronomeConfig, MetronomeFrequency, MetronomeOffsetClick } from '../../types';
+import { MIDIConfig, MIDIDeviceInfo } from '../../midi/types';
 
 interface MobileMoreMenuProps {
   isOpen: boolean;
@@ -24,6 +25,10 @@ interface MobileMoreMenuProps {
   onMetronomeCountInChange?: (countIn: boolean) => void;
   onMetronomeVolumeChange?: (volume: number) => void;
   onMetronomeOffsetClickChange?: (offsetClick: MetronomeOffsetClick) => void;
+  // MIDI props
+  midiConfig?: MIDIConfig;
+  midiCurrentDevice?: MIDIDeviceInfo | null;
+  onShowMIDISettings?: () => void;
 }
 
 export function MobileMoreMenu({
@@ -38,6 +43,8 @@ export function MobileMoreMenu({
   savedGroovesCount = 0,
   metronome = 'off',
   onMetronomeChange,
+  midiCurrentDevice,
+  onShowMIDISettings,
 }: MobileMoreMenuProps) {
   const menuRef = useRef<HTMLDivElement>(null);
   const metronomeOptions: Array<'off' | '4th' | '8th' | '16th'> = ['off', '4th', '8th', '16th'];
@@ -159,6 +166,21 @@ export function MobileMoreMenu({
           }`}>
             {countInEnabled ? 'ON' : 'OFF'}
           </span>
+        </button>
+
+        <button
+          onClick={() => handleAction(onShowMIDISettings)}
+          className="w-full flex items-center justify-between px-4 py-3 text-left text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+        >
+          <div className="flex items-center gap-3">
+            <Cable className="w-5 h-5" />
+            <span>MIDI</span>
+          </div>
+          {midiCurrentDevice && (
+            <span className="text-xs bg-purple-600 text-white px-2 py-1 rounded">
+              Connected
+            </span>
+          )}
         </button>
 
         <div className="border-t border-slate-200 dark:border-slate-700 my-1" />
