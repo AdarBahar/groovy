@@ -2,6 +2,8 @@ import { Play, Pause, Plus } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Slider } from '../ui/slider';
 import { TimeSignature } from '../../types';
+import { MIDITimingIndicator } from '../MIDITimingIndicator';
+import { useMIDITimingAccuracy } from '../../hooks/useMIDITimingAccuracy';
 
 interface PlaybackControlsProps {
   isPlaying: boolean;
@@ -38,16 +40,18 @@ export function PlaybackControls({
   trackingEnabled = false,
   onTrackingToggle,
 }: PlaybackControlsProps) {
-  return (
-    <div className="flex flex-col lg:flex-row lg:items-center gap-4 lg:gap-8">
-      {/* Time and Play button - centered on mobile, left on desktop */}
-      <div className="flex items-center justify-center lg:justify-start gap-4">
-        {/* Time signature - hidden on mobile to save space */}
-        <div className="hidden sm:block text-xs text-purple-600 dark:text-purple-400 font-semibold">
-          <div>TIME</div>
-          <div className="text-slate-900 dark:text-white text-lg mt-1">{timeSignature.beats}/{timeSignature.noteValue}</div>
-        </div>
+  // Use the enhanced MIDI timing accuracy hook
+  const {
+    timingAccuracy,
+    averageScore,
+    showingAverage,
+  } = useMIDITimingAccuracy(isPlaying, trackingEnabled);
 
+  return (
+    <div className="flex flex-col gap-0">
+      {/* Top row: Play buttons, Elapsed time, TIME, Tempo, Swing */}
+      <div className="flex flex-wrap items-start gap-4 lg:gap-6">
+        {/* Play buttons */}
         <div className="flex items-center gap-2 sm:gap-3">
           <Button
             onClick={onPlay}
@@ -87,35 +91,24 @@ export function PlaybackControls({
           </div>
         </div>
 
-        <div className="text-slate-900 dark:text-white text-center sm:text-left">
+        {/* Elapsed time */}
+        <div className="text-slate-900 dark:text-white text-center">
           <div className="text-2xl sm:text-3xl font-bold">{elapsedTime}</div>
           <div className="text-xs text-purple-600 dark:text-purple-400 uppercase tracking-wider">
             {isPlaying ? 'Loop Active' : 'Stopped'}
           </div>
         </div>
 
-        {/* MIDI Tracking Toggle - only visible when MIDI device is connected */}
-        {midiConnected && (
-          <div className="flex items-center gap-2 px-3 py-2 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
-            <label className="flex items-center gap-2 text-sm cursor-pointer">
-              <input
-                type="checkbox"
-                checked={trackingEnabled}
-                onChange={onTrackingToggle}
-                className="w-4 h-4 text-purple-600 rounded focus:ring-purple-500 cursor-pointer"
-              />
-              <span className="text-slate-700 dark:text-slate-300">
-                MIDI Tracking
-              </span>
-            </label>
+        {/* Time signature - hidden on mobile to save space */}
+        <div className="hidden sm:flex sm:flex-col sm:items-start sm:justify-start">
+          <div className="text-xs text-purple-600 dark:text-purple-400 font-semibold">
+            <div>TIME</div>
+            <div className="text-slate-900 dark:text-white text-lg mt-1">{timeSignature.beats}/{timeSignature.noteValue}</div>
           </div>
-        )}
-      </div>
+        </div>
 
-      {/* Sliders - stacked on mobile, side by side on desktop */}
-      <div className="flex flex-col sm:flex-row gap-4 lg:flex-1">
         {/* Tempo Slider */}
-        <div className="flex-1 lg:max-w-md">
+        <div className="flex-1 min-w-48 mr-6">
           <div className="flex items-center justify-between mb-2">
             <label className="text-sm text-slate-500 dark:text-slate-400">Tempo (BPM)</label>
             <span className="text-sm text-purple-600 dark:text-purple-400 font-semibold">{tempo}</span>
@@ -131,7 +124,7 @@ export function PlaybackControls({
         </div>
 
         {/* Swing Slider */}
-        <div className="flex-1 lg:max-w-md">
+        <div className="flex-1 min-w-48 mr-6">
           <div className="flex items-center justify-between mb-2">
             <label className="text-sm text-slate-500 dark:text-slate-400">Swing</label>
             <span className="text-sm text-purple-600 dark:text-purple-400 font-semibold">{swing}%</span>
@@ -146,6 +139,38 @@ export function PlaybackControls({
           />
         </div>
       </div>
+
+      {/* Second row: MIDI Tracking and MIDI Indicator */}
+      {midiConnected && (
+        <div className="flex flex-col gap-3 -mt-2">
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 px-3 py-2 bg-purple-50 dark:bg-purple-900/20 rounded-lg w-fit">
+              <label className="flex items-center gap-2 text-sm cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={trackingEnabled}
+                  onChange={onTrackingToggle}
+                  className="w-4 h-4 text-purple-600 rounded focus:ring-purple-500 cursor-pointer"
+                />
+                <span className="text-slate-700 dark:text-slate-300">
+                  MIDI Tracking
+                </span>
+              </label>
+            </div>
+
+            {/* MIDI Timing Indicator */}
+            <div className="flex-1 max-w-[500px]">
+              <MIDITimingIndicator
+                timingAccuracy={timingAccuracy}
+                isPlaying={isPlaying}
+                trackingEnabled={trackingEnabled}
+                averageScore={averageScore}
+                showingAverage={showingAverage}
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

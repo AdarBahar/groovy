@@ -116,6 +116,14 @@ class PerformanceTracker {
 
   /**
    * Calculate timing accuracy (how close to the beat)
+   *
+   * Uses practical grading bands based on human perception:
+   * - On time: |Δ| <= 20 ms (perfect)
+   * - Slightly early/late: 20–40 ms (good)
+   * - Early/late: 40–80 ms (fair)
+   * - Very off: 80–150 ms (poor)
+   * - Miss: > 150 ms (complete miss)
+   *
    * @private
    * @param timestamp - Hit timestamp (ms since epoch)
    * @returns Accuracy percentage (0-100)
@@ -131,10 +139,25 @@ class PerformanceTracker {
     const expectedTime = beatNumber * beatDurationMs;
     const timingError = Math.abs(elapsedMs - expectedTime);
 
-    // Convert to accuracy (closer = higher score)
-    // Quarter beat tolerance
-    const maxError = beatDurationMs / 4;
-    const accuracy = Math.max(0, 100 - (timingError / maxError) * 100);
+    // Practical grading bands (milliseconds from beat)
+    let accuracy: number;
+
+    if (timingError <= 20) {
+      // On time: perfect
+      accuracy = 100;
+    } else if (timingError <= 40) {
+      // Slightly early/late: good
+      accuracy = 75;
+    } else if (timingError <= 80) {
+      // Early/late: fair
+      accuracy = 50;
+    } else if (timingError <= 150) {
+      // Very off: poor
+      accuracy = 25;
+    } else {
+      // Complete miss
+      accuracy = 0;
+    }
 
     return accuracy;
   }

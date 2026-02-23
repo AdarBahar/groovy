@@ -36,7 +36,6 @@ import { SaveGrooveModal } from '../components/production/SaveGrooveModal';
 import { GrooveLibraryModal } from '../components/production/GrooveLibraryModal';
 import { ShareModal } from '../components/production/ShareModal';
 import { TimeSignatureSelectorModal } from '../components/production/TimeSignatureSelectorModal';
-import { MIDITrackingDebug } from '../components/production/MIDITrackingDebug';
 import { Button } from '../components/ui/button';
 
 import './ProductionPage.css';
@@ -512,7 +511,7 @@ export default function ProductionPage() {
 
         <div className="flex-1 flex flex-col overflow-hidden">
           <main className="flex-1 overflow-auto">
-            <div className="p-3 sm:p-4 md:p-6 space-y-4 md:space-y-6">
+            <div className="p-3 sm:p-4 md:p-6 space-y-1">
               {/* Playback controls */}
               <PlaybackControls
                 isPlaying={isPlaying}
@@ -665,9 +664,6 @@ export default function ProductionPage() {
         onClose={() => setIsTimeSignatureModalOpen(false)}
         onTimeSignatureChange={handleTimeSignatureChange}
       />
-
-      {/* MIDI Tracking Debug POC - Remove this component when visualization is working */}
-      <MIDITrackingDebug />
     </div>
   );
 }
