@@ -1,0 +1,239 @@
+/* MIDI Timing Indicator - Refined minimalist design */
+
+:root {
+  --timing-perfect: #10b981; /* Emerald green */
+  --timing-good: #34d399; /* Light green */
+  --timing-warning: #fbbf24; /* Amber */
+  --timing-slow-fast: #ef4444; /* Red */
+  --timing-position: 50%;
+  --timing-color: var(--timing-perfect);
+}
+
+.dark {
+  --timing-perfect: #059669; /* Darker emerald for dark mode */
+  --timing-good: #10b981;
+}
+
+.midi-timing-indicator-wrapper {
+  width: 100%;
+  padding: 0.75rem 0;
+}
+
+.midi-timing-indicator-disabled {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 2rem;
+  opacity: 0.6;
+  transition: opacity 0.3s ease;
+}
+
+.midi-timing-indicator {
+  position: relative;
+  width: 100%;
+  height: 4rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+/* Spectrum track background */
+.spectrum-track {
+  position: relative;
+  width: 100%;
+  height: 0.25rem;
+  background: linear-gradient(
+    to right,
+    rgb(239, 68, 68) 0%,
+    rgb(249, 115, 22) 15%,
+    rgb(251, 191, 36) 30%,
+    rgb(16, 185, 129) 50%,
+    rgb(251, 191, 36) 70%,
+    rgb(249, 115, 22) 85%,
+    rgb(239, 68, 68) 100%
+  );
+  border-radius: 9999px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.3s ease;
+}
+
+.spectrum-track:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.spectrum-gradient {
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+}
+
+/* Spectrum labels - anchor points */
+.spectrum-labels {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  padding: 0 0.25rem;
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: rgb(100, 116, 139); /* slate-400 */
+  transition: color 0.3s ease;
+}
+
+.dark .spectrum-labels {
+  color: rgb(71, 85, 105); /* slate-500 dark */
+}
+
+.label-slow,
+.label-fast {
+  color: rgb(156, 163, 175); /* slate-400 */
+}
+
+.label-on-time {
+  color: var(--timing-perfect);
+  font-weight: 700;
+  opacity: 0.8;
+}
+
+/* Indicator container - moves along the spectrum */
+.indicator-container {
+  position: absolute;
+  left: var(--timing-position);
+  top: 0.9rem;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  pointer-events: none;
+  transition: left 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* The animated dot indicator */
+.indicator-dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background-color: var(--timing-color);
+  box-shadow: 0 0 12px var(--timing-color),
+              0 0 24px rgba(0, 0, 0, 0.15);
+  transition: background-color 0.3s ease,
+              box-shadow 0.3s ease;
+  animation: pulse-indicator 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse-indicator {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.2);
+  }
+}
+
+/* The timing label below the dot */
+.indicator-label {
+  position: absolute;
+  top: 1.25rem;
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--timing-color);
+  white-space: nowrap;
+  transition: color 0.3s ease;
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.5);
+  margin-top: 0.25rem;
+}
+
+.dark .indicator-label {
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+/* Accuracy value display - shows exact millisecond offset or percentage */
+.accuracy-value {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  color: var(--timing-color);
+  letter-spacing: 0.025em;
+  opacity: 0.7;
+  transition: color 0.3s ease, opacity 0.3s ease;
+}
+
+.accuracy-value:hover {
+  opacity: 1;
+}
+
+/* Status label for showing average score */
+.average-score-label {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: rgb(107, 114, 128); /* slate-500 */
+  opacity: 0.8;
+}
+
+.dark .average-score-label {
+  color: rgb(100, 116, 139); /* slate-400 dark */
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  .midi-timing-indicator {
+    height: 3.5rem;
+    gap: 0.35rem;
+  }
+
+  .spectrum-labels {
+    font-size: 0.5rem;
+  }
+
+  .indicator-label {
+    font-size: 0.5rem;
+  }
+
+  .accuracy-value {
+    font-size: 0.65rem;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .spectrum-labels {
+    color: rgb(148, 163, 184); /* slate-400 */
+  }
+
+  .spectrum-track {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  }
+
+  .spectrum-track:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  }
+}
+
+/* Animation for first render */
+.midi-timing-indicator-wrapper {
+  animation: fade-in 0.6s ease-out;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
