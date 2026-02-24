@@ -55,7 +55,9 @@ class PerformanceTracker {
    * Enable performance tracking with a loaded groove pattern
    * @param pattern - Parsed groove pattern with voices
    * @param tempo - BPM (beats per minute)
-   * @param startTime - Performance start timestamp (ms since epoch)
+   * @param startTime - Performance start timestamp from performance.now() (ms relative to performance.timeOrigin)
+   *                    Must match the clock source used for hit timestamps (typically event.timeStamp from MIDI events)
+   *                    Issue #90: Standardized on performance.now() instead of Date.now()
    */
   enable(pattern: GroovePattern, tempo: number, startTime: number): void {
     // Validate tempo (Issue #94)
@@ -110,7 +112,9 @@ class PerformanceTracker {
   /**
    * Analyze a MIDI hit against the loaded pattern
    * @param grooveVoice - The drum voice that was hit
-   * @param timestamp - When the hit occurred (ms since epoch)
+   * @param timestamp - When the hit occurred from event.timeStamp (ms relative to performance.timeOrigin)
+   *                    Must use same clock source as startTime passed to enable()
+   *                    Issue #90: Standardized on performance.now() / event.timeStamp
    * @returns Analysis result or null if tracking disabled
    */
   analyzeHit(grooveVoice: DrumVoice | null, timestamp: number): HitAnalysis | null {
