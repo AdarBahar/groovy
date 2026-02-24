@@ -1,118 +1,84 @@
-import { useRef, useEffect } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import './VolumeKnob.css';
 
 interface VolumeKnobProps {
-  volume: number; // 0-1
+  volume: number;
   onVolumeChange: (volume: number) => void;
   label?: string;
 }
 
-/**
- * Master Volume Knob Component
- *
- * Visual knob control for master playback volume. Uses mouse/touch interaction
- * to rotate the knob and update volume. Positioned absolutely to avoid pushing
- * page content down.
- *
- * Features:
- * - Smooth circular rotation based on mouse Y position
- * - Visual feedback with color gradient
- * - Light and dark theme support
- * - Touch-friendly with visual scale feedback
- */
-function VolumeKnob({ volume, onVolumeChange, label = 'Volume' }: VolumeKnobProps) {
+export default function VolumeKnob({ volume, onVolumeChange, label = 'Volume' }: VolumeKnobProps) {
   const knobRef = useRef<HTMLDivElement>(null);
-  const isDraggingRef = useRef(false);
-  const startYRef = useRef(0);
-  const startVolumeRef = useRef(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
 
-  // Calculate rotation angle from volume (0-1 maps to 0-360 degrees)
-  const rotationDegrees = volume * 360;
+  // Calculate rotation angle from volume (0-1 -> -135 to 135 degrees)
+  const rotationAngle = (volume * 270) - 135;
 
-  // Calculate visual percentage for display
-  const volumePercent = Math.round(volume * 100);
-
-  // Handle mouse/touch down
-  const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
-    isDraggingRef.current = true;
-    startYRef.current = e.clientY;
-    startVolumeRef.current = volume;
-    (e.currentTarget as HTMLDivElement).setPointerCapture(e.pointerId);
+  const handleMouseDown = () => {
+    setIsDragging(true);
   };
 
-  // Handle mouse/touch move
-  useEffect(() => {
-    const handlePointerMove = (e: PointerEvent) => {
-      if (!isDraggingRef.current) return;
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
 
-      // Calculate vertical distance moved (negative = up = increase volume)
-      const deltaY = startYRef.current - e.clientY;
+  const handleMouseMove = (e: MouseEvent) => {
+    if (!isDragging || !containerRef.current) return;
 
-      // Convert pixel movement to volume change (1 pixel = ~0.002 volume change)
-      // This creates smooth, controllable volume adjustment
-      const volumeDelta = (deltaY / 500) * 1; // Sensitivity: ~500px to full range
-      let newVolume = startVolumeRef.current + volumeDelta;
+    const rect = containerRef.current.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
 
-      // Clamp to 0-1
-      newVolume = Math.max(0, Math.min(1, newVolume));
+    const x = e.clientX - centerX;
+    const y = e.clientY - centerY;
 
-      onVolumeChange(newVolume);
-    };
+    let angle = Math.atan2(y, x) * (180 / Math.PI) + 90;
+    if (angle < -135) angle += 360;
 
-    const handlePointerUp = () => {
-      isDraggingRef.current = false;
-    };
-
-    if (isDraggingRef.current) {
-      document.addEventListener('pointermove', handlePointerMove);
-      document.addEventListener('pointerup', handlePointerUp);
-
-      return () => {
-        document.removeEventListener('pointermove', handlePointerMove);
-        document.removeEventListener('pointerup', handlePointerUp);
-      };
-    }
-  }, [volume, onVolumeChange]);
-
-  // Handle mouse wheel for volume adjustment
-  const handleWheel = (e: React.WheelEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    const delta = (e.deltaY / 1000) * 0.1; // Convert wheel delta to volume change
-    let newVolume = volume - delta; // Negative because scroll down = decrease in most UIs
+    let newVolume = (angle + 135) / 270;
     newVolume = Math.max(0, Math.min(1, newVolume));
+
     onVolumeChange(newVolume);
   };
 
-  return (
-    <div className="volume-knob-container">
-      <label className="volume-knob-label">{label}</label>
+  const handleWheel = (e: WheelEvent) => {
+    e.preventDefault();
+    const delta = e.deltaY > 0 ? -0.05 : 0.05;
+    const newVolume = Math.max(0, Math.min(1, volume + delta));
+    onVolumeChange(newVolume);
+  };
 
+  useEffect(() => {
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+    containerRef.current?.addEventListener('wheel', handleWheel, { passive: false });
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+      containerRef.current?.removeEventListener('wheel', handleWheel);
+    };
+  }, [isDragging, volume]);
+
+  const volumePercent = Math.round(volume * 100);
+
+  return (
+    <div className="volume-knob-container" ref={containerRef}>
+      <div className="volume-knob-label">{label}</div>
       <div className="volume-knob-wrapper">
         <div
           ref={knobRef}
           className="volume-knob"
-          onPointerDown={handlePointerDown}
-          onWheel={handleWheel}
-          style={{
-            transform: `rotate(${rotationDegrees}deg)`,
-            cursor: isDraggingRef.current ? 'grabbing' : 'grab',
-          }}
+          onMouseDown={handleMouseDown}
+          style={{ transform: `rotate(${rotationAngle}deg)` }}
         >
-          {/* Outer ring */}
-          <div className="volume-knob-ring" />
-
-          {/* Center dot */}
-          <div className="volume-knob-center" />
-
-          {/* Indicator line */}
-          <div className="volume-knob-indicator" />
+          <div className="volume-knob-ring"></div>
+          <div className="volume-knob-center"></div>
+          <div className="volume-knob-indicator"></div>
+          <div className="volume-knob-display">{volumePercent}</div>
         </div>
-
-        {/* Volume percentage display */}
-        <div className="volume-knob-display">{volumePercent}%</div>
       </div>
-
-      {/* Min/Max labels */}
       <div className="volume-knob-range-labels">
         <span>Min</span>
         <span>Max</span>
@@ -120,5 +86,3 @@ function VolumeKnob({ volume, onVolumeChange, label = 'Volume' }: VolumeKnobProp
     </div>
   );
 }
-
-export default VolumeKnob;
