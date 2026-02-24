@@ -53,12 +53,15 @@ export function PlaybackControls({
     showingAverage,
   } = useMIDITimingAccuracy(isPlaying, trackingEnabled);
 
+  const showVolumeControl = masterVolume !== undefined && !!onMasterVolumeChange;
+  const showSecondRow = midiConnected || showVolumeControl;
+
   return (
     <div className="flex flex-col gap-0">
       {/* Top row: Play buttons, Elapsed time, TIME, Tempo, Swing */}
-      <div className="flex flex-wrap items-start gap-4 lg:gap-6">
+      <div className="flex flex-wrap items-start gap-3 lg:gap-5">
         {/* Play buttons */}
-        <div className="flex items-center gap-2 sm:gap-3">
+        <div className="flex items-center gap-2">
           <Button
             onClick={onPlay}
             size="lg"
@@ -115,7 +118,7 @@ export function PlaybackControls({
 
         {/* Tempo Slider */}
         <div className="flex-1 min-w-48 mr-6">
-          <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center justify-between mb-1.5">
             <label className="text-sm text-slate-500 dark:text-slate-400">Tempo (BPM)</label>
             <span className="text-sm text-purple-600 dark:text-purple-400 font-semibold">{tempo}</span>
           </div>
@@ -131,7 +134,7 @@ export function PlaybackControls({
 
         {/* Swing Slider */}
         <div className="flex-1 min-w-48 mr-6">
-          <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center justify-between mb-1.5">
             <label className="text-sm text-slate-500 dark:text-slate-400">Swing</label>
             <span className="text-sm text-purple-600 dark:text-purple-400 font-semibold">{swing}%</span>
           </div>
@@ -147,12 +150,12 @@ export function PlaybackControls({
       </div>
 
       {/* Second row: MIDI Tracking and MIDI Indicator */}
-      {(midiConnected || masterVolume !== undefined) && (
-        <div className="flex flex-col gap-3 -mt-2">
-          <div className="flex items-center gap-4">
+      {showSecondRow && (
+        <div className="flex flex-col gap-2 -mt-1">
+          <div className="flex items-center gap-3">
             {midiConnected && (
               <>
-                <div className="flex items-center gap-2 px-3 py-2 bg-purple-50 dark:bg-purple-900/20 rounded-lg w-fit">
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-purple-50 dark:bg-purple-900/20 rounded-lg w-fit">
                   <label className="flex items-center gap-2 text-sm cursor-pointer">
                     <input
                       type="checkbox"
@@ -183,12 +186,12 @@ export function PlaybackControls({
             )}
 
             {/* Master Volume Knob */}
-            {masterVolume !== undefined && onMasterVolumeChange && (
-              <div className="ml-auto">
+            {showVolumeControl && (
+              <div className={midiConnected ? 'ml-auto' : ''}>
                 <VolumeKnob
                   volume={masterVolume}
                   onVolumeChange={onMasterVolumeChange}
-                  label="Master"
+                  label="Master Volume:"
                 />
               </div>
             )}
@@ -198,4 +201,3 @@ export function PlaybackControls({
     </div>
   );
 }
-

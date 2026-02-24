@@ -130,7 +130,7 @@ export default function VolumeKnob({ volume, onVolumeChange, label = 'Volume' }:
       onWheel={handleWheel}
       style={{ cursor: 'pointer' }}
     >
-      {/* Left side: Label and percentage */}
+      {/* Left side: Label and percentage (inline) */}
       <div className="volume-knob-info">
         <span className="volume-knob-label">{label}</span>
         <span className="volume-knob-display">{volumePercent}%</span>

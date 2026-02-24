@@ -94,6 +94,20 @@ export class KeyboardMIDISimulator {
       return;
     }
 
+    const target = event.target as HTMLElement | null;
+    if (target) {
+      const tagName = target.tagName;
+      const isEditableField =
+        tagName === 'INPUT' ||
+        tagName === 'TEXTAREA' ||
+        tagName === 'SELECT' ||
+        target.isContentEditable;
+
+      if (isEditableField) {
+        return;
+      }
+    }
+
     const key = event.key.toLowerCase();
     const mapping = this.keyMap[key];
 

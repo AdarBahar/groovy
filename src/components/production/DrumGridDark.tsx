@@ -56,7 +56,7 @@ const DrumCell = memo(function DrumCell({
 }: DrumCellProps) {
   return (
     <button
-      className={`drum-cell w-11 h-11 sm:w-12 sm:h-10 border cursor-pointer transition-all duration-150 flex items-center justify-center relative touch-target
+      className={`drum-cell w-11 h-11 sm:w-12 sm:h-10 md:w-10 md:h-9 border cursor-pointer transition-all duration-150 flex items-center justify-center relative touch-target
         ${isActive ? 'bg-purple-600 hover:bg-purple-700 border-purple-500' : 'bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 border-slate-300 dark:border-slate-600'}
         ${isDownbeat ? 'border-l-slate-400 dark:border-l-slate-500' : ''}
       `}
@@ -114,7 +114,7 @@ export function DrumGridDark({
   });
 
   return (
-    <div className={`flex flex-wrap gap-4 md:gap-6 mt-4 md:mt-6 ${grid.isDragging ? 'select-none' : ''}`}>
+    <div className={`flex flex-wrap gap-3 md:gap-4 mt-4 md:mt-6 ${grid.isDragging ? 'select-none' : ''}`}>
       {groove.measures.map((measure, measureIndex) => {
         const positions = grid.getPositionsForMeasure(measureIndex);
         const ts = measure.timeSignature || groove.timeSignature;
@@ -124,7 +124,7 @@ export function DrumGridDark({
         return (
           <div
             key={measureIndex}
-            className="inline-block bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 md:p-4 min-w-0"
+            className="inline-block bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 md:p-3 min-w-0"
           >
             {/* Measure Header */}
             <div className="flex items-center justify-between mb-3 md:mb-4">
@@ -167,14 +167,14 @@ export function DrumGridDark({
             </div>
 
             {/* Beat Labels Row */}
-            <div className="flex items-center mb-2">
-              <div className="w-16 sm:w-20 md:w-24 flex-shrink-0" />
+            <div className="flex items-center mb-1.5">
+              <div className="w-16 sm:w-20 md:w-20 flex-shrink-0" />
               {positions.map((pos) => {
                 const countLabel = GrooveUtils.getCountLabel(pos, groove.division, ts.beats);
                 return (
                   <div
                     key={pos}
-                    className={`w-11 sm:w-12 text-center text-[10px] sm:text-xs font-medium ${
+                    className={`w-11 sm:w-12 md:w-10 text-center text-[10px] sm:text-xs leading-none font-medium ${
                       grid.isDownbeat(pos) ? 'text-slate-700 dark:text-slate-300' : 'text-slate-400 dark:text-slate-500'
                     }`}
                   >
@@ -193,7 +193,7 @@ export function DrumGridDark({
                     e.preventDefault();
                     onPreview(row.defaultVoices[0]);
                   }}
-                  className="w-16 sm:w-20 md:w-24 flex-shrink-0 px-1 sm:px-2 md:px-3 py-2 text-right text-xs sm:text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors touch-target"
+                  className="w-16 sm:w-20 md:w-20 flex-shrink-0 px-1 sm:px-2 md:px-2 py-2 md:py-1.5 text-right text-xs sm:text-sm md:text-xs font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors touch-target"
                   title="Click for patterns, right-click to preview"
                 >
                   {row.name}
