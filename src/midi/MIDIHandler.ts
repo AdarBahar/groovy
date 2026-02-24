@@ -57,11 +57,14 @@ class MIDIHandler {
    * @private
    */
   private handleNoteOn(note: number, velocity: number, timestamp: number): void {
-    console.log('MIDI Note ON:', {
-      note,
-      velocity,
-      timestamp,
-    });
+    // Gate console logging behind dev flag to avoid hot-path performance impact (Issue #96)
+    if (process.env.NODE_ENV === 'development') {
+      console.log('MIDI Note ON:', {
+        note,
+        velocity,
+        timestamp,
+      });
+    }
 
     if (this.onNoteOn) {
       // Note: grooveVoice mapping is done in the callback (from MIDIDrumMapping)
@@ -74,7 +77,10 @@ class MIDIHandler {
    * @private
    */
   private handleNoteOff(note: number, timestamp: number): void {
-    console.log('MIDI Note OFF:', note);
+    // Gate console logging behind dev flag to avoid hot-path performance impact (Issue #96)
+    if (process.env.NODE_ENV === 'development') {
+      console.log('MIDI Note OFF:', note);
+    }
 
     if (this.onNoteOff) {
       this.onNoteOff(note, timestamp);
@@ -86,7 +92,10 @@ class MIDIHandler {
    * @private
    */
   private handleControlChange(controller: number, value: number, timestamp: number): void {
-    console.log('MIDI Control Change:', { controller, value });
+    // Gate console logging behind dev flag to avoid hot-path performance impact (Issue #96)
+    if (process.env.NODE_ENV === 'development') {
+      console.log('MIDI Control Change:', { controller, value });
+    }
 
     if (this.onControlChange) {
       this.onControlChange(controller, value, timestamp);
@@ -97,7 +106,11 @@ class MIDIHandler {
    * Set callback for note on events
    * @param callback - (note, velocity, grooveVoice, timestamp) => {}
    */
-  setNoteOnHandler(callback: NoteOnCallback): void {
+  setNoteOnHandler(callback: NoteOnCallback | null): void {
+    // Validate callback is a function (Issue #99)
+    if (callback !== null && typeof callback !== 'function') {
+      throw new TypeError('setNoteOnHandler: callback must be a function or null');
+    }
     this.onNoteOn = callback;
   }
 
@@ -105,7 +118,11 @@ class MIDIHandler {
    * Set callback for note off events
    * @param callback - (note, timestamp) => {}
    */
-  setNoteOffHandler(callback: NoteOffCallback): void {
+  setNoteOffHandler(callback: NoteOffCallback | null): void {
+    // Validate callback is a function (Issue #99)
+    if (callback !== null && typeof callback !== 'function') {
+      throw new TypeError('setNoteOffHandler: callback must be a function or null');
+    }
     this.onNoteOff = callback;
   }
 
@@ -113,7 +130,11 @@ class MIDIHandler {
    * Set callback for control change events
    * @param callback - (controller, value, timestamp) => {}
    */
-  setControlChangeHandler(callback: ControlChangeCallback): void {
+  setControlChangeHandler(callback: ControlChangeCallback | null): void {
+    // Validate callback is a function (Issue #99)
+    if (callback !== null && typeof callback !== 'function') {
+      throw new TypeError('setControlChangeHandler: callback must be a function or null');
+    }
     this.onControlChange = callback;
   }
 }
