@@ -3,6 +3,7 @@ import { Button } from '../ui/button';
 import { Slider } from '../ui/slider';
 import { TimeSignature } from '../../types';
 import { MIDITimingIndicator } from '../MIDITimingIndicator';
+import VolumeKnob from '../VolumeKnob';
 import { useMIDITimingAccuracy } from '../../hooks/useMIDITimingAccuracy';
 import { trackMIDITrackingToggle } from '../../utils/analytics';
 
@@ -22,6 +23,8 @@ interface PlaybackControlsProps {
   midiConnected?: boolean;
   trackingEnabled?: boolean;
   onTrackingToggle?: () => void;
+  masterVolume?: number;
+  onMasterVolumeChange?: (volume: number) => void;
 }
 
 export function PlaybackControls({
@@ -40,6 +43,8 @@ export function PlaybackControls({
   midiConnected = false,
   trackingEnabled = false,
   onTrackingToggle,
+  masterVolume = 1,
+  onMasterVolumeChange,
 }: PlaybackControlsProps) {
   // Use the enhanced MIDI timing accuracy hook
   const {
@@ -142,36 +147,51 @@ export function PlaybackControls({
       </div>
 
       {/* Second row: MIDI Tracking and MIDI Indicator */}
-      {midiConnected && (
+      {(midiConnected || masterVolume !== undefined) && (
         <div className="flex flex-col gap-3 -mt-2">
           <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 px-3 py-2 bg-purple-50 dark:bg-purple-900/20 rounded-lg w-fit">
-              <label className="flex items-center gap-2 text-sm cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={trackingEnabled}
-                  onChange={() => {
-                    trackMIDITrackingToggle(!trackingEnabled);
-                    onTrackingToggle?.();
-                  }}
-                  className="w-4 h-4 text-purple-600 rounded focus:ring-purple-500 cursor-pointer"
-                />
-                <span className="text-slate-700 dark:text-slate-300">
-                  MIDI Tracking
-                </span>
-              </label>
-            </div>
+            {midiConnected && (
+              <>
+                <div className="flex items-center gap-2 px-3 py-2 bg-purple-50 dark:bg-purple-900/20 rounded-lg w-fit">
+                  <label className="flex items-center gap-2 text-sm cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={trackingEnabled}
+                      onChange={() => {
+                        trackMIDITrackingToggle(!trackingEnabled);
+                        onTrackingToggle?.();
+                      }}
+                      className="w-4 h-4 text-purple-600 rounded focus:ring-purple-500 cursor-pointer"
+                    />
+                    <span className="text-slate-700 dark:text-slate-300">
+                      MIDI Tracking
+                    </span>
+                  </label>
+                </div>
 
-            {/* MIDI Timing Indicator */}
-            <div className="flex-1 max-w-[500px]">
-              <MIDITimingIndicator
-                timingAccuracy={timingAccuracy}
-                isPlaying={isPlaying}
-                trackingEnabled={trackingEnabled}
-                averageScore={averageScore}
-                showingAverage={showingAverage}
-              />
-            </div>
+                {/* MIDI Timing Indicator */}
+                <div className="flex-1 max-w-[500px]">
+                  <MIDITimingIndicator
+                    timingAccuracy={timingAccuracy}
+                    isPlaying={isPlaying}
+                    trackingEnabled={trackingEnabled}
+                    averageScore={averageScore}
+                    showingAverage={showingAverage}
+                  />
+                </div>
+              </>
+            )}
+
+            {/* Master Volume Knob */}
+            {masterVolume !== undefined && onMasterVolumeChange && (
+              <div className="ml-auto">
+                <VolumeKnob
+                  volume={masterVolume}
+                  onVolumeChange={onMasterVolumeChange}
+                  label="Master"
+                />
+              </div>
+            )}
           </div>
         </div>
       )}
