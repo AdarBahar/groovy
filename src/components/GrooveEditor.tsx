@@ -12,6 +12,7 @@ import PlaybackControls from './PlaybackControls';
 import TempoControl from './TempoControl';
 import PresetSelector from './PresetSelector';
 import SyncControl from './SyncControl';
+import VolumeKnob from './VolumeKnob';
 import TimeSignatureSelector from './TimeSignatureSelector';
 import DivisionSelector from './DivisionSelector';
 import EditModeToggle from './EditModeToggle';
@@ -154,6 +155,8 @@ function App() {
     playPreview,
     play,
     stop,
+    masterVolume,
+    setMasterVolume,
   } = useGrooveEngine();
 
   // URL sync: load groove from URL on init, update URL on changes
@@ -470,6 +473,12 @@ function App() {
             <SyncOffsetControl
               offset={syncOffset}
               onOffsetChange={setSyncOffset}
+            />
+
+            <VolumeKnob
+              volume={masterVolume}
+              onVolumeChange={setMasterVolume}
+              label="Master"
             />
           </div>
         </section>

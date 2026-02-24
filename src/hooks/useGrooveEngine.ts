@@ -3,6 +3,37 @@ import { GrooveEngine, SyncMode } from '../core';
 import { GrooveData, DrumVoice, MetronomeFrequency, MetronomeOffsetClick, MetronomeConfig, DEFAULT_METRONOME_CONFIG } from '../types';
 
 const METRONOME_STORAGE_KEY = 'groovy-metronome-config';
+const MASTER_VOLUME_STORAGE_KEY = 'groovy-master-volume';
+const DEFAULT_MASTER_VOLUME = 1.0;
+
+/**
+ * Load master volume from localStorage
+ */
+function loadMasterVolume(): number {
+  try {
+    const saved = localStorage.getItem(MASTER_VOLUME_STORAGE_KEY);
+    if (saved) {
+      const volume = parseFloat(saved);
+      if (!isNaN(volume)) {
+        return Math.max(0, Math.min(1, volume));
+      }
+    }
+  } catch (e) {
+    console.warn('Failed to load master volume:', e);
+  }
+  return DEFAULT_MASTER_VOLUME;
+}
+
+/**
+ * Save master volume to localStorage
+ */
+function saveMasterVolume(volume: number): void {
+  try {
+    localStorage.setItem(MASTER_VOLUME_STORAGE_KEY, volume.toString());
+  } catch (e) {
+    console.warn('Failed to save master volume:', e);
+  }
+}
 
 /**
  * Load metronome config from localStorage
@@ -43,6 +74,9 @@ export function useGrooveEngine() {
   const [currentGroove, setCurrentGroove] = useState<GrooveData | null>(null);
   const [hasPendingChanges, setHasPendingChanges] = useState(false);
 
+  // Master volume state - load from localStorage
+  const [masterVolume, setMasterVolumeState] = useState<number>(loadMasterVolume);
+
   // Metronome state - load from localStorage
   const [metronomeConfig, setMetronomeConfigState] = useState<MetronomeConfig>(loadMetronomeConfig);
   
@@ -67,6 +101,10 @@ export function useGrooveEngine() {
     // Initialize engine with saved metronome config
     const savedConfig = loadMetronomeConfig();
     engine.setMetronomeConfig(savedConfig);
+
+    // Initialize engine with saved master volume
+    const savedVolume = loadMasterVolume();
+    engine.setMasterVolume(savedVolume);
 
     engineRef.current = engine;
 
@@ -206,6 +244,17 @@ export function useGrooveEngine() {
     }
   }, []);
 
+  // ===== Master Volume Methods =====
+
+  const setMasterVolume = useCallback((volume: number) => {
+    if (engineRef.current) {
+      engineRef.current.setMasterVolume(volume);
+      const clampedVolume = Math.max(0, Math.min(1, volume));
+      setMasterVolumeState(clampedVolume);
+      saveMasterVolume(clampedVolume);
+    }
+  }, []);
+
   return {
     // State
     isPlaying,
@@ -213,6 +262,7 @@ export function useGrooveEngine() {
     currentGroove,
     hasPendingChanges,
     metronomeConfig,
+    masterVolume,
 
     // Actions
     play,
@@ -230,6 +280,9 @@ export function useGrooveEngine() {
     setMetronomeOffsetClick,
     setMetronomeVolume,
     setMetronomeConfig,
+
+    // Master volume actions
+    setMasterVolume,
   };
 }
 
