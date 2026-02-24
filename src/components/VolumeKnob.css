@@ -12,6 +12,9 @@
   gap: 8px;
   flex: 0 0 auto;
   width: 110px;
+  padding: 10px;
+  background: rgba(0, 0, 0, 0.02);
+  border-radius: 8px;
 }
 
 .volume-knob-label {
@@ -28,6 +31,9 @@
 /* Light theme */
 .volume-knob-label {
   color: #374151;
+  background: rgba(102, 126, 234, 0.1);
+  padding: 4px 8px;
+  border-radius: 4px;
 }
 
 /* Dark theme */
