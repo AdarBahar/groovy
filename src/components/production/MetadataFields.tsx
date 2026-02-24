@@ -2,6 +2,7 @@ import { Input } from '../ui/input';
 import { Button } from '../ui/button';
 import { Edit2, Check, X, Save, Download, Printer, Share2 } from 'lucide-react';
 import { useState, useRef, useImperativeHandle, forwardRef, useEffect } from 'react';
+//import { ChevronDown, ChevronUp } from 'lucide-react';
 
 const TITLE_MAX_LENGTH = 50;
 const AUTHOR_MAX_LENGTH = 50;
