@@ -10,10 +10,15 @@ import type { GroovePattern } from './PerformanceTracker';
 
 describe('PerformanceTracker', () => {
   const mockPattern: GroovePattern = {
+    division: 8, // 8th notes (Issue #97: required for step-based timing)
+    timeSignature: {
+      beats: 4,
+      noteValue: 4,
+    },
     voices: {
-      'kick': [true, false, true, false],
-      'snare-normal': [false, true, false, true],
-      'hihat-closed': [true, true, true, true],
+      'kick': [true, false, true, false, true, false, true, false],
+      'snare-normal': [false, true, false, true, false, true, false, true],
+      'hihat-closed': [true, true, true, true, true, true, true, true],
     } as any,
   };
 
