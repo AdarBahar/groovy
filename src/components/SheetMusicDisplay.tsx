@@ -197,6 +197,8 @@ function SheetMusicDisplay({
 
               // Get barlines to determine measure boundaries (more accurate than notes)
               const barlines = Array.from(svg.querySelectorAll('.abcjs-bar'));
+              // Staff extras (clef / time signature / key signature) help locate the true beat-1 start
+              const staffExtras = Array.from(svg.querySelectorAll('.abcjs-staff-extra, .abcjs-clef, .abcjs-timesig'));
               // Get all notes/rests for fallback
               const notes = Array.from(svg.querySelectorAll('.abcjs-note, .abcjs-rest'));
 
@@ -232,34 +234,55 @@ function SheetMusicDisplay({
                   return barY >= lineTop && barY < lineBottom;
                 });
 
+                const staffExtrasOnLine = staffExtras.filter(extra => {
+                  const rect = extra.getBoundingClientRect();
+                  const extraY = rect.top + rect.height / 2;
+                  return extraY >= lineTop && extraY < lineBottom;
+                });
+
                 // Find bounds for this line
-                // Left bound: first note position (where beat 1 starts)
-                // Right bound: last barline position (end of measure)
+                // Prefer barlines so the cursor starts at beat 1 even when the first beats are rests/silence.
+                // Fallback to note bounds when barlines are unavailable.
                 let minX = Infinity;
                 let maxX = -Infinity;
 
-                // Find leftmost note on this line for the start position
-                notes.forEach(note => {
-                  const rect = note.getBoundingClientRect();
-                  const noteY = rect.top + rect.height / 2;
-                  if (noteY >= lineTop && noteY < lineBottom) {
-                    const relLeft = ((rect.left - wrapperRect.left) / wrapperRect.width) * 100;
-                    minX = Math.min(minX, relLeft);
-                  }
-                });
+                if (staffExtrasOnLine.length > 0) {
+                  const rightmostExtra = staffExtrasOnLine.reduce((max, el) => {
+                    const rect = el.getBoundingClientRect();
+                    return Math.max(max, rect.right);
+                  }, -Infinity);
+                  minX = ((rightmostExtra - wrapperRect.left) / wrapperRect.width) * 100;
 
-                // Use last barline for right bound (end of measure)
-                if (barlinesOnLine.length > 0) {
-                  const lastBarline = barlinesOnLine[barlinesOnLine.length - 1];
-                  const lastRect = lastBarline.getBoundingClientRect();
+                  if (barlinesOnLine.length > 0) {
+                    const sortedBarlines = [...barlinesOnLine].sort((a, b) => {
+                      const aRect = a.getBoundingClientRect();
+                      const bRect = b.getBoundingClientRect();
+                      return aRect.left - bRect.left;
+                    });
+                    const lastRect = sortedBarlines[sortedBarlines.length - 1].getBoundingClientRect();
+                    maxX = ((lastRect.right - wrapperRect.left) / wrapperRect.width) * 100;
+                  }
+                } else if (barlinesOnLine.length >= 2) {
+                  const sortedBarlines = [...barlinesOnLine].sort((a, b) => {
+                    const aRect = a.getBoundingClientRect();
+                    const bRect = b.getBoundingClientRect();
+                    return aRect.left - bRect.left;
+                  });
+
+                  const firstRect = sortedBarlines[0].getBoundingClientRect();
+                  const lastRect = sortedBarlines[sortedBarlines.length - 1].getBoundingClientRect();
+
+                  minX = ((firstRect.left - wrapperRect.left) / wrapperRect.width) * 100;
                   maxX = ((lastRect.right - wrapperRect.left) / wrapperRect.width) * 100;
                 } else {
-                  // Fallback: use rightmost note
+                  // Fallback: derive bounds from rendered notes/rests on the line
                   notes.forEach(note => {
                     const rect = note.getBoundingClientRect();
                     const noteY = rect.top + rect.height / 2;
                     if (noteY >= lineTop && noteY < lineBottom) {
+                      const relLeft = ((rect.left - wrapperRect.left) / wrapperRect.width) * 100;
                       const relRight = ((rect.right - wrapperRect.left) / wrapperRect.width) * 100;
+                      minX = Math.min(minX, relLeft);
                       maxX = Math.max(maxX, relRight);
                     }
                   });
@@ -320,4 +343,3 @@ function SheetMusicDisplay({
 }
 
 export default SheetMusicDisplay;
-

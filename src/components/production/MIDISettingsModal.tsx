@@ -17,6 +17,7 @@ import {
 import { Button } from '../ui/button';
 import { MIDIConfig, MIDIDeviceInfo } from '../../midi/types';
 import { getAllDrumKitNames } from '../../midi/config/drumKits';
+import { trackMIDISettingsOpen, trackMIDIDeviceSelected, trackMIDIDrumKitSelected, trackMIDIDeviceConnected } from '../../utils/analytics';
 
 interface MIDISettingsModalProps {
   isOpen: boolean;
@@ -38,7 +39,6 @@ export function MIDISettingsModal({
   onConnectDevice,
 }: MIDISettingsModalProps) {
   const [selectedDeviceId, setSelectedDeviceId] = useState<string>(config.selectedDeviceId || '');
-  const [throughEnabled, setThroughEnabled] = useState(config.throughEnabled);
   const [selectedKit, setSelectedKit] = useState<string>(config.selectedKitName);
   const drumKitNames = getAllDrumKitNames();
 
@@ -46,21 +46,19 @@ export function MIDISettingsModal({
   useEffect(() => {
     if (isOpen) {
       setSelectedDeviceId(config.selectedDeviceId || '');
-      setThroughEnabled(config.throughEnabled);
       setSelectedKit(config.selectedKitName);
+      trackMIDISettingsOpen();
     }
   }, [isOpen, config]);
 
   const handleConnect = () => {
     if (selectedDeviceId) {
+      const selectedDevice = devices.find(d => d.id === selectedDeviceId);
+      if (selectedDevice) {
+        trackMIDIDeviceConnected(selectedDevice.name, selectedDevice.id);
+      }
       onConnectDevice(selectedDeviceId);
     }
-  };
-
-  const handleThroughToggle = () => {
-    const newValue = !throughEnabled;
-    setThroughEnabled(newValue);
-    onConfigChange({ throughEnabled: newValue });
   };
 
   return (
@@ -87,7 +85,13 @@ export function MIDISettingsModal({
             <select
               id="midi-device-select"
               value={selectedDeviceId}
-              onChange={(e) => setSelectedDeviceId(e.target.value)}
+              onChange={(e) => {
+                setSelectedDeviceId(e.target.value);
+                const selectedDevice = devices.find(d => d.id === e.target.value);
+                if (selectedDevice) {
+                  trackMIDIDeviceSelected(selectedDevice.name, selectedDevice.id);
+                }
+              }}
               className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm"
             >
               <option value="">Select a device...</option>
@@ -128,6 +132,7 @@ export function MIDISettingsModal({
               onChange={(e) => {
                 setSelectedKit(e.target.value);
                 onConfigChange({ selectedKitName: e.target.value });
+                trackMIDIDrumKitSelected(e.target.value);
               }}
               className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm"
             >
@@ -139,25 +144,6 @@ export function MIDISettingsModal({
             </select>
             <p className="text-xs text-slate-500 dark:text-slate-400">
               Select the drum kit that matches your hardware
-            </p>
-          </div>
-
-          {/* Through Toggle */}
-          <div className="space-y-2">
-            <label htmlFor="midi-through-toggle" className="flex items-center gap-3 cursor-pointer">
-              <input
-                id="midi-through-toggle"
-                type="checkbox"
-                checked={throughEnabled}
-                onChange={handleThroughToggle}
-                className="w-4 h-4 rounded border-slate-300 text-purple-600 cursor-pointer"
-              />
-              <span className="text-sm text-slate-700 dark:text-slate-300">
-                Play sounds when hitting MIDI pads
-              </span>
-            </label>
-            <p className="text-xs text-slate-500 dark:text-slate-400 ml-7">
-              When enabled, hitting your MIDI drum pads will trigger Groovy sounds
             </p>
           </div>
 

@@ -24,50 +24,23 @@
   }
 }
 
-/* MIDI status indicator pulse animation */
-.midi-status-pulse {
-  animation: midi-pulse 2s infinite;
+/* Dark mode support for MIDI feedback */
+.dark .midi-hit {
+  animation: midi-hit-flash-dark 0.2s ease-out;
 }
 
-@keyframes midi-pulse {
-  0%, 100% {
-    opacity: 1;
+@keyframes midi-hit-flash-dark {
+  0% {
+    background-color: rgba(168, 85, 247, 0.4);
+    transform: scale(1);
   }
   50% {
-    opacity: 0.5;
+    background-color: rgba(168, 85, 247, 0.6);
+    transform: scale(1.02);
   }
-}
-
-/* MIDI connection indicator */
-.midi-connected {
-  color: #10b981;
-  font-weight: 500;
-}
-
-.midi-disconnected {
-  color: #6b7280;
-  font-weight: 400;
-}
-
-/* Dark mode support for MIDI feedback */
-@media (prefers-color-scheme: dark) {
-  .midi-hit {
-    animation: midi-hit-flash-dark 0.2s ease-out;
-  }
-
-  @keyframes midi-hit-flash-dark {
-    0% {
-      background-color: rgba(168, 85, 247, 0.4);
-      transform: scale(1);
-    }
-    50% {
-      background-color: rgba(168, 85, 247, 0.6);
-      transform: scale(1.02);
-    }
-    100% {
-      background-color: transparent;
-      transform: scale(1);
-    }
+  100% {
+    background-color: transparent;
+    transform: scale(1);
   }
 }
 
@@ -104,35 +77,33 @@
 }
 
 /* Dark mode support for MIDI tracking feedback */
-@media (prefers-color-scheme: dark) {
-  .midi-tracking-good {
-    animation: midi-good-flash-dark 500ms ease-out;
-  }
+.dark .midi-tracking-good {
+  animation: midi-good-flash-dark 500ms ease-out;
+}
 
-  @keyframes midi-good-flash-dark {
-    0%, 100% {
-      background-color: transparent;
-      transform: scale(1);
-    }
-    50% {
-      background-color: rgba(34, 197, 94, 0.4); /* Slightly darker for dark mode */
-      transform: scale(1.05);
-    }
+@keyframes midi-good-flash-dark {
+  0%, 100% {
+    background-color: transparent;
+    transform: scale(1);
   }
-
-  .midi-tracking-bad {
-    animation: midi-bad-flash-dark 500ms ease-out;
+  50% {
+    background-color: rgba(34, 197, 94, 0.4); /* Slightly darker for dark mode */
+    transform: scale(1.05);
   }
+}
 
-  @keyframes midi-bad-flash-dark {
-    0%, 100% {
-      background-color: transparent;
-      transform: scale(1);
-    }
-    50% {
-      background-color: rgba(239, 68, 68, 0.4);
-      transform: scale(1.05);
-    }
+.dark .midi-tracking-bad {
+  animation: midi-bad-flash-dark 500ms ease-out;
+}
+
+@keyframes midi-bad-flash-dark {
+  0%, 100% {
+    background-color: transparent;
+    transform: scale(1);
+  }
+  50% {
+    background-color: rgba(239, 68, 68, 0.4);
+    transform: scale(1.05);
   }
 }
 
@@ -165,5 +136,39 @@
   50% {
     stroke: #ef4444;
     stroke-width: 2;
+  }
+}
+
+/* Accessibility: Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  /* Disable MIDI hit animation - remove transform, keep color change instant */
+  .midi-hit {
+    animation: none;
+  }
+
+  /* Disable MIDI tracking feedback - remove transform animations */
+  .midi-tracking-good {
+    animation: none;
+  }
+
+  .midi-tracking-bad {
+    animation: none;
+  }
+
+  .dark .midi-tracking-good {
+    animation: none;
+  }
+
+  .dark .midi-tracking-bad {
+    animation: none;
+  }
+
+  /* Disable sheet music note highlighting animations */
+  .abcjs-note.midi-tracking-good {
+    animation: none !important;
+  }
+
+  .abcjs-note.midi-tracking-bad {
+    animation: none !important;
   }
 }

@@ -43,12 +43,12 @@ export class GrooveEngine {
   private isPlaying = false;
   private startTime = 0;
   private currentPosition = 0;
-  private scheduleAheadTime = 0.15; // Schedule notes 150ms ahead for better timing stability
   private timerID: number | null = null;
   private syncMode: SyncMode = 'middle';
   private currentGroove: GrooveData | null = null;
   private pendingGroove: GrooveData | null = null;
   private loopEnabled = true;
+  private baseScheduleAheadTime = 0.15; // Base 150ms schedule-ahead time
 
   // Visual update state (RAF-based for performance)
   private visualRAFId: number | null = null;
@@ -202,6 +202,23 @@ export class GrooveEngine {
   }
 
   // ===== End Metronome Methods =====
+
+  /**
+   * Set master volume (0-1)
+   */
+  setMasterVolume(volume: number): void {
+    const clampedVolume = Math.max(0, Math.min(1, volume));
+    this.synth.setMasterVolume(clampedVolume);
+  }
+
+  /**
+   * Get master volume
+   */
+  getMasterVolume(): number {
+    return this.synth.getMasterVolume();
+  }
+
+  // ===== End Master Volume Methods =====
 
   /**
    * Update the groove during playback
@@ -392,6 +409,26 @@ export class GrooveEngine {
     // Get flattened notes for multi-measure playback
     const flatNotes = getFlattenedNotes(activeGroove);
 
+    // Adaptive schedule-ahead time: reduce at high tempos to reduce audio node accumulation
+    // Consider both tempo AND division (more notes = more nodes)
+    let effectiveScheduleAheadTime = this.baseScheduleAheadTime;
+    const notesPerSecond = (activeGroove.tempo * activeGroove.division) / (4 * 60);
+
+    if (notesPerSecond > 32) {
+      // Very high note rate (e.g., 240 BPM / 1/8 or 180 BPM / 1/16)
+      effectiveScheduleAheadTime = 0.05; // 50ms - aggressive scheduling
+    } else if (notesPerSecond > 24) {
+      // High note rate (e.g., 240 BPM / 1/16)
+      effectiveScheduleAheadTime = 0.065; // 65ms
+    } else if (notesPerSecond > 16) {
+      // Moderate-high note rate
+      effectiveScheduleAheadTime = 0.08; // 80ms
+    } else if (activeGroove.tempo > 180) {
+      effectiveScheduleAheadTime = 0.1; // 100ms for fast tempos
+    } else if (activeGroove.tempo > 150) {
+      effectiveScheduleAheadTime = 0.12; // 120ms for moderate tempos
+    }
+
     // Schedule notes that should play in the next scheduleAheadTime window
     while (true) {
       // Calculate absolute position within the full groove
@@ -401,7 +438,7 @@ export class GrooveEngine {
       const noteTime = this.startTime + (this.currentPosition * noteDuration);
 
       // Stop scheduling if we're too far ahead
-      if (noteTime > currentTime + this.scheduleAheadTime) {
+      if (noteTime > currentTime + effectiveScheduleAheadTime) {
         break;
       }
 

@@ -59,7 +59,7 @@ function App() {
       }
 
       // Track the visit
-      track('Share Link Clicked', {
+      track('Groovy Share Link Clicked', {
         source: referrerSource,
         referrer: referrer || 'unknown',
         embed: params.get('embed') === 'true' ? 'embed' : 'editor',
