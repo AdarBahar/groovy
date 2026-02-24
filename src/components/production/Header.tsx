@@ -148,7 +148,7 @@ export function Header({
             className="text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white relative flex-shrink-0"
             title="My Groovies"
           >
-            <FolderOpen className="w-4 h-4 lg:mr-2 -mr-1" />
+            <FolderOpen className="w-4 h-4 mr-1" />
             <span className="hidden lg:inline">My Groovies</span>
             {savedGroovesCount > 0 && (
               <span className="absolute -top-1 -right-1 w-4 h-4 text-xs bg-purple-600 text-white rounded-full flex items-center justify-center">
@@ -165,7 +165,7 @@ export function Header({
             className="text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white flex-shrink-0"
             title="Groove Library"
           >
-            <Library className="w-4 h-4 lg:mr-2 -mr-1" />
+            <Library className="w-4 h-4 mr-1" />
             <span className="hidden lg:inline">Library</span>
           </Button>
 
@@ -174,13 +174,13 @@ export function Header({
             variant="ghost"
             size="sm"
             onClick={onCountInToggle}
-            className={`hidden lg:flex items-center gap-1 transition-colors ${
+            className={`hidden lg:flex items-center transition-colors ${
               countInEnabled
                 ? 'text-white bg-purple-600 hover:bg-purple-700'
                 : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
-            <Clock className="w-4 h-4 -mr-1" />
+            <Clock className="w-4 h-4 mr-1" />
             Count in - {countInEnabled ? 'ON' : 'OFF'}
           </Button>
 
@@ -191,13 +191,13 @@ export function Header({
                 variant="ghost"
                 size="sm"
                 onClick={() => { if (!showSpeedUpModal) trackAutoSpeedUpConfigOpen(); setShowSpeedUpModal(!showSpeedUpModal); }}
-                className={`flex items-center gap-1 transition-colors ${
+                className={`flex items-center transition-colors ${
                   showSpeedUpModal
                     ? 'text-white bg-slate-700'
                     : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
                 }`}
               >
-                <Zap className="w-4 h-4 -mr-1" />
+                <Zap className="w-4 h-4 mr-1" />
                 Auto Speed up
               </Button>
 
@@ -222,7 +222,7 @@ export function Header({
                 : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
-            <Info className="w-4 h-4 mr-2 -mr-1" />
+            <Info className="w-4 h-4 mr-1" />
             About
           </Button>
 
@@ -240,7 +240,7 @@ export function Header({
                 }`}
                 title="MIDI Settings"
               >
-                <Cable className="w-4 h-4 lg:mr-2 -mr-1" />
+                <Cable className="w-4 h-4 mr-1" />
                 <span className="hidden lg:inline">MIDI</span>
               </Button>
               <span className="hidden lg:inline text-xs font-semibold px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300">
