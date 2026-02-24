@@ -20,7 +20,6 @@ import '../styles/midi.css';
 // Core components - drum grid and sheet music
 import { DrumGridDark } from '../components/production/DrumGridDark';
 import SheetMusicDisplay from '../components/SheetMusicDisplay';
-import VolumeKnob from '../components/VolumeKnob';
 
 // New UI components
 import { Header } from '../components/production/Header';
@@ -532,16 +531,9 @@ export default function ProductionPage() {
                 midiConnected={!!midiInput.currentDevice}
                 trackingEnabled={midiTrackingEnabled}
                 onTrackingToggle={() => setMidiTrackingEnabled(!midiTrackingEnabled)}
+                masterVolume={masterVolume}
+                onMasterVolumeChange={setMasterVolume}
               />
-
-              {/* Master Volume Control */}
-              <div className="flex justify-end px-2">
-                <VolumeKnob
-                  volume={masterVolume}
-                  onVolumeChange={setMasterVolume}
-                  label="Master"
-                />
-              </div>
 
               {/* Metadata Details - Title, Author, Comments */}
               <MetadataFields
