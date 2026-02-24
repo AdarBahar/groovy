@@ -60,7 +60,7 @@ class MIDIAccessManager {
 
   /**
    * Get list of available MIDI input devices
-   * @returns Array of input devices
+   * @returns Array of input devices (sorted by name, fake device last)
    */
   getInputDevices(): MIDIDeviceInfo[] {
     const devices: MIDIDeviceInfo[] = [];
@@ -77,7 +77,10 @@ class MIDIAccessManager {
       }
     }
 
-    // Add fake keyboard device on localhost
+    // Sort real devices by name for stable UI ordering (Issue #100)
+    devices.sort((a, b) => a.name.localeCompare(b.name));
+
+    // Add fake keyboard device on localhost (always at end)
     if (this.isLocalhost) {
       devices.push({
         id: FAKE_MIDI_DEVICE_ID,
@@ -97,7 +100,31 @@ class MIDIAccessManager {
    * @returns boolean Success status
    */
   bindInput(deviceId: string, messageHandler: (event: MIDIMessageEvent) => void): boolean {
-    // Disconnect previous input
+    // Issue #92: Validate new device BEFORE disconnecting current connection
+    // This prevents losing working connection if new device doesn't exist
+
+    // Validate fake keyboard device request
+    if (deviceId === FAKE_MIDI_DEVICE_ID) {
+      if (!this.isLocalhost) {
+        console.error('Fake MIDI device only available on localhost');
+        return false;
+      }
+      // Validation passed, OK to proceed
+    } else {
+      // Validate real device exists
+      if (!this.midiAccess) {
+        console.error('MIDI access not initialized');
+        return false;
+      }
+
+      const input = this.midiAccess.inputs.get(deviceId);
+      if (!input) {
+        console.error('MIDI input device not found:', deviceId);
+        return false;
+      }
+    }
+
+    // NOW that we've validated the new device, disconnect previous input
     if (this.currentInput) {
       this.currentInput.onmidimessage = null;
       console.log('Disconnected from previous MIDI input');
@@ -105,11 +132,6 @@ class MIDIAccessManager {
 
     // Handle fake keyboard device on localhost
     if (deviceId === FAKE_MIDI_DEVICE_ID) {
-      if (!this.isLocalhost) {
-        console.error('Fake MIDI device only available on localhost');
-        return false;
-      }
-
       this.currentInput = null; // Fake device has no currentInput
       this.fakeMIDIMessageHandler = (data: Uint8Array, timestamp: number) => {
         // Convert to MIDIMessageEvent-like object
@@ -125,18 +147,8 @@ class MIDIAccessManager {
       return true;
     }
 
-    if (!this.midiAccess) {
-      console.error('MIDI access not initialized');
-      return false;
-    }
-
-    // Find and bind real MIDI input
-    const input = this.midiAccess.inputs.get(deviceId);
-    if (!input) {
-      console.error('MIDI input device not found:', deviceId);
-      return false;
-    }
-
+    // Bind real MIDI input (we already validated it exists above)
+    const input = this.midiAccess!.inputs.get(deviceId)!;
     this.currentInput = input;
     this.messageHandler = messageHandler;
     this.currentInput.onmidimessage = (event) => this.handleMIDIMessage(event);

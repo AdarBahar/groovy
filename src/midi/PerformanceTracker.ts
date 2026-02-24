@@ -28,6 +28,8 @@ export interface GroovePattern {
   [key: string]: any;
 }
 
+const MAX_TIMING_ERRORS = 500;
+
 class PerformanceTracker {
   private enabled: boolean = false;
   private loadedPattern: GroovePattern | null = null;
@@ -47,6 +49,12 @@ class PerformanceTracker {
    * @param startTime - Performance start timestamp (ms since epoch)
    */
   enable(pattern: GroovePattern, tempo: number, startTime: number): void {
+    // Validate tempo (Issue #94)
+    if (!tempo || tempo <= 0) {
+      console.warn('PerformanceTracker: Invalid tempo. Must be positive number.');
+      return;
+    }
+
     this.loadedPattern = pattern;
     this.tempo = tempo;
     this.startTime = startTime;
@@ -102,7 +110,11 @@ class PerformanceTracker {
     if (overall > 70) {
       this.stats.accurateHits++;
     }
+    // Keep rolling window of timing errors (Issue #98)
     this.stats.timingErrors.push(timingAccuracy);
+    if (this.stats.timingErrors.length > MAX_TIMING_ERRORS) {
+      this.stats.timingErrors.shift();
+    }
     this.stats.averageAccuracy =
       (this.stats.averageAccuracy * (this.stats.totalHits - 1) + overall) / this.stats.totalHits;
 
@@ -129,7 +141,8 @@ class PerformanceTracker {
    * @returns Accuracy percentage (0-100)
    */
   private calculateTimingAccuracy(timestamp: number): number {
-    if (!this.startTime) return 50;
+    // Use null check instead of falsy check to allow startTime=0 (Issue #93)
+    if (this.startTime == null) return 50;
 
     const elapsedMs = timestamp - this.startTime;
     const beatDurationMs = (60 / this.tempo) * 1000;
@@ -203,7 +216,8 @@ class PerformanceTracker {
    * Get current performance statistics
    */
   getStats(): PerformanceStats {
-    return { ...this.stats };
+    // Return deep copy to prevent external mutation of internal state (Issue #95)
+    return { ...this.stats, timingErrors: [...this.stats.timingErrors] };
   }
 
   /**
