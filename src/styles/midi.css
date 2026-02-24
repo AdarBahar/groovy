@@ -25,24 +25,22 @@
 }
 
 /* Dark mode support for MIDI feedback */
-@media (prefers-color-scheme: dark) {
-  .midi-hit {
-    animation: midi-hit-flash-dark 0.2s ease-out;
-  }
+.dark .midi-hit {
+  animation: midi-hit-flash-dark 0.2s ease-out;
+}
 
-  @keyframes midi-hit-flash-dark {
-    0% {
-      background-color: rgba(168, 85, 247, 0.4);
-      transform: scale(1);
-    }
-    50% {
-      background-color: rgba(168, 85, 247, 0.6);
-      transform: scale(1.02);
-    }
-    100% {
-      background-color: transparent;
-      transform: scale(1);
-    }
+@keyframes midi-hit-flash-dark {
+  0% {
+    background-color: rgba(168, 85, 247, 0.4);
+    transform: scale(1);
+  }
+  50% {
+    background-color: rgba(168, 85, 247, 0.6);
+    transform: scale(1.02);
+  }
+  100% {
+    background-color: transparent;
+    transform: scale(1);
   }
 }
 
@@ -79,35 +77,33 @@
 }
 
 /* Dark mode support for MIDI tracking feedback */
-@media (prefers-color-scheme: dark) {
-  .midi-tracking-good {
-    animation: midi-good-flash-dark 500ms ease-out;
-  }
+.dark .midi-tracking-good {
+  animation: midi-good-flash-dark 500ms ease-out;
+}
 
-  @keyframes midi-good-flash-dark {
-    0%, 100% {
-      background-color: transparent;
-      transform: scale(1);
-    }
-    50% {
-      background-color: rgba(34, 197, 94, 0.4); /* Slightly darker for dark mode */
-      transform: scale(1.05);
-    }
+@keyframes midi-good-flash-dark {
+  0%, 100% {
+    background-color: transparent;
+    transform: scale(1);
   }
-
-  .midi-tracking-bad {
-    animation: midi-bad-flash-dark 500ms ease-out;
+  50% {
+    background-color: rgba(34, 197, 94, 0.4); /* Slightly darker for dark mode */
+    transform: scale(1.05);
   }
+}
 
-  @keyframes midi-bad-flash-dark {
-    0%, 100% {
-      background-color: transparent;
-      transform: scale(1);
-    }
-    50% {
-      background-color: rgba(239, 68, 68, 0.4);
-      transform: scale(1.05);
-    }
+.dark .midi-tracking-bad {
+  animation: midi-bad-flash-dark 500ms ease-out;
+}
+
+@keyframes midi-bad-flash-dark {
+  0%, 100% {
+    background-color: transparent;
+    transform: scale(1);
+  }
+  50% {
+    background-color: rgba(239, 68, 68, 0.4);
+    transform: scale(1.05);
   }
 }
 
