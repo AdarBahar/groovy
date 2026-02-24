@@ -138,3 +138,37 @@
     stroke-width: 2;
   }
 }
+
+/* Accessibility: Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  /* Disable MIDI hit animation - remove transform, keep color change instant */
+  .midi-hit {
+    animation: none;
+  }
+
+  /* Disable MIDI tracking feedback - remove transform animations */
+  .midi-tracking-good {
+    animation: none;
+  }
+
+  .midi-tracking-bad {
+    animation: none;
+  }
+
+  .dark .midi-tracking-good {
+    animation: none;
+  }
+
+  .dark .midi-tracking-bad {
+    animation: none;
+  }
+
+  /* Disable sheet music note highlighting animations */
+  .abcjs-note.midi-tracking-good {
+    animation: none !important;
+  }
+
+  .abcjs-note.midi-tracking-bad {
+    animation: none !important;
+  }
+}
