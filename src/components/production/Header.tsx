@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Info, Sun, Moon, Save, FolderOpen, Library, Settings, Menu, MoreVertical, Cable } from 'lucide-react';
+import { Info, Sun, Moon, FolderOpen, Library, Settings, Menu, MoreVertical, Cable, Clock, Zap } from 'lucide-react';
 import { Button } from '../ui/button';
 import { useTheme } from '../../contexts/ThemeContext';
 import { AutoSpeedUpModal } from './AutoSpeedUpModal';
@@ -28,7 +28,6 @@ interface HeaderProps {
   autoSpeedUpConfig?: AutoSpeedUpConfig;
   onAutoSpeedUpConfigChange?: (config: AutoSpeedUpConfig) => void;
   onAutoSpeedUpSaveDefault?: () => void;
-  onSaveGroove?: () => void;
   onOpenMyGrooves?: () => void;
   onOpenGrooveLibrary?: () => void;
   savedGroovesCount?: number;
@@ -56,7 +55,6 @@ export function Header({
   autoSpeedUpConfig,
   onAutoSpeedUpConfigChange,
   onAutoSpeedUpSaveDefault,
-  onSaveGroove,
   onOpenMyGrooves,
   onOpenGrooveLibrary,
   savedGroovesCount = 0,
@@ -139,31 +137,21 @@ export function Header({
         </div>
       </div>
 
-      <div className="flex items-center gap-2 md:gap-4">
+      <div className="flex items-center gap-1 md:gap-2 lg:gap-4">
         {/* Desktop navigation buttons - hidden on mobile */}
-        <div className="hidden md:flex items-center gap-4">
-          {/* Save Groove Button */}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onSaveGroove}
-            className="text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white"
-          >
-            <Save className="w-4 h-4 mr-2" />
-            Save
-          </Button>
-
+        <div className="hidden md:flex items-center gap-2 lg:gap-4 flex-shrink-0">
           {/* My Groovies Button */}
           <Button
             variant="ghost"
             size="sm"
             onClick={onOpenMyGrooves}
-            className="text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white relative"
+            className="text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white relative flex-shrink-0"
+            title="My Groovies"
           >
-            <FolderOpen className="w-4 h-4 mr-2" />
-            My Groovies
+            <FolderOpen className="w-4 h-4 mr-1" />
+            <span className="hidden lg:inline">My Groovies</span>
             {savedGroovesCount > 0 && (
-              <span className="absolute -top-1 -right-1 w-5 h-5 bg-purple-600 text-white text-xs rounded-full flex items-center justify-center">
+              <span className="absolute -top-1 -right-1 w-4 h-4 text-xs bg-purple-600 text-white rounded-full flex items-center justify-center">
                 {savedGroovesCount > 9 ? '9+' : savedGroovesCount}
               </span>
             )}
@@ -174,39 +162,42 @@ export function Header({
             variant="ghost"
             size="sm"
             onClick={onOpenGrooveLibrary}
-            className="text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white"
+            className="text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white flex-shrink-0"
+            title="Groove Library"
           >
-            <Library className="w-4 h-4 mr-2" />
-            Library
+            <Library className="w-4 h-4 mr-1" />
+            <span className="hidden lg:inline">Library</span>
           </Button>
 
-          {/* Count In Toggle */}
+          {/* Count In Toggle - hidden at tablet width */}
           <Button
             variant="ghost"
             size="sm"
             onClick={onCountInToggle}
-            className={`transition-colors ${
+            className={`hidden lg:flex items-center transition-colors ${
               countInEnabled
                 ? 'text-white bg-purple-600 hover:bg-purple-700'
                 : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
+            <Clock className="w-4 h-4 mr-1" />
             Count in - {countInEnabled ? 'ON' : 'OFF'}
           </Button>
 
-          {/* Auto Speed Up Button with Dropdown */}
+          {/* Auto Speed Up Button with Dropdown - hidden at tablet width */}
           {autoSpeedUpConfig && onAutoSpeedUpConfigChange && (
-            <div className="relative">
+            <div className="hidden lg:flex relative">
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => { if (!showSpeedUpModal) trackAutoSpeedUpConfigOpen(); setShowSpeedUpModal(!showSpeedUpModal); }}
-                className={`transition-colors ${
+                className={`flex items-center transition-colors ${
                   showSpeedUpModal
                     ? 'text-white bg-slate-700'
                     : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
                 }`}
               >
+                <Zap className="w-4 h-4 mr-1" />
                 Auto Speed up
               </Button>
 
@@ -220,44 +211,39 @@ export function Header({
             </div>
           )}
 
+          {/* About Button - hidden at tablet width */}
           <Button
             variant="ghost"
             size="sm"
             onClick={() => setShowAboutModal(!showAboutModal)}
-            className={`transition-colors ${
+            className={`hidden lg:flex transition-colors ${
               showAboutModal
                 ? 'text-white bg-slate-700'
                 : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
-            <Info className="w-4 h-4 mr-2" />
+            <Info className="w-4 h-4 mr-1" />
             About
           </Button>
 
           {/* MIDI Settings Button - Beta */}
           {midiConfig && onMIDIConfigChange && onMIDIConnectDevice && (
-            <div className="flex flex-col items-center gap-0.5">
+            <div className="flex items-center gap-0 -ml-1 flex-shrink-0">
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => setShowMIDIModal(true)}
                 className={`transition-colors ${
                   midiCurrentDevice
-                    ? 'text-purple-600 dark:text-purple-400'
-                    : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
+                    ? 'text-green-600 dark:text-green-400'
+                    : 'text-red-600 dark:text-red-400'
                 }`}
+                title="MIDI Settings"
               >
-                <Cable className="w-4 h-4 mr-2" />
-                MIDI
+                <Cable className="w-4 h-4 mr-1" />
+                <span className="hidden lg:inline">MIDI</span>
               </Button>
-              <span className={`text-[10px] font-medium transition-colors ${
-                midiCurrentDevice
-                  ? 'text-green-600 dark:text-green-400'
-                  : 'text-slate-400 dark:text-slate-500'
-              }`}>
-                {midiCurrentDevice ? 'Connected' : 'Disconnected'}
-              </span>
-              <span className="text-xs font-semibold px-2 py-0.5 rounded bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300">
+              <span className="hidden lg:inline text-xs font-semibold px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300">
                 Beta
               </span>
             </div>
@@ -290,7 +276,6 @@ export function Header({
           <MobileMoreMenu
             isOpen={showMobileMenu}
             onClose={() => setShowMobileMenu(false)}
-            onSaveGroove={onSaveGroove}
             onOpenMyGrooves={onOpenMyGrooves}
             onOpenGrooveLibrary={onOpenGrooveLibrary}
             countInEnabled={countInEnabled}

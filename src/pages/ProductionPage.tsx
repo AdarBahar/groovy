@@ -29,6 +29,7 @@ import { MetadataFields, MetadataFieldsRef } from '../components/production/Meta
 import { BottomToolbar } from '../components/production/BottomToolbar';
 import { KeyboardShortcuts } from '../components/production/KeyboardShortcuts';
 import { ClearButton } from '../components/production/ClearButton';
+import { loadSyncOffset } from '../components/SyncOffsetControl';
 import { DownloadModal } from '../components/production/DownloadModal';
 import { PrintPreviewModal } from '../components/production/PrintPreviewModal';
 import { MyGroovesModal } from '../components/production/MyGroovesModal';
@@ -36,7 +37,6 @@ import { SaveGrooveModal } from '../components/production/SaveGrooveModal';
 import { GrooveLibraryModal } from '../components/production/GrooveLibraryModal';
 import { ShareModal } from '../components/production/ShareModal';
 import { TimeSignatureSelectorModal } from '../components/production/TimeSignatureSelectorModal';
-import { MIDITrackingDebug } from '../components/production/MIDITrackingDebug';
 import { Button } from '../components/ui/button';
 
 import './ProductionPage.css';
@@ -63,6 +63,18 @@ function metronomeOptionToFrequency(option: 'off' | '4th' | '8th' | '16th'): Met
   }
 }
 
+const TITLE_MAX_LENGTH = 50;
+const AUTHOR_MAX_LENGTH = 50;
+const COMMENT_MAX_LENGTH = 300;
+
+function sanitizeMetadataValue(value: string, maxLength: number): string {
+  return value
+    .normalize('NFKC')
+    .replace(/[\u0000-\u001F\u007F-\u009F]/g, '')
+    .trim()
+    .slice(0, maxLength);
+}
+
 export default function ProductionPage() {
   const [advancedEditMode] = useState(false);
   const [isNotesOnly, setIsNotesOnly] = useState(false);
@@ -79,6 +91,8 @@ export default function ProductionPage() {
   const [countingInButton, setCountingInButton] = useState<'play' | 'playPlus' | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [midiTrackingEnabled, setMidiTrackingEnabled] = useState(false);
+  const [isMetadataEditing, setIsMetadataEditing] = useState(false);
+  const [syncOffset] = useState<number>(loadSyncOffset);
   const playStartTimeRef = useRef<number | null>(null);
   const countInTimeoutRef = useRef<number | null>(null);
   const metadataFieldsRef = useRef<MetadataFieldsRef>(null);
@@ -127,6 +141,9 @@ export default function ProductionPage() {
     setMetronomeCountIn,
     setMetronomeVolume,
     setMetronomeOffsetClick,
+    // Master volume
+    masterVolume,
+    setMasterVolume,
   } = useGrooveEngine();
 
   // Create synth instance for MIDI input
@@ -204,8 +221,21 @@ export default function ProductionPage() {
   // Calculate visual position
   const visualPosition = useMemo(() => {
     if (currentPosition < 0 || !isPlaying) return currentPosition;
-    return currentPosition;
-  }, [currentPosition, isPlaying]);
+
+    const msPerPosition = (60000 / groove.tempo) / (groove.division / 4);
+    const positionOffset = Math.round(syncOffset / msPerPosition);
+    const totalPositions = GrooveUtils.getTotalPositions(groove);
+
+    let adjusted = currentPosition - positionOffset;
+
+    if (adjusted < 0) {
+      adjusted = totalPositions + adjusted;
+    } else if (adjusted >= totalPositions) {
+      adjusted = adjusted % totalPositions;
+    }
+
+    return adjusted;
+  }, [currentPosition, isPlaying, groove, syncOffset]);
 
   // Use direct DOM manipulation for playback highlighting (performance optimization)
   // This avoids React re-renders for high-frequency position updates during playback
@@ -249,6 +279,8 @@ export default function ProductionPage() {
   // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
+      if (isMetadataEditing) return;
+
       if ((event.ctrlKey || event.metaKey) && event.key === 'z' && !event.shiftKey) {
         event.preventDefault();
         if (canUndo) {
@@ -269,7 +301,7 @@ export default function ProductionPage() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [canUndo, canRedo, undo, redo]);
+  }, [canUndo, canRedo, undo, redo, isMetadataEditing]);
 
   // Cancel count-in helper
   const cancelCountIn = useCallback(() => {
@@ -409,6 +441,19 @@ export default function ProductionPage() {
     // Engine sync handled by centralized useEffect
   };
 
+  const handleMetadataSave = useCallback((metadata: { title: string; author: string; comments: string }) => {
+    const title = sanitizeMetadataValue(metadata.title, TITLE_MAX_LENGTH);
+    const author = sanitizeMetadataValue(metadata.author, AUTHOR_MAX_LENGTH);
+    const comments = sanitizeMetadataValue(metadata.comments, COMMENT_MAX_LENGTH);
+
+    setGroove({
+      ...groove,
+      title: title || undefined,
+      author: author || undefined,
+      comments: comments || undefined,
+    });
+  }, [groove, setGroove]);
+
   // My Grooves handlers
   const handleSaveGroove = (name: string, existingId?: string) => {
     analytics.trackGrooveSave(name, !!existingId);
@@ -467,7 +512,7 @@ export default function ProductionPage() {
   };
 
   return (
-    <div className="h-screen flex flex-col bg-slate-100 dark:bg-slate-900 text-slate-900 dark:text-white">
+    <div className="min-h-dvh flex flex-col bg-slate-100 dark:bg-slate-900 text-slate-900 dark:text-white">
       <Header
         metronome={frequencyToMetronomeOption(metronomeConfig.frequency)}
         onMetronomeChange={handleMetronomeChange}
@@ -482,7 +527,6 @@ export default function ProductionPage() {
         autoSpeedUpConfig={autoSpeedUp.config}
         onAutoSpeedUpConfigChange={autoSpeedUp.setConfig}
         onAutoSpeedUpSaveDefault={autoSpeedUp.saveAsDefault}
-        onSaveGroove={() => setIsSaveGrooveModalOpen(true)}
         onOpenMyGrooves={() => { analytics.trackMyGroovesOpen(); setIsMyGroovesModalOpen(true); }}
         onOpenGrooveLibrary={() => { analytics.trackLibraryOpen(); setIsGrooveLibraryModalOpen(true); }}
         savedGroovesCount={myGrooves.grooves.length}
@@ -512,7 +556,7 @@ export default function ProductionPage() {
 
         <div className="flex-1 flex flex-col overflow-hidden">
           <main className="flex-1 overflow-auto">
-            <div className="p-3 sm:p-4 md:p-6 space-y-4 md:space-y-6">
+            <div className="p-3 sm:p-4 md:p-5 space-y-1">
               {/* Playback controls */}
               <PlaybackControls
                 isPlaying={isPlaying}
@@ -530,24 +574,34 @@ export default function ProductionPage() {
                 midiConnected={!!midiInput.currentDevice}
                 trackingEnabled={midiTrackingEnabled}
                 onTrackingToggle={() => setMidiTrackingEnabled(!midiTrackingEnabled)}
+                masterVolume={masterVolume}
+                onMasterVolumeChange={setMasterVolume}
               />
 
               {/* Metadata Details - Title, Author, Comments */}
-              <MetadataFields
-                ref={metadataFieldsRef}
-                title={groove.title || ''}
-                author={groove.author || ''}
-                comments={groove.comments || ''}
-                onTitleChange={handleTitleChange}
-                onAuthorChange={handleAuthorChange}
-                onCommentsChange={handleCommentsChange}
-                isNotesOnly={isNotesOnly}
-              />
+              <div className="-mt-3">
+                <MetadataFields
+                  ref={metadataFieldsRef}
+                  title={groove.title || ''}
+                  author={groove.author || ''}
+                  comments={groove.comments || ''}
+                  onTitleChange={handleTitleChange}
+                  onAuthorChange={handleAuthorChange}
+                  onCommentsChange={handleCommentsChange}
+                  onMetadataSave={handleMetadataSave}
+                  onEditingStateChange={setIsMetadataEditing}
+                  onSaveGroove={() => setIsSaveGrooveModalOpen(true)}
+                  onDownload={() => { analytics.trackDownloadOpen(); setIsDownloadModalOpen(true); }}
+                  onPrint={() => { analytics.trackPrintOpen(); setIsPrintModalOpen(true); }}
+                  onShare={() => { analytics.trackShareModalOpen(); setIsShareModalOpen(true); }}
+                  isNotesOnly={isNotesOnly}
+                />
+              </div>
 
               {/* Main sequencer area - Sheet music + Grid */}
-              <div className="bg-white/50 dark:bg-slate-800/50 rounded-xl p-3 sm:p-4 md:p-6 border border-slate-200 dark:border-slate-700">
+              <div className="bg-white/50 dark:bg-slate-800/50 rounded-xl p-3 sm:p-4 md:p-5 border border-slate-200 dark:border-slate-700">
                 {/* Sheet Music Notation */}
-                <div className={`p-3 sm:p-4 md:p-6 bg-slate-50 dark:bg-slate-900/50 rounded-lg border border-slate-200 dark:border-slate-600 ${!isNotesOnly ? 'mb-4 md:mb-6' : ''}`}>
+                <div className={`px-3 py-1.5 sm:px-4 sm:py-2 md:px-5 md:py-2.5 bg-slate-50 dark:bg-slate-900/50 rounded-lg border border-slate-200 dark:border-slate-600 ${!isNotesOnly ? 'mb-1 md:mb-2' : ''}`}>
                   <SheetMusicDisplay
                     groove={groove}
                     visible={true}
@@ -559,13 +613,6 @@ export default function ProductionPage() {
                 {/* Drum Grid with time signature display - hidden in Notes Only mode */}
                 {!isNotesOnly && (
                   <div className="flex">
-                    {/* Time signature display - hidden on mobile, shown in sidebar */}
-                    <div className="hidden md:flex flex-col items-center justify-center mr-8 text-slate-900 dark:text-white">
-                      <div className="text-4xl font-bold">{groove.timeSignature.beats}</div>
-                      <div className="w-8 h-px bg-slate-900 dark:bg-white my-1"></div>
-                      <div className="text-4xl font-bold">{groove.timeSignature.noteValue}</div>
-                    </div>
-
                     {/* Drum grid */}
                     <div className="flex-1 overflow-x-auto">
                       <DrumGridDark
@@ -586,36 +633,32 @@ export default function ProductionPage() {
 
               {!isNotesOnly && (
                 <div className="flex items-center gap-2">
-                  <ClearButton onClear={handleClearAll} />
+                  <div className="flex items-center gap-2">
+                    <ClearButton onClear={handleClearAll} />
 
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center gap-2 h-auto py-2 px-4"
-                  >
-                    <div className="w-4 h-4 flex items-center justify-center font-bold text-sm">
-                      S
-                    </div>
-                    <span className="text-xs uppercase">Stickings</span>
-                  </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center gap-2 h-auto py-2 px-4"
+                    >
+                      <div className="w-4 h-4 flex items-center justify-center font-bold text-sm">
+                        S
+                      </div>
+                      <span className="text-xs uppercase">Stickings</span>
+                    </Button>
+                  </div>
+
+                  <div className="ml-auto">
+                    <KeyboardShortcuts inline />
+                  </div>
                 </div>
               )}
             </div>
           </main>
-
-          {!isNotesOnly && <KeyboardShortcuts />}
         </div>
       </div>
 
-      <BottomToolbar
-        onShare={() => { analytics.trackShareModalOpen(); setIsShareModalOpen(true); }}
-        onSave={() => {
-          console.log('Bottom toolbar onSave called, setting modal open to true');
-          setIsSaveGrooveModalOpen(true);
-        }}
-        onDownload={() => { analytics.trackDownloadOpen(); setIsDownloadModalOpen(true); }}
-        onPrint={() => { analytics.trackPrintOpen(); setIsPrintModalOpen(true); }}
-      />
+      <BottomToolbar />
 
       <DownloadModal
         groove={groove}
@@ -665,10 +708,6 @@ export default function ProductionPage() {
         onClose={() => setIsTimeSignatureModalOpen(false)}
         onTimeSignatureChange={handleTimeSignatureChange}
       />
-
-      {/* MIDI Tracking Debug POC - Remove this component when visualization is working */}
-      <MIDITrackingDebug />
     </div>
   );
 }
-

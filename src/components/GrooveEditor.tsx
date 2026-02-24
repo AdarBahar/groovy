@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { GrooveData, DEFAULT_GROOVE, DrumVoice, TimeSignature, Division, ALL_DRUM_VOICES } from '../types';
 import { SyncMode, GrooveUtils } from '../core';
 import { useGrooveEngine } from '../hooks/useGrooveEngine';
@@ -6,11 +6,13 @@ import { useHistory } from '../hooks/useHistory';
 import { useURLSync } from '../hooks/useURLSync';
 import { useAutoSpeedUp } from '../hooks/useAutoSpeedUp';
 import { useGrooveActions } from '../hooks/useGrooveActions';
+import { useGrooveSync } from '../hooks/useGrooveSync';
 import DrumGrid from './DrumGrid';
 import PlaybackControls from './PlaybackControls';
 import TempoControl from './TempoControl';
 import PresetSelector from './PresetSelector';
 import SyncControl from './SyncControl';
+import VolumeKnob from './VolumeKnob';
 import TimeSignatureSelector from './TimeSignatureSelector';
 import DivisionSelector from './DivisionSelector';
 import EditModeToggle from './EditModeToggle';
@@ -23,6 +25,109 @@ import AutoSpeedUpIndicator from './AutoSpeedUpIndicator';
 import SyncOffsetControl, { loadSyncOffset } from './SyncOffsetControl';
 import './GrooveEditor.css';
 
+/**
+ * GrooveEditor (App Component)
+ *
+ * The main orchestrator component for the Groovy drum pattern sequencer.
+ *
+ * ## Component Architecture
+ *
+ * This component manages the complete groove creation and playback experience.
+ * Following the composition pattern, most complex logic has been extracted into
+ * specialized hooks for testability, reusability, and maintainability.
+ *
+ * ```
+ * GrooveEditor (Orchestrator)
+ * ├── useHistory() - Undo/redo state management (20 lines)
+ * ├── useGrooveEngine() - WebAudio playback engine (30 lines)
+ * ├── useURLSync() - URL serialization/loading (20 lines)
+ * ├── useAutoSpeedUp() - Automatic tempo progression (40 lines)
+ * ├── useGrooveActions() - Note/measure/metadata operations (60 lines)
+ * ├── useGrooveSync() - Automatic engine synchronization (50 lines)
+ * ├── View State - UI toggles and display options (50 lines)
+ * ├── Effects - Keyboard shortcuts, initial sync (60 lines)
+ * ├── Event Handlers - User interaction & composition (80 lines)
+ * └── Render - JSX layout (100 lines)
+ * ```
+ *
+ * ## Responsibilities
+ *
+ * **State Management:**
+ * - Groove data: Notes, tempo, swing, time signature, measures
+ * - View state: Sheet music display, edit mode, sync offset
+ * - Undo/redo history (via useHistory hook)
+ *
+ * **Engine Synchronization:**
+ * - Automatic WebAudio engine updates (via useGrooveSync hook)
+ * - Prevents unnecessary updates for metadata-only changes
+ * - Handles playback state management (via useGrooveEngine hook)
+ *
+ * **User Interactions:**
+ * - Note toggling and grid editing
+ * - Measure operations (add, remove, duplicate, clear)
+ * - Parameter adjustments (tempo, swing, time signature, division)
+ * - Preset loading
+ * - Undo/redo via keyboard shortcuts (Ctrl+Z, Ctrl+Shift+Z)
+ * - Auto speed-up configuration
+ *
+ * **Data Persistence:**
+ * - URL synchronization for sharing grooves
+ * - Loads groove from URL on component mount (via useURLSync hook)
+ * - Updates URL when groove changes
+ *
+ * ## Hook Dependencies
+ *
+ * **useHistory<GrooveData>**
+ * - Provides: state, setState, undo, redo, canUndo, canRedo
+ * - Responsibility: Groove state management with undo/redo
+ * - Related Issue: #31
+ *
+ * **useGrooveEngine**
+ * - Provides: isPlaying, currentPosition, togglePlayback, updateGroove, setSyncMode, playPreview, play, stop
+ * - Responsibility: WebAudio engine operations
+ * - Related Issue: #70
+ *
+ * **useURLSync**
+ * - Provides: copyURLToClipboard (loads groove from URL on init)
+ * - Responsibility: URL-based groove sharing and loading
+ * - Related Issue: #44
+ *
+ * **useAutoSpeedUp**
+ * - Provides: isActive, tempoIncrease, loopsUntilIncrease, start, stop, updateConfig
+ * - Responsibility: Automatic tempo progression during playback
+ * - Related Issue: #73
+ *
+ * **useGrooveActions**
+ * - Provides: Note toggling, measure operations, metadata editing
+ * - Responsibility: Shared groove manipulation functions
+ * - Related Issue: #26 (this refactoring)
+ *
+ * **useGrooveSync** (NEW - extracted from this component)
+ * - Provides: Automatic engine synchronization
+ * - Responsibility: Centralized groove → engine sync logic
+ * - Only syncs when audio-relevant properties change
+ * - Skips unnecessary updates for metadata changes
+ *
+ * ## Performance Optimizations
+ *
+ * 1. **Selective Engine Sync**: useGrooveSync only triggers when audio properties change
+ * 2. **Visual Position Memoization**: visualPosition calculated only when dependencies change
+ * 3. **Ref-based Tracking**: Engine sync uses references to avoid stale closures
+ * 4. **No Unnecessary Re-renders**: Hooks properly memoized and callbacks optimized
+ *
+ * ## Related GitHub Issues
+ *
+ * - #26: God Component Pattern (This refactoring)
+ * - #31: History/undo-redo implementation
+ * - #44: URL sharing functionality
+ * - #70: WebAudio engine improvements
+ * - #73: Auto speed-up feature
+ *
+ * ## Testing
+ *
+ * See: `src/components/__tests__/GrooveEditor.test.ts`
+ * Integration tests: `tests/integration/GrooveEditor.integration.test.ts`
+ */
 function App() {
   const [syncMode, setSyncMode] = useState<SyncMode>('start');
   const [advancedEditMode, setAdvancedEditMode] = useState(false);
@@ -50,6 +155,8 @@ function App() {
     playPreview,
     play,
     stop,
+    masterVolume,
+    setMasterVolume,
   } = useGrooveEngine();
 
   // URL sync: load groove from URL on init, update URL on changes
@@ -70,28 +177,7 @@ function App() {
 
   // Centralized engine sync: automatically update engine when groove changes
   // This eliminates the need for manual updateGroove calls throughout the codebase
-  const prevGrooveRef = useRef<GrooveData | null>(null);
-  useEffect(() => {
-    // Skip if groove hasn't actually changed (reference check first, then compare audio-relevant fields)
-    if (prevGrooveRef.current) {
-      const prev = prevGrooveRef.current;
-      // Only sync if audio-relevant properties changed (not metadata like title/author/comments)
-      const audioChanged =
-        prev.tempo !== groove.tempo ||
-        prev.swing !== groove.swing ||
-        prev.division !== groove.division ||
-        prev.timeSignature.beats !== groove.timeSignature.beats ||
-        prev.timeSignature.noteValue !== groove.timeSignature.noteValue ||
-        prev.measures !== groove.measures; // Reference check for measures array
-
-      if (!audioChanged) {
-        prevGrooveRef.current = groove;
-        return;
-      }
-    }
-    prevGrooveRef.current = groove;
-    updateGroove(groove);
-  }, [groove, updateGroove]);
+  useGrooveSync(groove, updateGroove);
 
   // Auto Speed Up hook
   const autoSpeedUp = useAutoSpeedUp({
@@ -387,6 +473,12 @@ function App() {
             <SyncOffsetControl
               offset={syncOffset}
               onOffsetChange={setSyncOffset}
+            />
+
+            <VolumeKnob
+              volume={masterVolume}
+              onVolumeChange={setMasterVolume}
+              label="Master"
             />
           </div>
         </section>

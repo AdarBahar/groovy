@@ -1,4 +1,8 @@
-export function KeyboardShortcuts() {
+interface KeyboardShortcutsProps {
+  inline?: boolean;
+}
+
+export function KeyboardShortcuts({ inline = false }: KeyboardShortcutsProps) {
   const shortcuts = [
     { key: 'Space', description: 'Play/Pause' },
     { key: 'E', description: 'Edit Mode' },
@@ -8,9 +12,24 @@ export function KeyboardShortcuts() {
     { key: '⌘⇧Z', description: 'Redo' },
   ];
 
+  if (inline) {
+    return (
+      <div className="hidden md:flex items-center justify-end gap-4 lg:gap-6 flex-wrap">
+        {shortcuts.map((shortcut, index) => (
+          <div key={index} className="flex items-center gap-2 text-xs">
+            <kbd className="bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 px-2 py-1 rounded font-mono">
+              {shortcut.key}
+            </kbd>
+            <span className="text-slate-500 dark:text-slate-400">{shortcut.description}</span>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
   return (
     // Hidden on mobile - keyboard shortcuts not relevant for touch devices
-    <div className="hidden md:block bg-slate-100/50 dark:bg-slate-800/50 border-t border-slate-200 dark:border-slate-700 py-3 px-6">
+    <div className="hidden md:block bg-slate-100/50 dark:bg-slate-800/50 border-t border-slate-200 dark:border-slate-700 py-2 px-6">
       <div className="flex items-center justify-center gap-8 flex-wrap">
         {shortcuts.map((shortcut, index) => (
           <div key={index} className="flex items-center gap-2 text-xs">
@@ -24,4 +43,3 @@ export function KeyboardShortcuts() {
     </div>
   );
 }
-

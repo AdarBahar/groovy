@@ -73,11 +73,11 @@ const analytics = {
 // ============================================================================
 
 export function trackPlay(mode: 'normal' | 'speed-up', tempo: number, timeSignature: string) {
-  analytics.track('Playback Started', { mode, tempo, time_signature: timeSignature });
+  analytics.track('Groovy Playback Started', { mode, tempo, time_signature: timeSignature });
 }
 
 export function trackStop(mode: 'normal' | 'speed-up', duration_seconds: number) {
-  analytics.track('Playback Stopped', { mode, duration_seconds });
+  analytics.track('Groovy Playback Stopped', { mode, duration_seconds });
 }
 
 // ============================================================================
@@ -85,27 +85,27 @@ export function trackStop(mode: 'normal' | 'speed-up', duration_seconds: number)
 // ============================================================================
 
 export function trackNoteToggle(voice: string, position: number, isAdding: boolean) {
-  analytics.track('Note Toggled', { voice, position, action: isAdding ? 'add' : 'remove' });
+  analytics.track('Groovy Note Toggled', { voice, position, action: isAdding ? 'add' : 'remove' });
 }
 
 export function trackDivisionChange(division: number) {
-  analytics.track('Division Changed', { division });
+  analytics.track('Groovy Division Changed', { division });
 }
 
 export function trackTempoChange(tempo: number) {
-  analytics.track('Tempo Changed', { tempo });
+  analytics.track('Groovy Tempo Changed', { tempo });
 }
 
 export function trackSwingChange(swing: number) {
-  analytics.track('Swing Changed', { swing });
+  analytics.track('Groovy Swing Changed', { swing });
 }
 
 export function trackMeasureAction(action: 'add' | 'duplicate' | 'remove' | 'clear', measureIndex: number) {
-  analytics.track('Measure Action', { action, measure_index: measureIndex });
+  analytics.track('Groovy Measure Action', { action, measure_index: measureIndex });
 }
 
 export function trackClearAll() {
-  analytics.track('Clear All Notes');
+  analytics.track('Groovy Clear All Notes');
 }
 
 // ============================================================================
@@ -113,19 +113,19 @@ export function trackClearAll() {
 // ============================================================================
 
 export function trackLibraryOpen() {
-  analytics.track('Library Opened');
+  analytics.track('Groovy Library Opened');
 }
 
 export function trackLibraryStyleSelect(styleName: string) {
-  analytics.track('Library Style Selected', { style_name: styleName });
+  analytics.track('Groovy Library Style Selected', { style_name: styleName });
 }
 
 export function trackLibraryGrooveLoad(grooveName: string, styleName: string) {
-  analytics.track('Library Groove Loaded', { groove_name: grooveName, style_name: styleName });
+  analytics.track('Groovy Library Groove Loaded', { groove_name: grooveName, style_name: styleName });
 }
 
 export function trackLibraryGrooveSave(grooveName: string, styleName: string) {
-  analytics.track('Library Groove Saved to My Groovies', { groove_name: grooveName, style_name: styleName });
+  analytics.track('Groovy Library Groove Saved to My Groovies', { groove_name: grooveName, style_name: styleName });
 }
 
 // ============================================================================
@@ -133,19 +133,19 @@ export function trackLibraryGrooveSave(grooveName: string, styleName: string) {
 // ============================================================================
 
 export function trackMyGroovesOpen() {
-  analytics.track('My Groovies Opened');
+  analytics.track('Groovy My Groovies Opened');
 }
 
 export function trackGrooveSave(grooveName: string, isOverwrite: boolean) {
-  analytics.track('Groove Saved', { groove_name: grooveName, is_overwrite: isOverwrite });
+  analytics.track('Groovy Groove Saved', { groove_name: grooveName, is_overwrite: isOverwrite });
 }
 
 export function trackGrooveLoad(grooveName: string) {
-  analytics.track('Groove Loaded', { groove_name: grooveName });
+  analytics.track('Groovy Groove Loaded', { groove_name: grooveName });
 }
 
 export function trackGrooveDelete(grooveName: string) {
-  analytics.track('Groove Deleted', { groove_name: grooveName });
+  analytics.track('Groovy Groove Deleted', { groove_name: grooveName });
 }
 
 // ============================================================================
@@ -153,38 +153,38 @@ export function trackGrooveDelete(grooveName: string) {
 // ============================================================================
 
 export function trackShare() {
-  analytics.track('URL Shared');
+  analytics.track('Groovy URL Shared');
 }
 
 export function trackShareModalOpen() {
-  analytics.track('Share Modal Opened');
+  analytics.track('Groovy Share Modal Opened');
 }
 
 export function trackShareMethod(
   method: 'link' | 'twitter' | 'facebook' | 'reddit' | 'embed' | 'qr' | 'email' | 'shorten',
   properties?: Record<string, unknown>
 ) {
-  analytics.track('Share Method Used', { method, ...properties });
+  analytics.track('Groovy Share Method Used', { method, ...properties });
 }
 
 export function trackShareModeToggle(mode: 'embed' | 'editor') {
-  analytics.track('Share Mode Toggled', { mode });
+  analytics.track('Groovy Share Mode Toggled', { mode });
 }
 
 export function trackDownloadOpen() {
-  analytics.track('Download Modal Opened');
+  analytics.track('Groovy Download Modal Opened');
 }
 
 export function trackDownload(format: string) {
-  analytics.track('Downloaded', { format });
+  analytics.track('Groovy Downloaded', { format });
 }
 
 export function trackPrintOpen() {
-  analytics.track('Print Preview Opened');
+  analytics.track('Groovy Print Preview Opened');
 }
 
 export function trackPrint() {
-  analytics.track('Printed');
+  analytics.track('Groovy Printed');
 }
 
 // ============================================================================
@@ -192,36 +192,85 @@ export function trackPrint() {
 // ============================================================================
 
 export function trackThemeToggle(isDark: boolean) {
-  analytics.track('Theme Toggled', { theme: isDark ? 'dark' : 'light' });
+  analytics.track('Groovy Theme Toggled', { theme: isDark ? 'dark' : 'light' });
 }
 
 export function trackCountInToggle(enabled: boolean) {
-  analytics.track('Count In Toggled', { enabled });
+  analytics.track('Groovy Count In Toggled', { enabled });
 }
 
 export function trackMetronomeChange(frequency: string) {
-  analytics.track('Metronome Changed', { frequency });
+  analytics.track('Groovy Metronome Changed', { frequency });
 }
 
 export function trackNotesOnlyToggle(enabled: boolean) {
-  analytics.track('Notes Only Mode Toggled', { enabled });
+  analytics.track('Groovy Notes Only Mode Toggled', { enabled });
 }
 
 export function trackAutoSpeedUpConfigOpen() {
-  analytics.track('Auto Speed Up Config Opened');
+  analytics.track('Groovy Auto Speed Up Config Opened');
 }
 
 export function trackAutoSpeedUpConfigSave(config: { bpmIncrease: number; everyNLoops: number }) {
-  analytics.track('Auto Speed Up Config Saved', config);
+  analytics.track('Groovy Auto Speed Up Config Saved', config);
 }
 
 export function trackUndoRedo(action: 'undo' | 'redo') {
-  analytics.track('Undo/Redo', { action });
+  analytics.track('Groovy Undo/Redo', { action });
+}
+
+// ============================================================================
+// MIDI Events
+// ============================================================================
+
+export function trackMIDISettingsOpen() {
+  analytics.track('Groovy MIDI Settings Opened');
+}
+
+export function trackMIDIDeviceConnected(deviceName: string, deviceId: string) {
+  analytics.track('Groovy MIDI Device Connected', { device_name: deviceName, device_id: deviceId });
+}
+
+export function trackMIDIDeviceDisconnected(deviceName: string, deviceId: string) {
+  analytics.track('Groovy MIDI Device Disconnected', { device_name: deviceName, device_id: deviceId });
+}
+
+export function trackMIDIDeviceSelected(deviceName: string, deviceId: string) {
+  analytics.track('Groovy MIDI Device Selected', { device_name: deviceName, device_id: deviceId });
+}
+
+export function trackMIDITrackingToggle(enabled: boolean) {
+  analytics.track('Groovy MIDI Tracking Toggled', { enabled });
+}
+
+export function trackMIDIThroughToggle(enabled: boolean) {
+  analytics.track('Groovy MIDI Through Toggled', { enabled });
+}
+
+export function trackMIDIDrumKitSelected(kitName: string) {
+  analytics.track('Groovy MIDI Drum Kit Selected', { kit_name: kitName });
+}
+
+export function trackMIDIHit(note: number, velocity: number, voice: string, timingAccuracy?: number) {
+  analytics.track('Groovy MIDI Hit Received', {
+    note,
+    velocity,
+    voice,
+    ...(timingAccuracy !== undefined && { timing_accuracy: timingAccuracy })
+  });
+}
+
+export function trackMIDITimingSessionEnd(hitsCount: number, averageAccuracy: number) {
+  analytics.track('Groovy MIDI Timing Session Ended', {
+    hits_count: hitsCount,
+    average_accuracy: averageAccuracy
+  });
 }
 
 /**
  * Generic track function for custom events
  * Useful for one-off tracking that doesn't have a specific wrapper
+ * Note: Consider adding a 'Groovy' prefix if this is used for app-specific events
  */
 export function track(eventName: string, properties?: Record<string, unknown>) {
   analytics.track(eventName, properties);

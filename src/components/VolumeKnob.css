@@ -1,0 +1,201 @@
+/**
+ * Volume Knob Styles - SVG Based
+ *
+ * Professional circular volume knob with SVG rendering.
+ * Features 32 tick marks, animated slider, and smooth transitions.
+ */
+
+.volume-knob-container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+  flex: 0 0 auto;
+  width: auto;
+  padding: 10px 14px;
+  margin: -10px -14px;
+  user-select: none;
+}
+
+.volume-knob-info {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 4px;
+  min-width: 132px;
+}
+
+.volume-knob-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #374151;
+  letter-spacing: 0.3px;
+  display: block;
+  background: rgba(102, 126, 234, 0.1);
+  padding: 2px 6px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+.dark .volume-knob-label {
+  color: #d1d5db;
+  background: rgba(139, 92, 246, 0.15);
+}
+
+/**
+ * SVG-based Volume Button Knob
+ */
+.volume-button-knob {
+  position: relative;
+  width: 60px;
+  height: 60px;
+  user-select: none;
+  flex: 0 0 auto;
+}
+
+.volume-button-knob svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/**
+ * Main Circle Background
+ */
+.circle {
+  fill: #202528;
+  stroke: #080516;
+  stroke-width: 10px;
+  cursor: grab;
+  transition: filter 0.1s ease-in-out;
+}
+
+.volume-button-knob:hover .circle {
+  filter: brightness(1.05);
+}
+
+/**
+ * Gradient Tick Marks
+ */
+.gradate {
+  pointer-events: none;
+}
+
+.gradate-line {
+  --deg: 0deg;
+  --h: 135;
+  --s: 10%;
+  --a: 0.2;
+  stroke-linecap: round;
+  stroke-width: 10px;
+  stroke: hsla(var(--h), var(--s), 55%, var(--a));
+  transform: rotate(var(--deg));
+  transform-origin: 50% 50%;
+  transition: all 0.1s ease-in-out;
+}
+
+.gradate-line.active {
+  --a: 1;
+  --s: 60%;
+  filter: url(#shadow);
+}
+
+/**
+ * Slider Circle
+ */
+.slider {
+  --deg: 0deg;
+  --h: 270;
+  --s: 60%;
+  transform-origin: 50% 50%;
+  transform: rotate(var(--deg));
+  fill: hsl(var(--h), var(--s), 55%);
+  cursor: grab;
+  transition: all 0.1s ease-in-out;
+  user-select: none;
+}
+
+.slider:hover {
+  filter: brightness(1.1);
+}
+
+/**
+ * Without animate state - during drag
+ */
+.volume-button-knob.without-animate .slider {
+  transition: none;
+  cursor: grabbing;
+}
+
+/**
+ * Slider wrap for inset shadow effect
+ */
+.slider-wrap {
+  filter: url(#inset-shadow);
+}
+
+/**
+ * Volume Display Percentage
+ */
+.volume-knob-display {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #6b7280;
+  text-align: left;
+  min-width: 36px;
+  white-space: nowrap;
+}
+
+.dark .volume-knob-display {
+  color: #9ca3af;
+}
+
+/**
+ * Responsive adjustments for smaller screens
+ */
+@media (max-width: 640px) {
+  .volume-knob-container {
+    gap: 6px;
+    padding: 10px 12px;
+    margin: -10px -12px;
+  }
+
+  .volume-button-knob {
+    width: 50px;
+    height: 50px;
+  }
+
+  .volume-knob-info {
+    min-width: 112px;
+  }
+
+  .volume-knob-label {
+    font-size: 0.65rem;
+    padding: 1px 4px;
+  }
+
+  .gradate-line {
+    stroke-width: 8px;
+  }
+
+  .slider {
+    r: 8;
+  }
+
+  .volume-knob-display {
+    font-size: 0.65rem;
+  }
+}
+
+/**
+ * Accessibility: Reduced motion support
+ */
+@media (prefers-reduced-motion: reduce) {
+  .slider {
+    transition: none;
+  }
+
+  .gradate-line {
+    transition: none;
+  }
+}

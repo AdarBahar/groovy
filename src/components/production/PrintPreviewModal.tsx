@@ -6,7 +6,7 @@
  * Only the sheet music notation is printed, not the entire UI.
  */
 
-import { useRef, useEffect, useCallback, useMemo } from 'react';
+import { useRef, useEffect, useCallback, useMemo, useState } from 'react';
 import { X, Printer, AlertTriangle } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import {
@@ -19,6 +19,7 @@ import { Button } from '../ui/button';
 import { GrooveData } from '../../types';
 import { grooveToABC, renderABC, getShareableURL } from '../../core';
 import { trackPrint } from '../../utils/analytics';
+import { shortenURL, isShortenerConfigured } from '../../services/urlShortener';
 import './PrintPreviewModal.css';
 
 interface PrintPreviewModalProps {
@@ -31,12 +32,39 @@ interface PrintPreviewModalProps {
 export function PrintPreviewModal({ groove, isOpen, onClose, onAddTitle }: PrintPreviewModalProps) {
   const printContainerRef = useRef<HTMLDivElement>(null);
   const sheetMusicRef = useRef<HTMLDivElement>(null);
+  const [printURL, setPrintURL] = useState<string>('');
 
   // Check if groove has no title
   const isUntitled = !groove.title || groove.title.trim() === '';
 
   // Generate shareable URL
   const shareableURL = useMemo(() => getShareableURL(groove, undefined, 'embed'), [groove]);
+
+  // Default to shortened URL for print (fallback to full URL)
+  useEffect(() => {
+    let cancelled = false;
+
+    setPrintURL(shareableURL);
+
+    if (!isOpen || !isShortenerConfigured()) {
+      return;
+    }
+
+    (async () => {
+      try {
+        const shortUrl = await shortenURL(shareableURL);
+        if (!cancelled && shortUrl) {
+          setPrintURL(shortUrl);
+        }
+      } catch {
+        // Silent fallback to full shareable URL for print
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isOpen, shareableURL]);
 
   // Function to render the sheet music
   const renderSheetMusic = useCallback(() => {
@@ -179,7 +207,7 @@ export function PrintPreviewModal({ groove, isOpen, onClose, onAddTitle }: Print
   <div class="print-footer">
     <div class="footer-left">
       <div class="qr-code" id="qr-placeholder"></div>
-      <div class="url-text">${shareableURL}</div>
+      <div class="url-text">${printURL || shareableURL}</div>
     </div>
     <div class="footer-right">Created with Groovy</div>
   </div>
@@ -306,13 +334,13 @@ export function PrintPreviewModal({ groove, isOpen, onClose, onAddTitle }: Print
             <div className="mt-6 pt-3 border-t border-slate-200 flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <QRCodeSVG
-                  value={shareableURL}
+                  value={printURL || shareableURL}
                   size={64}
                   level="M"
                   className="flex-shrink-0"
                 />
                 <div className="text-xs text-slate-500 max-w-md break-all">
-                  {shareableURL}
+                  {printURL || shareableURL}
                 </div>
               </div>
               <div className="text-xs text-slate-400 text-right">
@@ -337,4 +365,3 @@ export function PrintPreviewModal({ groove, isOpen, onClose, onAddTitle }: Print
     </Dialog>
   );
 }
-

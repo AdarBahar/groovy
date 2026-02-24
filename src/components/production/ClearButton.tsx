@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Trash2 } from 'lucide-react';
 import { Button } from '../ui/button';
 import { trackClearAll } from '../../utils/analytics';
@@ -11,8 +12,18 @@ interface ClearButtonProps {
 
 export function ClearButton({ onClear }: ClearButtonProps) {
   const [state, setState] = useState<ClearButtonState>('default');
+  const [dropdownPosition, setDropdownPosition] = useState<{ top: number; left: number } | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
+
+  const updateDropdownPosition = () => {
+    if (!buttonRef.current) return;
+    const rect = buttonRef.current.getBoundingClientRect();
+    setDropdownPosition({
+      top: rect.bottom + 4,
+      left: rect.left,
+    });
+  };
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -30,8 +41,16 @@ export function ClearButton({ onClear }: ClearButtonProps) {
       }
     };
 
+    updateDropdownPosition();
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    window.addEventListener('resize', updateDropdownPosition);
+    window.addEventListener('scroll', updateDropdownPosition, true);
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      window.removeEventListener('resize', updateDropdownPosition);
+      window.removeEventListener('scroll', updateDropdownPosition, true);
+    };
   }, [state]);
 
   const handleButtonClick = () => {
@@ -74,10 +93,11 @@ export function ClearButton({ onClear }: ClearButtonProps) {
         <span className="text-xs uppercase">Clear</span>
       </Button>
 
-      {isOpen && (
+      {isOpen && dropdownPosition && createPortal(
         <div
           ref={dropdownRef}
-          className="absolute top-full left-0 mt-1 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-md px-3 py-2 shadow-lg flex items-center gap-3 whitespace-nowrap z-50"
+          className="fixed bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-md px-3 py-2 shadow-lg flex items-center gap-3 whitespace-nowrap z-[100]"
+          style={{ top: dropdownPosition.top, left: dropdownPosition.left }}
         >
           {state === 'confirmation' ? (
             <>
@@ -103,9 +123,9 @@ export function ClearButton({ onClear }: ClearButtonProps) {
           ) : (
             <span className="text-slate-600 dark:text-slate-300 text-xs">Clearing editor...</span>
           )}
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
 }
-
