@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Info, Sun, Moon, Save, FolderOpen, Library, Settings, Menu, MoreVertical, Cable } from 'lucide-react';
+import { Info, Sun, Moon, FolderOpen, Library, Settings, Menu, MoreVertical, Cable } from 'lucide-react';
 import { Button } from '../ui/button';
 import { useTheme } from '../../contexts/ThemeContext';
 import { AutoSpeedUpModal } from './AutoSpeedUpModal';
@@ -28,7 +28,6 @@ interface HeaderProps {
   autoSpeedUpConfig?: AutoSpeedUpConfig;
   onAutoSpeedUpConfigChange?: (config: AutoSpeedUpConfig) => void;
   onAutoSpeedUpSaveDefault?: () => void;
-  onSaveGroove?: () => void;
   onOpenMyGrooves?: () => void;
   onOpenGrooveLibrary?: () => void;
   savedGroovesCount?: number;
@@ -56,7 +55,6 @@ export function Header({
   autoSpeedUpConfig,
   onAutoSpeedUpConfigChange,
   onAutoSpeedUpSaveDefault,
-  onSaveGroove,
   onOpenMyGrooves,
   onOpenGrooveLibrary,
   savedGroovesCount = 0,
@@ -139,21 +137,9 @@ export function Header({
         </div>
       </div>
 
-      <div className="flex items-center gap-1 md:gap-2 lg:gap-4 overflow-x-auto">
+      <div className="flex items-center gap-1 md:gap-2 lg:gap-4">
         {/* Desktop navigation buttons - hidden on mobile */}
         <div className="hidden md:flex items-center gap-2 lg:gap-4 flex-shrink-0">
-          {/* Save Groove Button */}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onSaveGroove}
-            className="text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white flex-shrink-0"
-            title="Save Groove"
-          >
-            <Save className="w-4 h-4 lg:mr-2" />
-            <span className="hidden lg:inline">Save</span>
-          </Button>
-
           {/* My Groovies Button */}
           <Button
             variant="ghost"
@@ -288,7 +274,6 @@ export function Header({
           <MobileMoreMenu
             isOpen={showMobileMenu}
             onClose={() => setShowMobileMenu(false)}
-            onSaveGroove={onSaveGroove}
             onOpenMyGrooves={onOpenMyGrooves}
             onOpenGrooveLibrary={onOpenGrooveLibrary}
             countInEnabled={countInEnabled}

@@ -481,7 +481,6 @@ export default function ProductionPage() {
         autoSpeedUpConfig={autoSpeedUp.config}
         onAutoSpeedUpConfigChange={autoSpeedUp.setConfig}
         onAutoSpeedUpSaveDefault={autoSpeedUp.saveAsDefault}
-        onSaveGroove={() => setIsSaveGrooveModalOpen(true)}
         onOpenMyGrooves={() => { analytics.trackMyGroovesOpen(); setIsMyGroovesModalOpen(true); }}
         onOpenGrooveLibrary={() => { analytics.trackLibraryOpen(); setIsGrooveLibraryModalOpen(true); }}
         savedGroovesCount={myGrooves.grooves.length}
@@ -540,6 +539,7 @@ export default function ProductionPage() {
                 onTitleChange={handleTitleChange}
                 onAuthorChange={handleAuthorChange}
                 onCommentsChange={handleCommentsChange}
+                onSaveGroove={() => setIsSaveGrooveModalOpen(true)}
                 isNotesOnly={isNotesOnly}
               />
 

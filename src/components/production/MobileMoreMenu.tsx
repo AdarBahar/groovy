@@ -1,12 +1,11 @@
 import { useEffect, useRef } from 'react';
-import { Save, FolderOpen, Library, Info, Zap, Cable } from 'lucide-react';
+import { FolderOpen, Library, Info, Zap, Cable } from 'lucide-react';
 import { AutoSpeedUpConfig, MetronomeConfig, MetronomeFrequency, MetronomeOffsetClick } from '../../types';
 import { MIDIConfig, MIDIDeviceInfo } from '../../midi/types';
 
 interface MobileMoreMenuProps {
   isOpen: boolean;
   onClose: () => void;
-  onSaveGroove?: () => void;
   onOpenMyGrooves?: () => void;
   onOpenGrooveLibrary?: () => void;
   countInEnabled?: boolean;
@@ -34,7 +33,6 @@ interface MobileMoreMenuProps {
 export function MobileMoreMenu({
   isOpen,
   onClose,
-  onSaveGroove,
   onOpenMyGrooves,
   onOpenGrooveLibrary,
   countInEnabled = false,
@@ -120,14 +118,6 @@ export function MobileMoreMenu({
 
       {/* Menu Items */}
       <div className="py-1">
-        <button
-          onClick={() => handleAction(onSaveGroove)}
-          className="w-full flex items-center gap-3 px-4 py-3 text-left text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
-        >
-          <Save className="w-5 h-5" />
-          <span>Save Groove</span>
-        </button>
-
         <button
           onClick={() => handleAction(onOpenMyGrooves)}
           className="w-full flex items-center gap-3 px-4 py-3 text-left text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
