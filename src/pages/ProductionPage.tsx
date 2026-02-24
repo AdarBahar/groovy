@@ -29,6 +29,7 @@ import { MetadataFields, MetadataFieldsRef } from '../components/production/Meta
 import { BottomToolbar } from '../components/production/BottomToolbar';
 import { KeyboardShortcuts } from '../components/production/KeyboardShortcuts';
 import { ClearButton } from '../components/production/ClearButton';
+import { loadSyncOffset } from '../components/SyncOffsetControl';
 import { DownloadModal } from '../components/production/DownloadModal';
 import { PrintPreviewModal } from '../components/production/PrintPreviewModal';
 import { MyGroovesModal } from '../components/production/MyGroovesModal';
@@ -91,6 +92,7 @@ export default function ProductionPage() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [midiTrackingEnabled, setMidiTrackingEnabled] = useState(false);
   const [isMetadataEditing, setIsMetadataEditing] = useState(false);
+  const [syncOffset] = useState<number>(loadSyncOffset);
   const playStartTimeRef = useRef<number | null>(null);
   const countInTimeoutRef = useRef<number | null>(null);
   const metadataFieldsRef = useRef<MetadataFieldsRef>(null);
@@ -219,8 +221,21 @@ export default function ProductionPage() {
   // Calculate visual position
   const visualPosition = useMemo(() => {
     if (currentPosition < 0 || !isPlaying) return currentPosition;
-    return currentPosition;
-  }, [currentPosition, isPlaying]);
+
+    const msPerPosition = (60000 / groove.tempo) / (groove.division / 4);
+    const positionOffset = Math.round(syncOffset / msPerPosition);
+    const totalPositions = GrooveUtils.getTotalPositions(groove);
+
+    let adjusted = currentPosition - positionOffset;
+
+    if (adjusted < 0) {
+      adjusted = totalPositions + adjusted;
+    } else if (adjusted >= totalPositions) {
+      adjusted = adjusted % totalPositions;
+    }
+
+    return adjusted;
+  }, [currentPosition, isPlaying, groove, syncOffset]);
 
   // Use direct DOM manipulation for playback highlighting (performance optimization)
   // This avoids React re-renders for high-frequency position updates during playback
