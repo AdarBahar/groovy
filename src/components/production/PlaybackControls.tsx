@@ -152,7 +152,7 @@ export function PlaybackControls({
       {/* Second row: MIDI Tracking and MIDI Indicator */}
       {showSecondRow && (
         <div className="flex flex-col gap-2 -mt-1">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 w-full">
             {midiConnected && (
               <>
                 <div className="flex items-center gap-2 px-3 py-1.5 bg-purple-50 dark:bg-purple-900/20 rounded-lg w-fit">
@@ -187,7 +187,7 @@ export function PlaybackControls({
 
             {/* Master Volume Knob */}
             {showVolumeControl && (
-              <div className={midiConnected ? 'ml-auto' : ''}>
+              <div className="ml-auto">
                 <VolumeKnob
                   volume={masterVolume}
                   onVolumeChange={onMasterVolumeChange}
