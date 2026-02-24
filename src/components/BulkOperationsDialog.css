@@ -255,3 +255,55 @@
   border-bottom-color: #444;
 }
 
+/* Reduced motion support - accessibility */
+@media (prefers-reduced-motion: reduce) {
+  /* Skip fade and slide animations, show immediately */
+  .bulk-operations-overlay {
+    animation: none;
+    opacity: 1;
+  }
+
+  .bulk-operations-dialog {
+    animation: none;
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* Remove hover and active transforms */
+  .pattern-button:hover {
+    transform: none;
+  }
+
+  .pattern-button:active {
+    transform: none;
+  }
+
+  .save-pattern-button:hover {
+    transform: none;
+  }
+
+  .save-pattern-button:active {
+    transform: none;
+  }
+
+  .delete-pattern-button:hover {
+    transform: none;
+  }
+
+  .delete-pattern-button:active {
+    transform: none;
+  }
+
+  .pattern-button.custom:hover {
+    transform: none;
+  }
+
+  /* Use instant transitions */
+  .close-button,
+  .pattern-button,
+  .save-pattern-button,
+  .delete-pattern-button {
+    transition: none;
+  }
+}
+

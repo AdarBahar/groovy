@@ -124,3 +124,29 @@
   }
 }
 
+/* Reduced motion support - accessibility */
+@media (prefers-reduced-motion: reduce) {
+  /* Disable pulse animation, but keep the icon visible */
+  .note-cell.current .note-icon {
+    animation: none;
+    transform: scale(1);
+  }
+
+  /* Disable flash animation, but keep the red color */
+  .note-icon-container.playing .note-icon {
+    animation: none;
+    transform: scale(1);
+    filter: brightness(1);
+  }
+
+  /* Remove hover transform */
+  .note-cell.active:hover .note-icon {
+    transform: none;
+  }
+
+  /* Use instant transitions */
+  .note-icon {
+    transition: none;
+  }
+}
+

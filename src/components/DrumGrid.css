@@ -461,3 +461,37 @@
   }
 }
 
+/* Reduced motion support - accessibility */
+@media (prefers-reduced-motion: reduce) {
+  /* Disable pulse animation */
+  .note-cell.current {
+    animation: none;
+    box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.8);
+  }
+
+  /* Remove hover and active transforms */
+  .note-cell:hover {
+    transform: none;
+  }
+
+  .voice-label:hover {
+    transform: none;
+  }
+
+  .voice-label:active {
+    transform: none;
+  }
+
+  .measure-action-btn:active:not(:disabled) {
+    transform: none;
+  }
+
+  /* Use instant transitions instead of timed ones */
+  .measure-action-btn,
+  .voice-label,
+  .note-cell,
+  .context-menu-item {
+    transition: none;
+  }
+}
+
