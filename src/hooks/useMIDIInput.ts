@@ -21,6 +21,7 @@ import { VelocityFilter } from '../midi/VelocityFilter';
 import { DoubleTriggerFilter } from '../midi/DoubleTriggerFilter';
 import { keyboardMIDISimulator } from '../midi/KeyboardMIDISimulator';
 import { FAKE_MIDI_DEVICE_ID_EXPORT } from '../midi/MIDIAccess';
+import { trackMIDIDeviceDisconnected } from '../utils/analytics';
 
 interface UseMIDIInputReturn {
   config: MIDIConfig;
@@ -85,8 +86,14 @@ export function useMIDIInput(synth: DrumSynth): UseMIDIInputReturn {
 
       // If current device disconnected, clear connection
       if (isConnected && config.selectedDeviceId && !updatedDevices.some((d) => d.id === config.selectedDeviceId)) {
+        const disconnectedDevice = currentDevice;
         setIsConnected(false);
         setCurrentDevice(null);
+
+        // Track device disconnection
+        if (disconnectedDevice) {
+          trackMIDIDeviceDisconnected(disconnectedDevice.name, disconnectedDevice.id);
+        }
       }
     };
 
@@ -94,7 +101,7 @@ export function useMIDIInput(synth: DrumSynth): UseMIDIInputReturn {
     return () => {
       midiAccess.onDeviceListChange = null;
     };
-  }, [isConnected, config.selectedDeviceId]);
+  }, [isConnected, config.selectedDeviceId, currentDevice]);
 
   // Handle drum kit changes
   useEffect(() => {

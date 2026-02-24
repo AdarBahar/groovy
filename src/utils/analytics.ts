@@ -219,6 +219,54 @@ export function trackUndoRedo(action: 'undo' | 'redo') {
   analytics.track('Groovy Undo/Redo', { action });
 }
 
+// ============================================================================
+// MIDI Events
+// ============================================================================
+
+export function trackMIDISettingsOpen() {
+  analytics.track('Groovy MIDI Settings Opened');
+}
+
+export function trackMIDIDeviceConnected(deviceName: string, deviceId: string) {
+  analytics.track('Groovy MIDI Device Connected', { device_name: deviceName, device_id: deviceId });
+}
+
+export function trackMIDIDeviceDisconnected(deviceName: string, deviceId: string) {
+  analytics.track('Groovy MIDI Device Disconnected', { device_name: deviceName, device_id: deviceId });
+}
+
+export function trackMIDIDeviceSelected(deviceName: string, deviceId: string) {
+  analytics.track('Groovy MIDI Device Selected', { device_name: deviceName, device_id: deviceId });
+}
+
+export function trackMIDITrackingToggle(enabled: boolean) {
+  analytics.track('Groovy MIDI Tracking Toggled', { enabled });
+}
+
+export function trackMIDIThroughToggle(enabled: boolean) {
+  analytics.track('Groovy MIDI Through Toggled', { enabled });
+}
+
+export function trackMIDIDrumKitSelected(kitName: string) {
+  analytics.track('Groovy MIDI Drum Kit Selected', { kit_name: kitName });
+}
+
+export function trackMIDIHit(note: number, velocity: number, voice: string, timingAccuracy?: number) {
+  analytics.track('Groovy MIDI Hit Received', {
+    note,
+    velocity,
+    voice,
+    ...(timingAccuracy !== undefined && { timing_accuracy: timingAccuracy })
+  });
+}
+
+export function trackMIDITimingSessionEnd(hitsCount: number, averageAccuracy: number) {
+  analytics.track('Groovy MIDI Timing Session Ended', {
+    hits_count: hitsCount,
+    average_accuracy: averageAccuracy
+  });
+}
+
 /**
  * Generic track function for custom events
  * Useful for one-off tracking that doesn't have a specific wrapper

@@ -4,6 +4,7 @@ import { Slider } from '../ui/slider';
 import { TimeSignature } from '../../types';
 import { MIDITimingIndicator } from '../MIDITimingIndicator';
 import { useMIDITimingAccuracy } from '../../hooks/useMIDITimingAccuracy';
+import { trackMIDITrackingToggle } from '../../utils/analytics';
 
 interface PlaybackControlsProps {
   isPlaying: boolean;
@@ -149,7 +150,10 @@ export function PlaybackControls({
                 <input
                   type="checkbox"
                   checked={trackingEnabled}
-                  onChange={onTrackingToggle}
+                  onChange={() => {
+                    trackMIDITrackingToggle(!trackingEnabled);
+                    onTrackingToggle?.();
+                  }}
                   className="w-4 h-4 text-purple-600 rounded focus:ring-purple-500 cursor-pointer"
                 />
                 <span className="text-slate-700 dark:text-slate-300">

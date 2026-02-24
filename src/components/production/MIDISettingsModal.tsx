@@ -17,6 +17,7 @@ import {
 import { Button } from '../ui/button';
 import { MIDIConfig, MIDIDeviceInfo } from '../../midi/types';
 import { getAllDrumKitNames } from '../../midi/config/drumKits';
+import { trackMIDISettingsOpen, trackMIDIDeviceSelected, trackMIDIDrumKitSelected, trackMIDIDeviceConnected } from '../../utils/analytics';
 
 interface MIDISettingsModalProps {
   isOpen: boolean;
@@ -46,11 +47,16 @@ export function MIDISettingsModal({
     if (isOpen) {
       setSelectedDeviceId(config.selectedDeviceId || '');
       setSelectedKit(config.selectedKitName);
+      trackMIDISettingsOpen();
     }
   }, [isOpen, config]);
 
   const handleConnect = () => {
     if (selectedDeviceId) {
+      const selectedDevice = devices.find(d => d.id === selectedDeviceId);
+      if (selectedDevice) {
+        trackMIDIDeviceConnected(selectedDevice.name, selectedDevice.id);
+      }
       onConnectDevice(selectedDeviceId);
     }
   };
@@ -79,7 +85,13 @@ export function MIDISettingsModal({
             <select
               id="midi-device-select"
               value={selectedDeviceId}
-              onChange={(e) => setSelectedDeviceId(e.target.value)}
+              onChange={(e) => {
+                setSelectedDeviceId(e.target.value);
+                const selectedDevice = devices.find(d => d.id === e.target.value);
+                if (selectedDevice) {
+                  trackMIDIDeviceSelected(selectedDevice.name, selectedDevice.id);
+                }
+              }}
               className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm"
             >
               <option value="">Select a device...</option>
@@ -120,6 +132,7 @@ export function MIDISettingsModal({
               onChange={(e) => {
                 setSelectedKit(e.target.value);
                 onConfigChange({ selectedKitName: e.target.value });
+                trackMIDIDrumKitSelected(e.target.value);
               }}
               className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm"
             >
