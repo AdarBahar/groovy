@@ -1,198 +1,144 @@
 /**
- * Volume Knob Styles
+ * Volume Knob Styles - SVG Based
  *
- * Visual knob control with smooth animations and theme support.
- * Designed to integrate with Groovy's dark/light theme system.
+ * Professional circular volume knob with SVG rendering.
+ * Features 32 tick marks, animated slider, and smooth transitions.
  */
 
 .volume-knob-container {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: 4px;
   flex: 0 0 auto;
-  width: 110px;
-  padding: 10px;
-  background: rgba(0, 0, 0, 0.02);
-  border-radius: 8px;
+  width: auto;
+  padding: 0;
 }
 
 .volume-knob-label {
-  font-size: 0.9rem;
+  font-size: 0.75rem;
   font-weight: 600;
-  color: #333;
+  color: #374151;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  height: 20px;
+  height: 16px;
   display: flex;
   align-items: center;
-}
-
-/* Light theme */
-.volume-knob-label {
-  color: #374151;
   background: rgba(102, 126, 234, 0.1);
-  padding: 4px 8px;
+  padding: 2px 6px;
   border-radius: 4px;
 }
 
-/* Dark theme */
 .dark .volume-knob-label {
   color: #d1d5db;
-}
-
-.volume-knob-wrapper {
-  position: relative;
-  width: 100px;
-  height: 100px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  background: rgba(139, 92, 246, 0.15);
 }
 
 /**
- * Main Knob Element
- * - Circular dial that rotates based on volume
- * - Uses gradient background for visual appeal
+ * SVG-based Volume Button Knob
  */
-.volume-knob {
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
+.volume-button-knob {
   position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  width: 120px;
+  height: 120px;
   user-select: none;
-  transition: transform 0.15s ease-out;
-  background: conic-gradient(
-    from 0deg,
-    #667eea 0%,
-    #764ba2 25%,
-    #f093fb 50%,
-    #4facfe 75%,
-    #667eea 100%
-  );
-  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-  cursor: grab;
 }
 
-/* Dark theme knob */
-.dark .volume-knob {
-  background: conic-gradient(
-    from 0deg,
-    #7c3aed 0%,
-    #8b5cf6 25%,
-    #d8b4fe 50%,
-    #60a5fa 75%,
-    #7c3aed 100%
-  );
-  box-shadow: 0 4px 15px rgba(124, 58, 237, 0.4);
-}
-
-.volume-knob:hover {
-  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
-}
-
-.dark .volume-knob:hover {
-  box-shadow: 0 6px 20px rgba(124, 58, 237, 0.5);
-}
-
-.volume-knob:active {
-  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5);
-}
-
-.dark .volume-knob:active {
-  box-shadow: 0 8px 25px rgba(124, 58, 237, 0.6);
-}
-
-/**
- * Knob Ring
- * - Inner ring that provides visual structure
- * - Contrasts with the gradient background
- */
-.volume-knob-ring {
-  position: absolute;
+.volume-button-knob svg {
+  display: block;
   width: 100%;
   height: 100%;
-  border-radius: 50%;
-  border: 2px solid rgba(255, 255, 255, 0.9);
-  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.dark .volume-knob-ring {
-  border-color: rgba(255, 255, 255, 0.8);
 }
 
 /**
- * Center Dot
- * - Visual anchor point in the middle of the knob
+ * Main Circle Background
  */
-.volume-knob-center {
-  position: absolute;
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background: white;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-  z-index: 2;
+.circle {
+  fill: #202528;
+  stroke: #080516;
+  stroke-width: 10px;
+  cursor: grab;
+  transition: filter 0.1s ease-in-out;
+}
+
+.volume-button-knob:hover .circle {
+  filter: brightness(1.05);
 }
 
 /**
- * Indicator Line
- * - Points from center to top of knob to show current rotation
- * - Acts as the primary visual feedback for volume position
+ * Gradient Tick Marks
  */
-.volume-knob-indicator {
-  position: absolute;
-  top: 8px;
-  left: 50%;
-  width: 3px;
-  height: 20px;
-  background: linear-gradient(to bottom, white, rgba(255, 255, 255, 0.6));
-  border-radius: 1.5px;
-  transform: translateX(-50%);
-  z-index: 1;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+.gradate {
+  pointer-events: none;
+}
+
+.gradate-line {
+  --deg: 0deg;
+  --h: 135;
+  --s: 10%;
+  --a: 0.2;
+  stroke-linecap: round;
+  stroke-width: 10px;
+  stroke: hsla(var(--h), var(--s), 55%, var(--a));
+  transform: rotate(var(--deg));
+  transform-origin: 50% 50%;
+  transition: all 0.1s ease-in-out;
+}
+
+.gradate-line.active {
+  --a: 1;
+  --s: 60%;
+  filter: url(#shadow);
 }
 
 /**
- * Volume Display
- * - Shows current volume percentage as number
+ * Slider Circle
+ */
+.slider {
+  --deg: 0deg;
+  --h: 270;
+  --s: 60%;
+  transform-origin: 50% 50%;
+  transform: rotate(var(--deg));
+  fill: hsl(var(--h), var(--s), 55%);
+  cursor: grab;
+  transition: all 0.1s ease-in-out;
+  user-select: none;
+}
+
+.slider:hover {
+  filter: brightness(1.1);
+}
+
+/**
+ * Without animate state - during drag
+ */
+.volume-button-knob.without-animate .slider {
+  transition: none;
+  cursor: grabbing;
+}
+
+/**
+ * Slider wrap for inset shadow effect
+ */
+.slider-wrap {
+  filter: url(#inset-shadow);
+}
+
+/**
+ * Volume Display Percentage
  */
 .volume-knob-display {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  font-size: 13px;
-  font-weight: 700;
-  color: white;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-  pointer-events: none;
-  z-index: 3;
-  min-width: 35px;
-  text-align: center;
-}
-
-/**
- * Range Labels
- * - "Min" and "Max" labels to orient the user
- */
-.volume-knob-range-labels {
-  display: flex;
-  justify-content: space-between;
-  width: 100%;
-  padding: 0 8px;
-  font-size: 0.7rem;
-  font-weight: 500;
-  color: #9ca3af;
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
-}
-
-.dark .volume-knob-range-labels {
+  font-size: 0.75rem;
+  font-weight: 600;
   color: #6b7280;
+  text-align: center;
+  min-width: 40px;
+  margin-top: 2px;
+}
+
+.dark .volume-knob-display {
+  color: #9ca3af;
 }
 
 /**
@@ -200,36 +146,29 @@
  */
 @media (max-width: 640px) {
   .volume-knob-container {
-    width: 90px;
+    gap: 2px;
   }
 
-  .volume-knob-wrapper {
-    width: 85px;
-    height: 85px;
-  }
-
-  .volume-knob {
-    width: 70px;
-    height: 70px;
-  }
-
-  .volume-knob-center {
-    width: 12px;
-    height: 12px;
-  }
-
-  .volume-knob-indicator {
-    width: 2px;
-    height: 16px;
-    top: 6px;
-  }
-
-  .volume-knob-display {
-    font-size: 11px;
+  .volume-button-knob {
+    width: 100px;
+    height: 100px;
   }
 
   .volume-knob-label {
-    font-size: 0.8rem;
+    font-size: 0.7rem;
+    padding: 2px 4px;
+  }
+
+  .gradate-line {
+    stroke-width: 8px;
+  }
+
+  .slider {
+    r: 8;
+  }
+
+  .volume-knob-display {
+    font-size: 0.65rem;
   }
 }
 
@@ -237,7 +176,11 @@
  * Accessibility: Reduced motion support
  */
 @media (prefers-reduced-motion: reduce) {
-  .volume-knob {
+  .slider {
+    transition: none;
+  }
+
+  .gradate-line {
     transition: none;
   }
 }

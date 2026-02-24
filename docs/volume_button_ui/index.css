@@ -1,0 +1,72 @@
+body {
+	background-color: #161a20;
+	color: white;
+	display: grid;
+	place-items: center;
+	min-height: 100vh;
+}
+
+main {
+	width: 50vw;
+}
+
+.volume-button-knob {
+	position: relative;
+	svg {
+		display: block;
+		width: 100%;
+	}
+}
+
+.circle {
+	fill: #202528;
+	// fill: url(#radial-gradient);
+	stroke: #080516;
+	stroke-width: 10px;
+}
+.slider-wrap {
+	filter: url(#inset-shadow);
+}
+.slider {
+	--deg: 0deg;
+	--h: 270;
+	--s: 60%;
+	transform-origin: 50% 50%;
+	transform: rotate(var(--deg));
+	fill: rgba(255, 255, 255, 0.5);
+	cursor: grab;
+	transition: all 0.1s ease-in-out;
+	fill: hsl(var(--h), var(--s), 55%);
+}
+
+.volume-button-knob {
+	&.without-animate {
+		.slider {
+			transition: unset;
+			cursor: grabbing;
+		}
+	}
+}
+
+.gradate {
+	line {
+		--deg: 0deg;
+		--h: 135;
+		--s: 10%;
+		--a: 0.2;
+		stroke-linecap: round;
+		stroke-width: 10px;
+		stroke: hsla(var(--h), var(--s), 55%, var(--a));
+		transform: rotate(var(--deg));
+		transform-origin: 50% 50%;
+
+		// transition: all 0.1s ease-in-out;
+
+		&:hover,
+		&.active {
+			--a: 1;
+			--s: 60%;
+			filter: url(#shadow);
+		}
+	}
+}
