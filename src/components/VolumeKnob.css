@@ -7,26 +7,34 @@
 
 .volume-knob-container {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
-  gap: 4px;
+  gap: 8px;
   flex: 0 0 auto;
   width: auto;
   padding: 0;
+  user-select: none;
+}
+
+.volume-knob-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  min-width: 70px;
 }
 
 .volume-knob-label {
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   font-weight: 600;
   color: #374151;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  height: 16px;
-  display: flex;
-  align-items: center;
+  display: block;
   background: rgba(102, 126, 234, 0.1);
   padding: 2px 6px;
   border-radius: 4px;
+  white-space: nowrap;
 }
 
 .dark .volume-knob-label {
@@ -39,9 +47,10 @@
  */
 .volume-button-knob {
   position: relative;
-  width: 120px;
-  height: 120px;
+  width: 60px;
+  height: 60px;
   user-select: none;
+  flex: 0 0 auto;
 }
 
 .volume-button-knob svg {
@@ -132,9 +141,8 @@
   font-size: 0.75rem;
   font-weight: 600;
   color: #6b7280;
-  text-align: center;
+  text-align: left;
   min-width: 40px;
-  margin-top: 2px;
 }
 
 .dark .volume-knob-display {
@@ -146,17 +154,21 @@
  */
 @media (max-width: 640px) {
   .volume-knob-container {
-    gap: 2px;
+    gap: 6px;
   }
 
   .volume-button-knob {
-    width: 100px;
-    height: 100px;
+    width: 50px;
+    height: 50px;
+  }
+
+  .volume-knob-info {
+    min-width: 60px;
   }
 
   .volume-knob-label {
-    font-size: 0.7rem;
-    padding: 2px 4px;
+    font-size: 0.65rem;
+    padding: 1px 4px;
   }
 
   .gradate-line {

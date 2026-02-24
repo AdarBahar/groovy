@@ -75,6 +75,16 @@ export default function VolumeKnob({ volume, onVolumeChange, label = 'Volume' }:
     setIsDragging(true);
   }, []);
 
+  const handleWheel = useCallback(
+    (e: React.WheelEvent) => {
+      e.preventDefault();
+      const delta = e.deltaY > 0 ? -0.05 : 0.05;
+      const newVolume = Math.max(0, Math.min(1, volume + delta));
+      onVolumeChange(newVolume);
+    },
+    [volume, onVolumeChange]
+  );
+
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       if (!isDragging) return;
@@ -114,8 +124,19 @@ export default function VolumeKnob({ volume, onVolumeChange, label = 'Volume' }:
   const volumePercent = Math.round(volume * 100);
 
   return (
-    <div className="volume-knob-container" ref={knobRef}>
-      <div className="volume-knob-label">{label}</div>
+    <div
+      className="volume-knob-container"
+      ref={knobRef}
+      onWheel={handleWheel}
+      style={{ cursor: 'pointer' }}
+    >
+      {/* Left side: Label and percentage */}
+      <div className="volume-knob-info">
+        <span className="volume-knob-label">{label}</span>
+        <span className="volume-knob-display">{volumePercent}%</span>
+      </div>
+
+      {/* Right side: Knob */}
       <div className="volume-button-knob" style={{ cursor: isDragging ? 'grabbing' : 'grab' }}>
         <svg
           viewBox="0 0 600 600"
@@ -210,9 +231,6 @@ export default function VolumeKnob({ volume, onVolumeChange, label = 'Volume' }:
           </g>
         </svg>
       </div>
-
-      {/* Volume percentage display */}
-      <div className="volume-knob-display">{volumePercent}%</div>
     </div>
   );
 }
