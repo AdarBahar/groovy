@@ -115,3 +115,30 @@
   }
 }
 
+/* Reduced motion support - accessibility */
+@media (prefers-reduced-motion: reduce) {
+  /* Disable pulsing animations */
+  .play-button.playing {
+    animation: none;
+    box-shadow: 0 4px 12px rgba(245, 87, 108, 0.5);
+  }
+
+  .play-plus-button.active {
+    animation: none;
+    box-shadow: 0 4px 12px rgba(241, 39, 17, 0.5);
+  }
+
+  /* Remove hover transform effects */
+  .play-button:hover,
+  .play-plus-button:hover {
+    transform: none;
+  }
+
+  /* Use instant transitions */
+  .play-button,
+  .play-plus-button,
+  .speed-up-config-button {
+    transition: none;
+  }
+}
+

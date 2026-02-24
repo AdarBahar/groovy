@@ -73,3 +73,12 @@
   }
 }
 
+/* Reduced motion support - accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .indicator-icon {
+    animation: none;
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+

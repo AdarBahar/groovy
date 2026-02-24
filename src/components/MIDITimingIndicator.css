@@ -237,3 +237,32 @@
     transform: translateY(0);
   }
 }
+
+/* Reduced motion support - accessibility */
+@media (prefers-reduced-motion: reduce) {
+  /* Disable pulsing animation, but keep the dot visible */
+  .indicator-dot {
+    animation: none;
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  /* Skip fade-in animation, show immediately */
+  .midi-timing-indicator-wrapper {
+    animation: none;
+    opacity: 1;
+  }
+
+  /* Use linear transitions instead of easing curves */
+  .indicator-container {
+    transition: left 0.2s linear;
+  }
+
+  .midi-timing-indicator-disabled,
+  .spectrum-track,
+  .spectrum-labels,
+  .indicator-label,
+  .accuracy-value {
+    transition: none;
+  }
+}
