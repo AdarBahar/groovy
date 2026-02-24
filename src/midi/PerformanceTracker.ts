@@ -23,8 +23,15 @@ export interface HitAnalysis {
   feedback: string;
 }
 
+export interface TimeSignature {
+  beats: number;
+  noteValue: 4 | 8 | 16;
+}
+
 export interface GroovePattern {
   voices?: Record<DrumVoice, boolean[]>;
+  division?: number; // 4, 8, 12, 16, 24, 32, 48
+  timeSignature?: TimeSignature;
   [key: string]: any;
 }
 
@@ -35,6 +42,8 @@ class PerformanceTracker {
   private loadedPattern: GroovePattern | null = null;
   private startTime: number | null = null;
   private tempo: number = 120;
+  private division: number = 8; // Steps per measure
+  private timeSignature: TimeSignature = { beats: 4, noteValue: 4 };
   private stats: PerformanceStats = {
     totalHits: 0,
     accurateHits: 0,
@@ -55,8 +64,16 @@ class PerformanceTracker {
       return;
     }
 
+    // Validate pattern has required timing metadata (Issue #97)
+    if (!pattern.division || !pattern.timeSignature?.beats || !pattern.timeSignature?.noteValue) {
+      console.warn('PerformanceTracker: Pattern missing required timing metadata (division, timeSignature.beats, timeSignature.noteValue). Step-accurate timing unavailable.');
+      return;
+    }
+
     this.loadedPattern = pattern;
     this.tempo = tempo;
+    this.division = pattern.division!;
+    this.timeSignature = pattern.timeSignature!;
     this.startTime = startTime;
     this.enabled = true;
     this.resetStats();
@@ -102,7 +119,8 @@ class PerformanceTracker {
     }
 
     const timingAccuracy = this.calculateTimingAccuracy(timestamp);
-    const noteAccuracy = this.checkNoteAccuracy(grooveVoice);
+    const currentStep = this.getCurrentStep(timestamp);
+    const noteAccuracy = this.checkNoteAccuracy(grooveVoice, currentStep);
     const overall = (timingAccuracy + noteAccuracy) / 2;
 
     // Update stats
@@ -127,7 +145,26 @@ class PerformanceTracker {
   }
 
   /**
-   * Calculate timing accuracy (how close to the beat)
+   * Get current step position based on elapsed time
+   * @private
+   * @param timestamp - Hit timestamp (ms since epoch)
+   * @returns Step index (0-based within measure)
+   */
+  private getCurrentStep(timestamp: number): number {
+    if (this.startTime == null) return 0;
+
+    const elapsedMs = timestamp - this.startTime;
+    const beatDurationMs = (60 / this.tempo) * 1000;
+    const stepsPerBeat = this.division / this.timeSignature.noteValue;
+    const stepDurationMs = beatDurationMs / stepsPerBeat;
+
+    const stepNumber = Math.round(elapsedMs / stepDurationMs);
+    const measureLength = (this.division / this.timeSignature.noteValue) * this.timeSignature.beats;
+    return stepNumber % measureLength;
+  }
+
+  /**
+   * Calculate timing accuracy (how close to the step grid)
    *
    * Uses practical grading bands based on human perception:
    * - On time: |Δ| <= 20 ms (perfect)
@@ -135,6 +172,8 @@ class PerformanceTracker {
    * - Early/late: 40–80 ms (fair)
    * - Very off: 80–150 ms (poor)
    * - Miss: > 150 ms (complete miss)
+   *
+   * Issue #91: Now uses step-based quantization instead of beat-based
    *
    * @private
    * @param timestamp - Hit timestamp (ms since epoch)
@@ -146,13 +185,15 @@ class PerformanceTracker {
 
     const elapsedMs = timestamp - this.startTime;
     const beatDurationMs = (60 / this.tempo) * 1000;
+    const stepsPerBeat = this.division / this.timeSignature.noteValue;
+    const stepDurationMs = beatDurationMs / stepsPerBeat;
 
-    // Find nearest beat
-    const beatNumber = Math.round(elapsedMs / beatDurationMs);
-    const expectedTime = beatNumber * beatDurationMs;
+    // Find nearest step (Issue #91: step-based, not beat-based)
+    const stepNumber = Math.round(elapsedMs / stepDurationMs);
+    const expectedTime = stepNumber * stepDurationMs;
     const timingError = Math.abs(elapsedMs - expectedTime);
 
-    // Practical grading bands (milliseconds from beat)
+    // Practical grading bands (milliseconds from step)
     let accuracy: number;
 
     if (timingError <= 20) {
@@ -176,26 +217,34 @@ class PerformanceTracker {
   }
 
   /**
-   * Check if the hit note matches the loaded pattern
+   * Check if the hit note matches the loaded pattern at the current step
    * @private
    * @param grooveVoice - Voice that was hit
+   * @param currentStep - Current step in the measure (0-based)
    * @returns Accuracy percentage (0-100)
    */
-  private checkNoteAccuracy(grooveVoice: DrumVoice): number {
+  private checkNoteAccuracy(grooveVoice: DrumVoice, currentStep: number): number {
+    // Issue #89: Now position-aware (checks specific step, not just voice existence)
     if (!this.loadedPattern || !this.loadedPattern.voices) {
       return 50; // No pattern loaded, can't verify
     }
 
-    // Check if this voice exists in the pattern
     const voicePattern = this.loadedPattern.voices[grooveVoice];
 
     if (!voicePattern || voicePattern.length === 0) {
-      // Voice not in pattern
+      // Voice not in pattern at all
       return 30;
     }
 
-    // Voice exists in pattern
-    return 80;
+    // Check if this voice plays at the current step (position-aware)
+    const stepInMeasure = currentStep % voicePattern.length;
+    if (voicePattern[stepInMeasure]) {
+      // Voice plays at this step
+      return 80;
+    } else {
+      // Voice exists in pattern but not at this step (wrong position)
+      return 30;
+    }
   }
 
   /**
