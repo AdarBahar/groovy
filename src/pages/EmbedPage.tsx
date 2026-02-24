@@ -127,7 +127,7 @@ export default function EmbedPage() {
   const handlePlayWithSpeedUp = handlePlay;
 
   return (
-    <div className="h-screen flex flex-col bg-white dark:bg-slate-900 text-slate-900 dark:text-white overflow-hidden">
+    <div className="min-h-dvh flex flex-col bg-white dark:bg-slate-900 text-slate-900 dark:text-white overflow-hidden">
       {/* Compact Header with Title */}
       <header className="px-3 py-2 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between bg-slate-50 dark:bg-slate-800/50">
         <h1 className="text-sm font-semibold truncate">{grooveTitle}</h1>

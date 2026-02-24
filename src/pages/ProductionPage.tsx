@@ -466,7 +466,7 @@ export default function ProductionPage() {
   };
 
   return (
-    <div className="h-screen flex flex-col bg-slate-100 dark:bg-slate-900 text-slate-900 dark:text-white">
+    <div className="min-h-dvh flex flex-col bg-slate-100 dark:bg-slate-900 text-slate-900 dark:text-white">
       <Header
         metronome={frequencyToMetronomeOption(metronomeConfig.frequency)}
         onMetronomeChange={handleMetronomeChange}
