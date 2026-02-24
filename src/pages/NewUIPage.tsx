@@ -14,7 +14,7 @@ export default function NewUIPage() {
   const [isNotesOnly, setIsNotesOnly] = useState(false);
 
   return (
-    <div className="w-screen h-screen flex flex-col bg-slate-900 text-white overflow-x-hidden">
+    <div className="w-dvw min-h-dvh flex flex-col bg-slate-900 text-white overflow-x-hidden">
       <Header />
       
       <div className="flex-1 flex overflow-hidden">
