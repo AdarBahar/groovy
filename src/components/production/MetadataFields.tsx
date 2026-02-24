@@ -1,6 +1,6 @@
 import { Input } from '../ui/input';
 import { Button } from '../ui/button';
-import { Edit2, Check, X } from 'lucide-react';
+import { Edit2, Check, X, Save } from 'lucide-react';
 import { useState, useRef, useImperativeHandle, forwardRef, useEffect } from 'react';
 
 interface MetadataFieldsProps {
@@ -10,6 +10,7 @@ interface MetadataFieldsProps {
   onTitleChange: (title: string) => void;
   onAuthorChange: (author: string) => void;
   onCommentsChange: (comments: string) => void;
+  onSaveGroove?: () => void;
   isNotesOnly: boolean;
 }
 
@@ -24,6 +25,7 @@ export const MetadataFields = forwardRef<MetadataFieldsRef, MetadataFieldsProps>
   onTitleChange,
   onAuthorChange,
   onCommentsChange,
+  onSaveGroove,
   isNotesOnly,
 }, ref) {
   const [isEditing, setIsEditing] = useState(false);
@@ -166,15 +168,27 @@ export const MetadataFields = forwardRef<MetadataFieldsRef, MetadataFieldsProps>
   // State 2: Display Mode (Edit Mode - Not Editing)
   return (
     <div className="flex items-start gap-3">
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={handleEdit}
-        className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center gap-2 mt-1 touch-target"
-      >
-        <Edit2 className="w-4 h-4" />
-        <span className="text-xs uppercase hidden sm:inline">Edit</span>
-      </Button>
+      <div className="flex items-center gap-2 mt-1">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={handleEdit}
+          className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center gap-2 touch-target"
+        >
+          <Edit2 className="w-4 h-4" />
+          <span className="text-xs uppercase hidden sm:inline">Edit</span>
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onSaveGroove}
+          className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center gap-2 touch-target"
+          title="Save Groove"
+        >
+          <Save className="w-4 h-4" />
+          <span className="text-xs uppercase hidden sm:inline">Save</span>
+        </Button>
+      </div>
       <div className="space-y-1 flex-1 min-w-0">
         <h1 className="text-xl sm:text-2xl font-semibold text-slate-900 dark:text-white truncate">{displayTitle}</h1>
         {displayAuthor && (
