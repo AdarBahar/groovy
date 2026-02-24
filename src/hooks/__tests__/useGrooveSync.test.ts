@@ -1,6 +1,6 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { useGrooveSync } from '../useGrooveSync';
-import { GrooveData, DEFAULT_GROOVE } from '../../types';
+import { DEFAULT_GROOVE } from '../../types';
 
 /**
  * Tests for useGrooveSync hook
