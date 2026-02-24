@@ -9,15 +9,18 @@ interface BottomToolbarProps {
 }
 
 export function BottomToolbar({ onShare, onSave, onDownload, onPrint }: BottomToolbarProps) {
+  const hasActions = Boolean(onShare || onSave || onDownload || onPrint);
+
   return (
     <div className="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-700 px-4 md:px-6 py-3 md:py-4">
-      <div className="flex flex-col-reverse sm:flex-row items-center justify-between gap-3 sm:gap-0">
+      <div className={`flex ${hasActions ? 'flex-col-reverse sm:flex-row items-center justify-between gap-3 sm:gap-0' : 'items-center justify-center'}`}>
         {/* Copyright - hidden on very small screens */}
-        <div className="text-slate-500 dark:text-slate-400 text-xs sm:text-sm hidden sm:block">
+        <div className="text-slate-500 dark:text-slate-400 text-xs sm:text-sm">
           Groovy by Adar Bahar © 2026
         </div>
 
         {/* Action buttons */}
+        {hasActions && (
         <div className="flex items-center gap-1 sm:gap-2 w-full sm:w-auto justify-center sm:justify-end">
           <Button
             variant="ghost"
@@ -58,8 +61,8 @@ export function BottomToolbar({ onShare, onSave, onDownload, onPrint }: BottomTo
             <span className="uppercase font-semibold text-xs sm:text-sm">Save</span>
           </Button>
         </div>
+        )}
       </div>
     </div>
   );
 }
-

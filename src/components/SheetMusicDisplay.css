@@ -6,7 +6,7 @@
   background: var(--bg-secondary, #f8f9fa);
   border-radius: 8px;
   padding: 0.5rem;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0;
   border: 1px solid var(--border-color, #dee2e6);
   max-width: 780px;
   margin-left: auto;
@@ -101,4 +101,3 @@
   fill: #000000;
   stroke: #000000;
 }
-
