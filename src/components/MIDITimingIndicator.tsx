@@ -103,6 +103,13 @@ export function MIDITimingIndicator({
             <div className="spectrum-gradient" />
           </div>
 
+          {/* Spectrum labels - anchor points for Slow/On-Time/Fast */}
+          <div className="spectrum-labels">
+            <span className="label-slow">SLOW</span>
+            <span className="label-on-time">ON-TIME</span>
+            <span className="label-fast">FAST</span>
+          </div>
+
           {/* Message below spectrum */}
           <div className="absolute left-0 right-0 top-1 flex items-center justify-center">
             <span className="text-xs text-slate-400 dark:text-slate-500 font-medium">
@@ -122,6 +129,13 @@ export function MIDITimingIndicator({
           {/* Spectrum background */}
           <div className="spectrum-track">
             <div className="spectrum-gradient" />
+          </div>
+
+          {/* Spectrum labels - anchor points for Slow/On-Time/Fast */}
+          <div className="spectrum-labels">
+            <span className="label-slow">SLOW</span>
+            <span className="label-on-time">ON-TIME</span>
+            <span className="label-fast">FAST</span>
           </div>
 
           {/* Waiting message below spectrum */}
@@ -144,6 +158,13 @@ export function MIDITimingIndicator({
           {/* Spectrum background */}
           <div className="spectrum-track">
             <div className="spectrum-gradient" />
+          </div>
+
+          {/* Spectrum labels - anchor points for Slow/On-Time/Fast */}
+          <div className="spectrum-labels">
+            <span className="label-slow">SLOW</span>
+            <span className="label-on-time">ON-TIME</span>
+            <span className="label-fast">FAST</span>
           </div>
 
           {/* Average indicator dot positioned on spectrum based on score */}
@@ -191,6 +212,13 @@ export function MIDITimingIndicator({
         {/* Spectrum background */}
         <div className="spectrum-track">
           <div className="spectrum-gradient" />
+        </div>
+
+        {/* Spectrum labels - anchor points for Slow/On-Time/Fast */}
+        <div className="spectrum-labels">
+          <span className="label-slow">SLOW</span>
+          <span className="label-on-time">ON-TIME</span>
+          <span className="label-fast">FAST</span>
         </div>
 
         {/* Animated indicator dot and label */}
