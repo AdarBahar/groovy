@@ -92,7 +92,7 @@ export function MobileMoreMenu({
   return (
     <div
       ref={menuRef}
-      className="absolute right-0 top-full mt-2 w-64 max-w-[calc(100vw-1rem)] bg-white dark:bg-slate-800 rounded-lg shadow-lg border border-slate-200 dark:border-slate-700 py-2 z-50 overflow-x-hidden"
+      className="absolute right-0 top-full mt-2 w-64 max-w-[calc(100vw-1rem)] max-h-[calc(100vh-120px)] bg-white dark:bg-slate-800 rounded-lg shadow-lg border border-slate-200 dark:border-slate-700 py-2 z-50 overflow-x-hidden overflow-y-auto"
     >
       {/* Metronome Section */}
       <div className="px-4 py-2 border-b border-slate-200 dark:border-slate-700">
