@@ -204,6 +204,23 @@ export class GrooveEngine {
   // ===== End Metronome Methods =====
 
   /**
+   * Set master volume (0-1)
+   */
+  setMasterVolume(volume: number): void {
+    const clampedVolume = Math.max(0, Math.min(1, volume));
+    this.synth.setMasterVolume(clampedVolume);
+  }
+
+  /**
+   * Get master volume
+   */
+  getMasterVolume(): number {
+    return this.synth.getMasterVolume();
+  }
+
+  // ===== End Master Volume Methods =====
+
+  /**
    * Update the groove during playback
    * Changes will take effect on the next loop
    * Validates division compatibility and auto-corrects if needed

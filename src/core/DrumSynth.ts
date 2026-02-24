@@ -9,6 +9,7 @@ export class DrumSynth {
   private audioContext: AudioContext;
   private samples: Map<string, AudioBuffer> = new Map();
   private isLoaded = false;
+  private masterGainNode: GainNode;
 
   // Rate limiting for audio playback (prevent spam/DoS)
   private lastPlayTime = new Map<DrumVoice, number>();
@@ -51,6 +52,12 @@ export class DrumSynth {
 
   constructor() {
     this.audioContext = new AudioContext();
+
+    // Initialize master gain node for volume control
+    this.masterGainNode = this.audioContext.createGain();
+    this.masterGainNode.gain.value = 1.0; // Default to full volume
+    this.masterGainNode.connect(this.audioContext.destination);
+
     this.setupErrorHandling();
     this.loadSamples();
   }
@@ -208,9 +215,9 @@ export class DrumSynth {
       }
       gainNode.gain.value = volume;
 
-      // Connect nodes
+      // Connect nodes through master gain
       source.connect(gainNode);
-      gainNode.connect(this.audioContext.destination);
+      gainNode.connect(this.masterGainNode);
 
       // Play
       source.start(playTime);
@@ -233,6 +240,22 @@ export class DrumSynth {
    */
   getCurrentTime(): number {
     return this.audioContext.currentTime;
+  }
+
+  /**
+   * Set master volume (0-1)
+   */
+  setMasterVolume(volume: number): void {
+    // Clamp volume to 0-1 range
+    const clampedVolume = Math.max(0, Math.min(1, volume));
+    this.masterGainNode.gain.value = clampedVolume;
+  }
+
+  /**
+   * Get current master volume (0-1)
+   */
+  getMasterVolume(): number {
+    return this.masterGainNode.gain.value;
   }
 }
 

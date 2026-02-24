@@ -1,0 +1,237 @@
+/**
+ * Volume Knob Styles
+ *
+ * Visual knob control with smooth animations and theme support.
+ * Designed to integrate with Groovy's dark/light theme system.
+ */
+
+.volume-knob-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+  width: 110px;
+}
+
+.volume-knob-label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #333;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+}
+
+/* Light theme */
+.volume-knob-label {
+  color: #374151;
+}
+
+/* Dark theme */
+.dark .volume-knob-label {
+  color: #d1d5db;
+}
+
+.volume-knob-wrapper {
+  position: relative;
+  width: 100px;
+  height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/**
+ * Main Knob Element
+ * - Circular dial that rotates based on volume
+ * - Uses gradient background for visual appeal
+ */
+.volume-knob {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+  transition: transform 0.15s ease-out;
+  background: conic-gradient(
+    from 0deg,
+    #667eea 0%,
+    #764ba2 25%,
+    #f093fb 50%,
+    #4facfe 75%,
+    #667eea 100%
+  );
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+  cursor: grab;
+}
+
+/* Dark theme knob */
+.dark .volume-knob {
+  background: conic-gradient(
+    from 0deg,
+    #7c3aed 0%,
+    #8b5cf6 25%,
+    #d8b4fe 50%,
+    #60a5fa 75%,
+    #7c3aed 100%
+  );
+  box-shadow: 0 4px 15px rgba(124, 58, 237, 0.4);
+}
+
+.volume-knob:hover {
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+.dark .volume-knob:hover {
+  box-shadow: 0 6px 20px rgba(124, 58, 237, 0.5);
+}
+
+.volume-knob:active {
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5);
+}
+
+.dark .volume-knob:active {
+  box-shadow: 0 8px 25px rgba(124, 58, 237, 0.6);
+}
+
+/**
+ * Knob Ring
+ * - Inner ring that provides visual structure
+ * - Contrasts with the gradient background
+ */
+.volume-knob-ring {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.dark .volume-knob-ring {
+  border-color: rgba(255, 255, 255, 0.8);
+}
+
+/**
+ * Center Dot
+ * - Visual anchor point in the middle of the knob
+ */
+.volume-knob-center {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: white;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  z-index: 2;
+}
+
+/**
+ * Indicator Line
+ * - Points from center to top of knob to show current rotation
+ * - Acts as the primary visual feedback for volume position
+ */
+.volume-knob-indicator {
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  width: 3px;
+  height: 20px;
+  background: linear-gradient(to bottom, white, rgba(255, 255, 255, 0.6));
+  border-radius: 1.5px;
+  transform: translateX(-50%);
+  z-index: 1;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+/**
+ * Volume Display
+ * - Shows current volume percentage as number
+ */
+.volume-knob-display {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 13px;
+  font-weight: 700;
+  color: white;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  pointer-events: none;
+  z-index: 3;
+  min-width: 35px;
+  text-align: center;
+}
+
+/**
+ * Range Labels
+ * - "Min" and "Max" labels to orient the user
+ */
+.volume-knob-range-labels {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0 8px;
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: #9ca3af;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.dark .volume-knob-range-labels {
+  color: #6b7280;
+}
+
+/**
+ * Responsive adjustments for smaller screens
+ */
+@media (max-width: 640px) {
+  .volume-knob-container {
+    width: 90px;
+  }
+
+  .volume-knob-wrapper {
+    width: 85px;
+    height: 85px;
+  }
+
+  .volume-knob {
+    width: 70px;
+    height: 70px;
+  }
+
+  .volume-knob-center {
+    width: 12px;
+    height: 12px;
+  }
+
+  .volume-knob-indicator {
+    width: 2px;
+    height: 16px;
+    top: 6px;
+  }
+
+  .volume-knob-display {
+    font-size: 11px;
+  }
+
+  .volume-knob-label {
+    font-size: 0.8rem;
+  }
+}
+
+/**
+ * Accessibility: Reduced motion support
+ */
+@media (prefers-reduced-motion: reduce) {
+  .volume-knob {
+    transition: none;
+  }
+}
