@@ -2,7 +2,6 @@ import { BrowserRouter, Routes, Route, Navigate, useSearchParams } from 'react-r
 import { useEffect } from 'react';
 import ProductionPage from './pages/ProductionPage';
 import EmbedPage from './pages/EmbedPage';
-import PocPage from './pages/PocPage';
 import NewUIPage from './pages/NewUIPage';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { track } from './utils/analytics';
@@ -72,7 +71,6 @@ function App() {
       <BrowserRouter basename={basename}>
         <Routes>
           <Route path="/" element={<HomePage />} />
-          <Route path="/poc" element={<PocPage />} />
           <Route path="/newUI" element={<NewUIPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
