@@ -16,6 +16,11 @@ interface PlaybackControlsProps {
   elapsedTime?: string;
   countdownNumber?: number | null;
   countingInButton?: 'play' | 'playPlus' | null;
+  midiConnected?: boolean;
+  trackingEnabled?: boolean;
+  onTrackingToggle?: () => void;
+  masterVolume?: number;
+  onMasterVolumeChange?: (volume: number) => void;
   isEmbedded?: boolean;
 }
 
@@ -32,7 +37,7 @@ export function PlaybackControls({
   elapsedTime = '0:00',
   countdownNumber,
   countingInButton,
-  isEmbedded = false,
+  isEmbedded,
 }: PlaybackControlsProps) {
   return (
     <div className="flex flex-col lg:flex-row lg:items-center gap-4 lg:gap-8">
