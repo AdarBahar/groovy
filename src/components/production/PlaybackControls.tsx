@@ -39,6 +39,28 @@ export function PlaybackControls({
   countingInButton,
   isEmbedded,
 }: PlaybackControlsProps) {
+  // Use the enhanced MIDI timing accuracy hook
+  const {
+    timingAccuracy,
+    averageScore,
+    showingAverage,
+  } = useMIDITimingAccuracy(isPlaying, trackingEnabled);
+
+  const showVolumeControl = masterVolume !== undefined && !!onMasterVolumeChange;
+  const showSecondRow = midiConnected || showVolumeControl;
+
+  // Swing display conversion (internal 0–100 maps to DAW convention 50–67%)
+  // 0 = no swing (straight), 100 = triplet swing (2:1 ratio)
+  const swingToDisplay = (v: number) => Math.round(50 + v / 6);
+  const swingToInternal = (v: number) => Math.min(100, Math.max(0, Math.round((v - 50) * 6)));
+
+  // Swing type labels based on display percentage (50–67%)
+  const getSwingType = (displayPercent: number): string => {
+    if (displayPercent < 55) return 'Straight';
+    if (displayPercent < 61) return 'Light Shuffle';
+    return 'Full Triplet';
+  };
+
   return (
     <div className="flex flex-col lg:flex-row lg:items-center gap-4 lg:gap-8">
       {/* Time and Play button - centered on mobile, left on desktop */}
@@ -119,13 +141,16 @@ export function PlaybackControls({
         <div className="flex-1 lg:max-w-md">
           <div className="flex items-center justify-between mb-2">
             <label className="text-sm text-slate-500 dark:text-slate-400">Swing</label>
-            <span className="text-sm text-purple-600 dark:text-purple-400 font-semibold">{swing}%</span>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-slate-500 dark:text-slate-500">{getSwingType(swingToDisplay(swing))}</span>
+              <span className="text-sm text-purple-600 dark:text-purple-400 font-semibold">{swingToDisplay(swing)}%</span>
+            </div>
           </div>
           <Slider
-            value={[swing]}
-            onValueChange={(v) => onSwingChange(v[0])}
-            min={0}
-            max={100}
+            value={[swingToDisplay(swing)]}
+            onValueChange={(v) => onSwingChange(swingToInternal(v[0]))}
+            min={50}
+            max={67}
             step={1}
             className="[&_[data-slot=slider-range]]:bg-purple-500 [&_[data-slot=slider-thumb]]:bg-purple-500 [&_[data-slot=slider-thumb]]:border-purple-400 [&_[data-slot=slider-track]]:bg-slate-200 dark:[&_[data-slot=slider-track]]:bg-slate-700"
           />
