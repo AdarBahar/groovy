@@ -91,7 +91,10 @@
   --sidebar-ring: oklch(0.439 0 0);
 }
 
-
+.embed {
+  background: white;
+  color: var(--foreground);
+}
 
 @theme inline {
   --color-background: var(--background);
