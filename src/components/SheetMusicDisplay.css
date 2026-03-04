@@ -69,6 +69,7 @@
   text-align: center;
 }
 
+
 /* Dark mode support - using class-based theming */
 .dark .sheet-music-display {
   background: #2d2d2d;
