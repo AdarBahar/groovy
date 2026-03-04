@@ -16,7 +16,7 @@ import { visualizer } from 'rollup-plugin-visualizer'
 //
 // Note: Must start and end with '/'
 // Default: '/groovy/' (production deployment)
-const PRODUCTION_BASE_PATH = process.env.VITE_BASE_PATH || '/scribe/';
+const PRODUCTION_BASE_PATH = process.env.VITE_BASE_PATH || '/groovy/';
 
 // ============================================================================
 // VITE CONFIGURATION
