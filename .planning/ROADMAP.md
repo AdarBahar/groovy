@@ -29,6 +29,12 @@
 - AbortController pattern for cleanup
 - Memory profiling hook to detect stacked listeners
 
+**Plans:** 2 plans
+
+Plans:
+- [ ] 01-01-PLAN.md — Refactor useMIDIInput.ts: ref-based config + state, empty-dep listener effects (MEM-01, MEM-03)
+- [ ] 01-02-PLAN.md — Create useMemoryProfiler hook + Vitest tests for useMIDIInput and VolumeKnob (MEM-01, MEM-02, MEM-03)
+
 ---
 
 ## Phase 2: Config State Management
