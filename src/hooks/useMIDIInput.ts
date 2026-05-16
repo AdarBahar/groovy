@@ -48,6 +48,23 @@ export function useMIDIInput(synth: DrumSynth): UseMIDIInputReturn {
   const velocityFilterRef = useRef<VelocityFilter>(new VelocityFilter());
   const doubleTriggerFilterRef = useRef<DoubleTriggerFilter>(new DoubleTriggerFilter());
 
+  // Refs for stable listener attachment (prevents dependency churn)
+  const configRef = useRef<MIDIConfig>(config);
+  const stateRef = useRef<{ isConnected: boolean; selectedDeviceId: string | null; currentDevice: MIDIDeviceInfo | null }>({
+    isConnected,
+    selectedDeviceId: config.selectedDeviceId,
+    currentDevice,
+  });
+
+  // Sync refs whenever state changes (cheap operation, no listener re-attachment)
+  useEffect(() => {
+    configRef.current = config;
+  }, [config]);
+
+  useEffect(() => {
+    stateRef.current = { isConnected, selectedDeviceId: config.selectedDeviceId, currentDevice };
+  }, [isConnected, config.selectedDeviceId, currentDevice]);
+
   // Initialize MIDI on mount
   useEffect(() => {
     const initMIDI = async () => {
@@ -82,11 +99,12 @@ export function useMIDIInput(synth: DrumSynth): UseMIDIInputReturn {
   // Handle device list changes and device disconnections
   useEffect(() => {
     midiAccess.onDeviceListChange = (updatedDevices) => {
+      const state = stateRef.current;
       setDevices(updatedDevices);
 
       // If current device disconnected, clear connection
-      if (isConnected && config.selectedDeviceId && !updatedDevices.some((d) => d.id === config.selectedDeviceId)) {
-        const disconnectedDevice = currentDevice;
+      if (state.isConnected && state.selectedDeviceId && !updatedDevices.some((d) => d.id === state.selectedDeviceId)) {
+        const disconnectedDevice = state.currentDevice;
         setIsConnected(false);
         setCurrentDevice(null);
 
@@ -101,7 +119,7 @@ export function useMIDIInput(synth: DrumSynth): UseMIDIInputReturn {
     return () => {
       midiAccess.onDeviceListChange = null;
     };
-  }, [isConnected, config.selectedDeviceId, currentDevice]);
+  }, []);
 
   // Handle drum kit changes
   useEffect(() => {
@@ -140,6 +158,7 @@ export function useMIDIInput(synth: DrumSynth): UseMIDIInputReturn {
   // Set up MIDI note handler with filtering
   useEffect(() => {
     midiHandler.setNoteOnHandler((note, velocity, _currentVoice, timestamp) => {
+      const config = configRef.current;
       console.log(`🎵 MIDI Note Handler called: note=${note}, velocity=${velocity}, timestamp=${timestamp}`);
 
       // Apply velocity filtering
@@ -198,7 +217,7 @@ export function useMIDIInput(synth: DrumSynth): UseMIDIInputReturn {
     return () => {
       midiHandler.setNoteOnHandler(() => {});
     };
-  }, [config.throughEnabled, config.latencyCompensation, synth]);
+  }, []);
 
   const connectDevice = useCallback(
     (deviceId: string) => {
