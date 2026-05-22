@@ -1,4 +1,4 @@
-import { Play, Pause, Plus, Hand } from 'lucide-react';
+import { Play, Pause, Plus } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Slider } from '../ui/slider';
 import { TimeSignature } from '../../types';
@@ -23,10 +23,6 @@ interface PlaybackControlsProps {
   masterVolume?: number;
   onMasterVolumeChange?: (volume: number) => void;
   isEmbedded?: boolean;
-  /** Whether sticking setup mode is currently active */
-  isStickingSetupActive?: boolean;
-  /** Callback to toggle sticking setup mode on/off */
-  onStickingSetupToggle?: () => void;
 }
 
 export function PlaybackControls({
@@ -44,8 +40,6 @@ export function PlaybackControls({
   countingInButton,
   isEmbedded,
   trackingEnabled,
-  isStickingSetupActive = false,
-  onStickingSetupToggle,
 }: PlaybackControlsProps) {
   // Use the enhanced MIDI timing accuracy hook
   const {
@@ -160,28 +154,7 @@ export function PlaybackControls({
             className="[&_[data-slot=slider-range]]:bg-purple-500 [&_[data-slot=slider-thumb]]:bg-purple-500 [&_[data-slot=slider-thumb]]:border-purple-400 [&_[data-slot=slider-track]]:bg-slate-200 dark:[&_[data-slot=slider-track]]:bg-slate-700"
           />
         </div>
-
-        {/* Sticking toggle button */}
-        {!isEmbedded && onStickingSetupToggle && (
-          <div className="flex items-end">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onStickingSetupToggle}
-              aria-pressed={isStickingSetupActive}
-              className={`flex items-center gap-1.5 h-9 px-3 text-xs font-medium transition-colors ${
-                isStickingSetupActive
-                  ? 'bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 border border-purple-300 dark:border-purple-600 hover:bg-purple-200 dark:hover:bg-purple-800/60'
-                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-              }`}
-            >
-              <Hand className="w-3.5 h-3.5" />
-              <span>Sticking</span>
-            </Button>
-          </div>
-        )}
       </div>
     </div>
   );
 }
-

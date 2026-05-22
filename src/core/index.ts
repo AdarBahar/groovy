@@ -25,6 +25,7 @@ export type { CustomPattern } from './PatternManager';
 
 // ABC Notation
 export { ABCTranscoder, grooveToABC, hasHandsNotes, hasFeetNotes } from './ABCTranscoder';
+export { hasVisibleStickings, layoutStickingAndCountRows } from './SVGAnnotationLayout';
 export type { ABCTranscoderOptions } from './ABCTranscoder';
 export {
   ABC_SYMBOLS,

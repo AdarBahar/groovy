@@ -9,11 +9,19 @@
 
 import { useRef, useEffect, useState, useMemo } from 'react';
 import { GrooveData } from '../types';
-import { grooveToABC, renderABC, GrooveUtils } from '../core';
+import {
+  grooveToABC,
+  renderABC,
+  GrooveUtils,
+  hasVisibleStickings,
+  layoutStickingAndCountRows
+} from '../core';
 import './SheetMusicDisplay.css';
 
 /** Number of measures per line (must match ABCTranscoder.MEASURES_PER_LINE) */
 const MEASURES_PER_LINE = 3;
+const MIN_STAFF_WIDTH = 740;
+const SHEET_CONTAINER_HORIZONTAL_PADDING = 16;
 
 interface LineBounds {
   top: number;      // Top of this line (percentage)
@@ -170,19 +178,32 @@ function SheetMusicDisplay({
     try {
       // Convert groove to ABC notation
       const abc = grooveToABC(groove, { title });
+      const hasStickings = hasVisibleStickings(groove);
+      const containerWidth = containerRef.current.clientWidth || MIN_STAFF_WIDTH;
+      const staffWidth = Math.max(
+        MIN_STAFF_WIDTH,
+        Math.floor(containerWidth - SHEET_CONTAINER_HORIZONTAL_PADDING)
+      );
 
       // Render ABC to SVG
       const result = renderABC(abc, containerRef.current, {
-        staffWidth: 740,
+        staffWidth,
         scale: 1.0,
         responsive: true,
         padding: 10,
+        paddingTop: hasStickings ? 36 : 10,
       });
 
       if (!result.success) {
         setError(result.error || 'Failed to render notation');
       } else {
         setError(null);
+
+        // Post-process SVG to reserve separate sticking and count lanes above the notes.
+        const svg = containerRef.current.querySelector('svg');
+        if (svg) {
+          layoutStickingAndCountRows(svg, groove);
+        }
 
         // After rendering, calculate line bounds for multi-line cursor support
         setTimeout(() => {

@@ -691,12 +691,10 @@ export default function ProductionPage() {
                 onTrackingToggle={() => setMidiTrackingEnabled(!midiTrackingEnabled)}
                 masterVolume={masterVolume}
                 onMasterVolumeChange={setMasterVolume}
-                isStickingSetupActive={isStickingSetupActive}
-                onStickingSetupToggle={handleStickingSetupToggle}
               />
 
               {/* Metadata Details - Title, Author, Comments */}
-              <div className="-mt-3">
+              <div className={isMetadataEditing ? 'mt-2' : '-mt-3'}>
                 <MetadataFields
                   ref={metadataFieldsRef}
                   title={groove.title || ''}
@@ -711,6 +709,8 @@ export default function ProductionPage() {
                   onDownload={() => { analytics.trackDownloadOpen(); setIsDownloadModalOpen(true); }}
                   onPrint={() => { analytics.trackPrintOpen(); setIsPrintModalOpen(true); }}
                   onShare={() => { analytics.trackShareModalOpen(); setIsShareModalOpen(true); }}
+                  isStickingSetupActive={isStickingSetupActive}
+                  onStickingSetupToggle={handleStickingSetupToggle}
                   isNotesOnly={isNotesOnly}
                 />
               </div>

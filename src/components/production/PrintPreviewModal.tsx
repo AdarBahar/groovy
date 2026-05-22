@@ -17,7 +17,13 @@ import {
 } from '../ui/dialog';
 import { Button } from '../ui/button';
 import { GrooveData } from '../../types';
-import { grooveToABC, renderABC, getShareableURL } from '../../core';
+import {
+  grooveToABC,
+  renderABC,
+  getShareableURL,
+  hasVisibleStickings,
+  layoutStickingAndCountRows
+} from '../../core';
 import { trackPrint } from '../../utils/analytics';
 import { shortenURL, isShortenerConfigured } from '../../services/urlShortener';
 import './PrintPreviewModal.css';
@@ -80,8 +86,14 @@ export function PrintPreviewModal({ groove, isOpen, onClose, onAddTitle }: Print
       scale: 1.0,
       responsive: false, // Fixed size for consistent print output
       padding: 10,
+      paddingTop: hasVisibleStickings(groove) ? 36 : 10,
       foregroundColor: '#000000', // Black notes for printing
     });
+
+    const svg = sheetMusicRef.current.querySelector('svg');
+    if (svg) {
+      layoutStickingAndCountRows(svg, groove);
+    }
   }, [groove]);
 
   // Render the sheet music when modal opens (with delay to ensure DOM is ready)

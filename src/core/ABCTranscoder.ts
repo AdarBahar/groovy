@@ -5,7 +5,7 @@
  * Supports multi-voice notation with hands (stems up) and feet (stems down).
  */
 
-import { GrooveData, DrumVoice, StickingValue, getFlattenedNotes } from '../types';
+import { GrooveData, DrumVoice, getFlattenedNotes } from '../types';
 import {
   ABC_SYMBOLS,
   ABC_DECORATIONS,
@@ -17,20 +17,6 @@ import {
   getNoteDurationSuffix,
   isTripletDivision,
 } from './ABCConstants';
-
-/** Valid sticking values for annotation validation (T-02-05) */
-const VALID_STICKING_VALUES = new Set<StickingValue>(['L', 'R', 'L/R', null]);
-
-/**
- * Return the ABC annotation prefix for a sticking value, or empty string if none.
- * Validates the value before rendering (T-02-05: only L, R, L/R, null allowed).
- */
-function getStickingAnnotation(value: StickingValue | undefined): string {
-  if (value === null || value === undefined) return '';
-  // Validate: only known sticking values render annotations
-  if (!VALID_STICKING_VALUES.has(value)) return '';
-  return `^"${value}"`;
-}
 
 export interface ABCTranscoderOptions {
   title?: string;
@@ -112,14 +98,11 @@ const MEASURES_PER_LINE = 3;
  * Handles multiple measures with measure bars between them
  * Adds line breaks every MEASURES_PER_LINE measures for readability
  *
- * @param includeSticking - Whether to include sticking annotations in output.
- *   Annotations should only appear on one voice (Hands) to avoid duplication.
  */
 function generateVoicePart(
   groove: GrooveData,
   voiceFilter: DrumVoice[],
-  durationSuffix: string,
-  includeSticking: boolean = false
+  durationSuffix: string
 ): string {
   const division = groove.division;
   const isTriplet = isTripletDivision(division);
@@ -140,19 +123,7 @@ function generateVoicePart(
         parts.push(' ');
       }
 
-      // Resolve sticking annotation for this position (D-06).
-      // Sticking is global per subdivision — render only on the Hands voice to avoid duplication.
-      // If sticking array exists and has the right length, read the value; otherwise skip.
-      let stickingAnnotation = '';
-      if (includeSticking) {
-        const stickingValue: StickingValue | undefined =
-          measure.sticking && measure.sticking.length === notesPerMeasure
-            ? measure.sticking[i]
-            : undefined;
-        stickingAnnotation = getStickingAnnotation(stickingValue);
-      }
-
-      const abc = generatePositionABC(measure.notes, i, voiceFilter, durationSuffix, stickingAnnotation);
+      const abc = generatePositionABC(measure.notes, i, voiceFilter, durationSuffix);
       parts.push(abc);
     }
 
@@ -199,15 +170,15 @@ export function grooveToABC(
   // Key and clef
   lines.push('K:C clef=perc');
 
-  // Hands voice (stems up) — sticking annotations rendered here only to avoid duplication
+  // Hands voice (stems up)
   lines.push('V:Hands stem=up');
   lines.push('%%voicemap drum');
-  lines.push(generateVoicePart(groove, HANDS_VOICES, durationSuffix, /* includeSticking */ true));
+  lines.push(generateVoicePart(groove, HANDS_VOICES, durationSuffix));
 
-  // Feet voice (stems down) — no sticking annotations (already shown on Hands voice)
+  // Feet voice (stems down)
   lines.push('V:Feet stem=down');
   lines.push('%%voicemap drum');
-  lines.push(generateVoicePart(groove, FEET_VOICES, durationSuffix, /* includeSticking */ false));
+  lines.push(generateVoicePart(groove, FEET_VOICES, durationSuffix));
 
   return lines.join('\n');
 }
@@ -238,4 +209,3 @@ export const ABCTranscoder = {
   hasHandsNotes,
   hasFeetNotes,
 };
-

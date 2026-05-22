@@ -14,6 +14,14 @@ export interface ABCRenderOptions {
   scale?: number;
   /** Padding around the notation in pixels */
   padding?: number;
+  /** Top padding around the notation in pixels */
+  paddingTop?: number;
+  /** Bottom padding around the notation in pixels */
+  paddingBottom?: number;
+  /** Left padding around the notation in pixels */
+  paddingLeft?: number;
+  /** Right padding around the notation in pixels */
+  paddingRight?: number;
   /** Whether to make the SVG responsive (resize with container) */
   responsive?: boolean;
   /** Foreground color for notes and lines */
@@ -62,10 +70,10 @@ export function renderABC(
     const params: abcjs.AbcVisualParams = {
       staffwidth: opts.staffWidth,
       scale: opts.scale,
-      paddingtop: opts.padding,
-      paddingbottom: opts.padding,
-      paddingleft: opts.padding,
-      paddingright: opts.padding,
+      paddingtop: opts.paddingTop ?? opts.padding,
+      paddingbottom: opts.paddingBottom ?? opts.padding,
+      paddingleft: opts.paddingLeft ?? opts.padding,
+      paddingright: opts.paddingRight ?? opts.padding,
       responsive: opts.responsive ? 'resize' : undefined,
       add_classes: opts.addClasses,
       foregroundColor: opts.foregroundColor,
@@ -152,4 +160,3 @@ export const ABCRenderer = {
   renderToString: renderABCToString,
   clear: clearRenderedABC,
 };
-

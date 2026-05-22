@@ -52,7 +52,8 @@ export function isTripletDivision(division: number): boolean {
  */
 export const ABC_BOILERPLATE = `%%flatbeams 1
 %%ornament up
-%%barnumbers 1`;
+%%barnumbers 1
+%%staffsep 110`;
 
 /**
  * Generate ABC header with time signature and tempo
@@ -75,4 +76,3 @@ export function generateABCHeader(
 
   return lines.join('\n');
 }
-

@@ -1,6 +1,6 @@
 import { Input } from '../ui/input';
 import { Button } from '../ui/button';
-import { Edit2, Check, X, Save, Download, Printer, Share2 } from 'lucide-react';
+import { Edit2, Check, X, Save, Download, Printer, Share2, Hand } from 'lucide-react';
 import { useState, useRef, useImperativeHandle, forwardRef, useEffect } from 'react';
 //import { ChevronDown, ChevronUp } from 'lucide-react';
 
@@ -28,6 +28,8 @@ interface MetadataFieldsProps {
   onDownload?: () => void;
   onPrint?: () => void;
   onShare?: () => void;
+  isStickingSetupActive?: boolean;
+  onStickingSetupToggle?: () => void;
   isNotesOnly: boolean;
 }
 
@@ -48,6 +50,8 @@ export const MetadataFields = forwardRef<MetadataFieldsRef, MetadataFieldsProps>
   onDownload,
   onPrint,
   onShare,
+  isStickingSetupActive = false,
+  onStickingSetupToggle,
   isNotesOnly,
 }, ref) {
   const [isEditing, setIsEditing] = useState(false);
@@ -148,7 +152,7 @@ export const MetadataFields = forwardRef<MetadataFieldsRef, MetadataFieldsProps>
   // State 3: Editing Mode
   if (isEditing) {
     return (
-      <div className="space-y-2">
+      <div className="space-y-2 mt-[5px]">
         {/* Row 1: Title / Author */}
         <div className="grid grid-cols-1 md:grid-cols-[minmax(0,52ch)_auto_minmax(0,52ch)] md:justify-start gap-2 items-start">
           <div className="space-y-1.5 min-w-0 md:max-w-[52ch]">
@@ -250,22 +254,41 @@ export const MetadataFields = forwardRef<MetadataFieldsRef, MetadataFieldsProps>
   // State 2: Display Mode (Edit Mode - Not Editing)
   return (
     <div className="flex items-start gap-2.5">
-      <div className="space-y-1 flex-1 min-w-0">
-        <h1 className="text-xl sm:text-2xl font-semibold text-slate-900 dark:text-white truncate">{titleAuthorLine}</h1>
+      <div className="space-y-1 flex-1 min-w-0 mt-[10px]">
+        <button
+          type="button"
+          onClick={handleEdit}
+          className="group max-w-full flex items-center gap-2 text-left text-slate-900 dark:text-white hover:text-purple-700 dark:hover:text-purple-300 transition-colors"
+          title="Edit groove details"
+        >
+          <h1 className="text-xl sm:text-2xl font-semibold truncate">{titleAuthorLine}</h1>
+          <Edit2 className="w-4 h-4 flex-shrink-0 text-slate-500 dark:text-slate-400 group-hover:text-purple-700 dark:group-hover:text-purple-300" />
+          <span className="text-xs uppercase hidden sm:inline text-slate-500 dark:text-slate-400 group-hover:text-purple-700 dark:group-hover:text-purple-300">
+            Edit
+          </span>
+        </button>
         {displayComments && (
           <p className="text-xs text-slate-500 dark:text-slate-400 truncate">{displayComments}</p>
         )}
       </div>
       <div className="flex items-center gap-2 mt-0.5 flex-wrap justify-end">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleEdit}
-          className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center gap-2 touch-target"
-        >
-          <Edit2 className="w-4 h-4" />
-          <span className="text-xs uppercase hidden sm:inline">Edit</span>
-        </Button>
+        {onStickingSetupToggle && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onStickingSetupToggle}
+            aria-pressed={isStickingSetupActive}
+            className={`flex items-center gap-2 touch-target ${
+              isStickingSetupActive
+                ? 'bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 border border-purple-300 dark:border-purple-600 hover:bg-purple-200 dark:hover:bg-purple-800/60'
+                : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+            }`}
+            title="Toggle sticking setup"
+          >
+            <Hand className="w-4 h-4" />
+            <span className="text-xs uppercase hidden sm:inline">Sticking</span>
+          </Button>
+        )}
         <Button
           variant="ghost"
           size="sm"

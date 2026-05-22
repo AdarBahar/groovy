@@ -6,6 +6,7 @@ import { useDrumGrid, DRUM_ROWS, NoteChange } from '../../hooks/useDrumGrid';
 import BulkOperationsDialog from '../BulkOperationsDialog';
 import NoteIcon from '../NoteIcon';
 import StickingRow from './StickingRow';
+import CountRow from './CountRow';
 
 // Re-export NoteChange for backward compatibility
 export type { NoteChange };
@@ -254,6 +255,13 @@ export function DrumGridDark({
                 measureIndex={measureIndex}
               />
             )}
+
+            {/* Count Row — displays beat counting (1, &, 2, &, etc.) aligned with subdivisions */}
+            <CountRow
+              division={groove.division}
+              timeSignature={ts}
+              measureIndex={measureIndex}
+            />
 
             {/* Drum Rows */}
             {DRUM_ROWS.map((row, rowIndex) => (

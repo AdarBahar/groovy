@@ -11,6 +11,7 @@ import DOMPurify from 'dompurify';
 import { GrooveData, DrumVoice, ALL_DRUM_VOICES, getFlattenedNotes } from '../types';
 import { grooveToABC } from './ABCTranscoder';
 import { renderABC } from './ABCRenderer';
+import { hasVisibleStickings, layoutStickingAndCountRows } from './SVGAnnotationLayout';
 import { getShareableURL } from './GrooveURLCodec';
 import { GrooveUtils } from './GrooveUtils';
 import { DRUM_VOICE_TO_MIDI, getVelocityForVoice } from './DrumVoiceConfig';
@@ -195,6 +196,7 @@ function renderSheetMusicToSVG(groove: GrooveData, width: number): string {
       scale: 1.0,
       responsive: false,
       padding: 20,
+      paddingTop: hasVisibleStickings(groove) ? 46 : 20,
       foregroundColor: '#000000',
     });
 
@@ -202,6 +204,7 @@ function renderSheetMusicToSVG(groove: GrooveData, width: number): string {
     if (!svgElement) {
       throw new Error('Failed to generate SVG');
     }
+    layoutStickingAndCountRows(svgElement, groove);
 
     // Sanitize the SVG content before returning
     return sanitizeSVG(svgElement.outerHTML);
@@ -880,4 +883,3 @@ export function getFormatInfo(format: ExportFormat): {
 
 /** All available export formats */
 export const ALL_EXPORT_FORMATS: ExportFormat[] = ['json', 'midi', 'pdf', 'png', 'svg', 'wav', 'mp3'];
-
