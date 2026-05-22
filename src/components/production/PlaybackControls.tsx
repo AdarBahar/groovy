@@ -2,6 +2,7 @@ import { Play, Pause, Plus } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Slider } from '../ui/slider';
 import { TimeSignature } from '../../types';
+import { useMIDITimingAccuracy } from '../../hooks/useMIDITimingAccuracy';
 
 interface PlaybackControlsProps {
   isPlaying: boolean;
@@ -38,20 +39,18 @@ export function PlaybackControls({
   countdownNumber,
   countingInButton,
   isEmbedded,
+  trackingEnabled,
 }: PlaybackControlsProps) {
   // Use the enhanced MIDI timing accuracy hook
   const {
-    timingAccuracy,
-    averageScore,
-    showingAverage,
+    timingAccuracy: _timingAccuracy,
+    averageScore: _averageScore,
+    showingAverage: _showingAverage,
   } = useMIDITimingAccuracy(isPlaying, trackingEnabled);
-
-  const showVolumeControl = masterVolume !== undefined && !!onMasterVolumeChange;
-  const showSecondRow = midiConnected || showVolumeControl;
 
   // Swing display conversion (internal 0–100 maps to DAW convention 50–67%)
   // 0 = no swing (straight), 100 = triplet swing (2:1 ratio)
-  const swingToDisplay = (v: number) => Math.round(50 + v / 6);
+  const swingToDisplay = (v: number) => Math.min(67, Math.max(50, Math.round(50 + v / 6)));
   const swingToInternal = (v: number) => Math.min(100, Math.max(0, Math.round((v - 50) * 6)));
 
   // Swing type labels based on display percentage (50–67%)

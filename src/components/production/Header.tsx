@@ -11,10 +11,11 @@ import { MIDISettingsModal } from './MIDISettingsModal';
 import { AutoSpeedUpConfig, MetronomeConfig, MetronomeFrequency, MetronomeOffsetClick } from '../../types';
 import { MIDIConfig, MIDIDeviceInfo } from '../../midi/types';
 import { trackThemeToggle, trackAutoSpeedUpConfigOpen } from '../../utils/analytics';
+import { METRONOME_OPTIONS, type MetronomeOption } from '../../utils/metronomeConstants';
 
 interface HeaderProps {
-  metronome?: 'off' | '4th' | '8th' | '16th';
-  onMetronomeChange?: (value: 'off' | '4th' | '8th' | '16th') => void;
+  metronome?: MetronomeOption;
+  onMetronomeChange?: (value: MetronomeOption) => void;
   // Metronome options
   metronomeConfig?: MetronomeConfig;
   onMetronomeFrequencyChange?: (frequency: MetronomeFrequency) => void;
@@ -65,7 +66,6 @@ export function Header({
   onMIDIConnectDevice,
   onToggleSidebar,
 }: HeaderProps) {
-  const metronomeOptions: Array<'off' | '4th' | '8th' | '16th'> = ['off', '4th', '8th', '16th'];
   const { toggleTheme, isDark } = useTheme();
   const [showSpeedUpModal, setShowSpeedUpModal] = useState(false);
   const [showAboutModal, setShowAboutModal] = useState(false);
@@ -99,7 +99,7 @@ export function Header({
         {/* Desktop metronome controls - hidden on mobile */}
         <div className="hidden lg:flex items-center gap-4 text-sm relative">
           <span className="text-slate-500 dark:text-slate-400">Metronome:</span>
-          {metronomeOptions.map((option) => (
+          {METRONOME_OPTIONS.map((option) => (
             <button
               key={option}
               onClick={() => onMetronomeChange?.(option)}

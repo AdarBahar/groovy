@@ -43,6 +43,10 @@ export default defineConfig({
 
   server: {
     port: 5175,
+    hmr: {
+      // Exclude audio-related modules from HMR to prevent AudioContext recreation
+      exclude: ['**/DrumSynth.ts', '**/GrooveEngine.ts'],
+    },
   },
 
   build: {

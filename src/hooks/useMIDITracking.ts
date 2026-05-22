@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { performanceTracker } from '../midi/PerformanceTracker';
 import { GrooveData } from '../types';
+import { logger } from '../utils/logger';
 
 /**
  * Hook that bridges playback, MIDI events, and PerformanceTracker.
@@ -62,13 +63,13 @@ export function useMIDITracking(
 
       if (analysis) {
         // Debug: Log timing calculation
-        console.log(`⏱️ Timing: error=${analysis.timingErrorMs.toFixed(1)}ms, accuracy=${analysis.timingAccuracy}%, overall=${analysis.overall}%, tempo=${groove.tempo}BPM`);
+        logger.log(`⏱️ Timing: error=${analysis.timingErrorMs.toFixed(1)}ms, accuracy=${analysis.timingAccuracy}%, overall=${analysis.overall}%, tempo=${groove.tempo}BPM`);
 
         // Debug: Clearer format for timing analysis (0=slow, 50=on-time, 100=fast)
         const quarterBeatMs = (60 / groove.tempo) * 1000 / 4;
         const accuracy = Math.max(-100, Math.min(100, (analysis.timingErrorMs / quarterBeatMs) * 100));
         const rangeScore = ((accuracy + 100) / 200) * 100;
-        console.log(`timing-debug: error=${analysis.timingErrorMs.toFixed(1)}ms, score=${rangeScore.toFixed(0)} (0=slow, 50=on-time, 100=fast)`);
+        logger.log(`timing-debug: error=${analysis.timingErrorMs.toFixed(1)}ms, score=${rangeScore.toFixed(0)} (0=slow, 50=on-time, 100=fast)`);
 
         // Dispatch tracking event with analysis results
         window.dispatchEvent(new CustomEvent('midi-tracking-hit', {

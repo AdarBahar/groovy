@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { GrooveData, DEFAULT_GROOVE, DrumVoice, Division, ALL_DRUM_VOICES, MetronomeFrequency, TimeSignature } from '../types';
+import { GrooveData, DEFAULT_GROOVE, DrumVoice, Division, ALL_DRUM_VOICES, TimeSignature } from '../types';
 import { GrooveUtils, decodeGroove, SavedGroove } from '../core';
 import { useGrooveEngine } from '../hooks/useGrooveEngine';
 import { useHistory } from '../hooks/useHistory';
@@ -14,7 +14,7 @@ import { useMIDIFeedback } from '../hooks/useMIDIFeedback';
 import { useMIDITracking } from '../hooks/useMIDITracking';
 import { useMIDITrackingFeedback } from '../hooks/useMIDITrackingFeedback';
 import * as analytics from '../utils/analytics';
-import { DrumSynth } from '../core/DrumSynth';
+import { frequencyToMetronomeOption, metronomeOptionToFrequency } from '../utils/metronomeConstants';
 import '../styles/midi.css';
 
 // Core components - drum grid and sheet music
@@ -40,28 +40,6 @@ import { TimeSignatureSelectorModal } from '../components/production/TimeSignatu
 import { Button } from '../components/ui/button';
 
 import './ProductionPage.css';
-
-// Helper to convert MetronomeFrequency to Header format
-function frequencyToMetronomeOption(freq: MetronomeFrequency): 'off' | '4th' | '8th' | '16th' {
-  switch (freq) {
-    case 0: return 'off';
-    case 4: return '4th';
-    case 8: return '8th';
-    case 16: return '16th';
-    default: return 'off';
-  }
-}
-
-// Helper to convert Header format to MetronomeFrequency
-function metronomeOptionToFrequency(option: 'off' | '4th' | '8th' | '16th'): MetronomeFrequency {
-  switch (option) {
-    case 'off': return 0;
-    case '4th': return 4;
-    case '8th': return 8;
-    case '16th': return 16;
-    default: return 0;
-  }
-}
 
 const TITLE_MAX_LENGTH = 50;
 const AUTHOR_MAX_LENGTH = 50;
@@ -144,14 +122,12 @@ export default function ProductionPage() {
     // Master volume
     masterVolume,
     setMasterVolume,
+    // Engine for MIDI synth
+    engine,
   } = useGrooveEngine();
 
-  // Create synth instance for MIDI input
-  // Note: useRef to prevent re-initialization on every render
-  const synthRef = useRef(new DrumSynth());
-
-  // Use MIDI Input hook
-  const midiInput = useMIDIInput(synthRef.current);
+  // Use MIDI Input hook (shares synth with GrooveEngine)
+  const midiInput = useMIDIInput(engine?.getSynth());
 
   // Use MIDI Feedback hook for visual feedback
   useMIDIFeedback();

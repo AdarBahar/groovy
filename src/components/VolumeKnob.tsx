@@ -86,8 +86,9 @@ export default function VolumeKnob({ volume, onVolumeChange, label = 'Volume' }:
   );
 
   useEffect(() => {
+    if (!isDragging) return;
+
     const handleMouseMove = (e: MouseEvent) => {
-      if (!isDragging) return;
       setByCoords(e.clientX, e.clientY);
     };
 
@@ -96,7 +97,6 @@ export default function VolumeKnob({ volume, onVolumeChange, label = 'Volume' }:
     };
 
     const handleTouchMove = (e: TouchEvent) => {
-      if (!isDragging) return;
       e.preventDefault();
       const touch = e.touches[0];
       setByCoords(touch.clientX, touch.clientY);
@@ -106,19 +106,22 @@ export default function VolumeKnob({ volume, onVolumeChange, label = 'Volume' }:
       setIsDragging(false);
     };
 
-    if (isDragging) {
-      document.addEventListener('mousemove', handleMouseMove);
-      document.addEventListener('mouseup', handleMouseUp);
-      document.addEventListener('touchmove', handleTouchMove, { passive: false });
-      document.addEventListener('touchend', handleTouchEnd);
+    const listeners: Array<[string, EventListener, AddEventListenerOptions | undefined]> = [
+      ['mousemove', handleMouseMove as EventListener, undefined],
+      ['mouseup', handleMouseUp as EventListener, undefined],
+      ['touchmove', handleTouchMove as EventListener, { passive: false }],
+      ['touchend', handleTouchEnd as EventListener, undefined],
+    ];
 
-      return () => {
-        document.removeEventListener('mousemove', handleMouseMove);
-        document.removeEventListener('mouseup', handleMouseUp);
-        document.removeEventListener('touchmove', handleTouchMove);
-        document.removeEventListener('touchend', handleTouchEnd);
-      };
-    }
+    listeners.forEach(([event, handler, options]) => {
+      document.addEventListener(event, handler, options);
+    });
+
+    return () => {
+      listeners.forEach(([event, handler]) => {
+        document.removeEventListener(event, handler);
+      });
+    };
   }, [isDragging, setByCoords]);
 
   const volumePercent = Math.round(volume * 100);

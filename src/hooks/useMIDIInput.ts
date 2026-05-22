@@ -22,6 +22,7 @@ import { DoubleTriggerFilter } from '../midi/DoubleTriggerFilter';
 import { keyboardMIDISimulator } from '../midi/KeyboardMIDISimulator';
 import { FAKE_MIDI_DEVICE_ID_EXPORT } from '../midi/MIDIAccess';
 import { trackMIDIDeviceDisconnected } from '../utils/analytics';
+import { logger } from '../utils/logger';
 
 interface UseMIDIInputReturn {
   config: MIDIConfig;
@@ -35,10 +36,13 @@ interface UseMIDIInputReturn {
 
 /**
  * React hook for MIDI input integration
- * @param synth - DrumSynth instance for audio playback
+ * @param synth - DrumSynth instance for audio playback (optional, creates one if not provided)
  * @returns MIDI state and control methods
  */
-export function useMIDIInput(synth: DrumSynth): UseMIDIInputReturn {
+export function useMIDIInput(synth?: DrumSynth): UseMIDIInputReturn {
+  // Use provided synth or create one (should be provided from GrooveEngine)
+  const synthRef = useRef<DrumSynth>(synth || new DrumSynth());
+
   const [config, setConfig] = useState<MIDIConfig>(loadMIDIConfig);
   const [devices, setDevices] = useState<MIDIDeviceInfo[]>([]);
   const [isConnected, setIsConnected] = useState(false);
@@ -77,7 +81,7 @@ export function useMIDIInput(synth: DrumSynth): UseMIDIInputReturn {
         // On localhost, auto-connect to fake keyboard device for testing
         const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
         if (isLocalhost && initialDevices.some((d) => d.id === FAKE_MIDI_DEVICE_ID_EXPORT)) {
-          console.log('🎹 Auto-connecting to fake MIDI device (localhost)');
+          logger.log('🎹 Auto-connecting to fake MIDI device (localhost)');
           connectDevice(FAKE_MIDI_DEVICE_ID_EXPORT);
           return;
         }
@@ -121,16 +125,12 @@ export function useMIDIInput(synth: DrumSynth): UseMIDIInputReturn {
     };
   }, []);
 
-  // Handle drum kit changes
+  // Update drum kit and filters when config changes
   useEffect(() => {
     midiDrumMapping.setKit(config.selectedKitName);
-  }, [config.selectedKitName]);
-
-  // Update filters when config changes
-  useEffect(() => {
     velocityFilterRef.current.setThresholds(config.velocityThresholds || {});
     doubleTriggerFilterRef.current.setWindows(config.doubleTriggerWindows || {});
-  }, [config.velocityThresholds, config.doubleTriggerWindows]);
+  }, [config.selectedKitName, config.velocityThresholds, config.doubleTriggerWindows]);
 
   // Set up keyboard MIDI simulator for debugging (localhost only)
   useEffect(() => {
@@ -147,8 +147,8 @@ export function useMIDIInput(synth: DrumSynth): UseMIDIInputReturn {
     keyboardMIDISimulator.setEnabled(true);
     keyboardMIDISimulator.start(handleKeyboardMIDI);
 
-    console.log('🎹 Keyboard MIDI simulator enabled (localhost)');
-    console.log('📝 Key bindings: K=Kick, S=Snare, Space=Hi-hat');
+    logger.log('🎹 Keyboard MIDI simulator enabled (localhost)');
+    logger.log('📝 Key bindings: K=Kick, S=Snare, Space=Hi-hat');
 
     return () => {
       keyboardMIDISimulator.stop();
@@ -159,50 +159,33 @@ export function useMIDIInput(synth: DrumSynth): UseMIDIInputReturn {
   useEffect(() => {
     midiHandler.setNoteOnHandler((note, velocity, _currentVoice, timestamp) => {
       const config = configRef.current;
-      console.log(`🎵 MIDI Note Handler called: note=${note}, velocity=${velocity}, timestamp=${timestamp}`);
 
       // Apply velocity filtering
       if (!velocityFilterRef.current.isValid(note, velocity)) {
-        console.log(
-          `MIDI: Note ${note} velocity ${velocity} filtered (threshold: ${velocityFilterRef.current.getThreshold(note)})`
-        );
         return;
       }
-      console.log(`✅ Velocity filter passed for note ${note}`);
 
       // Apply double-trigger filtering
       if (!doubleTriggerFilterRef.current.isValid(note, timestamp)) {
-        console.log(`MIDI: Note ${note} filtered (double-trigger within ${doubleTriggerFilterRef.current.getWindow(note)}ms)`);
         return;
       }
-      console.log(`✅ Double-trigger filter passed for note ${note}`);
 
       const voice = midiDrumMapping.getVoiceFromNote(note);
-      console.log(`🎼 Voice mapping result: note=${note} → voice=${voice}`);
 
       if (voice) {
         // Apply latency compensation if enabled
         let compensatedTimestamp = timestamp;
 
-        // Debug: Log config to see what's being used
-        if (process.env.NODE_ENV === 'development') {
-          console.log(`🔧 Config latency: enabled=${config.latencyCompensation?.enabled}, offset=${config.latencyCompensation?.offsetMs}ms`);
-        }
-
         if (config.latencyCompensation?.enabled && config.latencyCompensation?.offsetMs) {
           compensatedTimestamp = timestamp - config.latencyCompensation.offsetMs;
-          console.log(`✅ Latency compensation APPLIED: -${config.latencyCompensation.offsetMs}ms`);
         }
 
         if (config.throughEnabled) {
           // Resume AudioContext if suspended (required for user interaction on Web Audio API)
-          synth.resume();
+          synthRef.current.resume();
 
           // Play sound immediately (time=0)
-          synth.playDrum(voice, 0, velocity);
-          console.log(
-            `MIDI: Note ${note} → ${voice} (velocity: ${velocity}${config.latencyCompensation?.enabled ? `, latency: -${config.latencyCompensation.offsetMs}ms` : ''})`
-          );
+          synthRef.current.playDrum(voice, 0, velocity);
         }
 
         // Emit event for UI feedback (always emit, independent of audio playback)
@@ -231,26 +214,21 @@ export function useMIDIInput(synth: DrumSynth): UseMIDIInputReturn {
 
         // Load device-specific latency config if available
         const latencyConfig = loadLatencyConfig(deviceId);
-        console.log(`📦 Device latency config loaded:`, latencyConfig);
-        console.log(`📦 Config latencyCompensation before device connect:`, config.latencyCompensation);
 
         // Save config with device-specific settings
         const updated: MIDIConfig = {
-          ...config,
+          ...configRef.current,
           selectedDeviceId: deviceId,
-          latencyCompensation: latencyConfig || config.latencyCompensation,
+          latencyCompensation: latencyConfig || configRef.current.latencyCompensation,
         };
-        console.log(`📦 Final latencyCompensation after device connect:`, updated.latencyCompensation);
         setConfig(updated);
         saveMIDIConfig(updated);
 
         // Clear double-trigger history for new device
         doubleTriggerFilterRef.current.clearHistory();
-
-        console.log(`Connected to device ${deviceId}${latencyConfig ? ` with latency offset ${latencyConfig.offsetMs}ms` : ''}`);
       }
     },
-    [config]
+    []
   );
 
   const disconnect = useCallback(() => {

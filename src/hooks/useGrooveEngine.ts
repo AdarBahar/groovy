@@ -283,6 +283,9 @@ export function useGrooveEngine() {
 
     // Master volume actions
     setMasterVolume,
+
+    // Engine access for shared synth
+    engine: engineRef.current,
   };
 }
 

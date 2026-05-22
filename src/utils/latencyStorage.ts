@@ -3,10 +3,11 @@
  *
  * Persists per-device latency calibration to localStorage.
  * Allows users to calibrate their hardware setup and automatically
- * apply the offset to future sessions.
+ * apply the offset to future sessions. Validates data using Zod schema.
  */
 
-import { LatencyCompensationConfig } from '../midi/types';
+import { LatencyCompensationConfig, LatencyCompensationConfigSchema } from '../midi/types';
+import { logger } from './logger';
 
 const LATENCY_CONFIG_KEY = 'groovy_midi_latency_config';
 
@@ -20,10 +21,21 @@ export function loadLatencyConfig(deviceId: string): LatencyCompensationConfig |
     const stored = localStorage.getItem(LATENCY_CONFIG_KEY);
     if (!stored) return null;
 
-    const configs: Record<string, LatencyCompensationConfig> = JSON.parse(stored);
-    return configs[deviceId] || null;
+    const parsed = JSON.parse(stored);
+    const config = parsed[deviceId];
+
+    if (!config) return null;
+
+    // Validate against schema
+    const validationResult = LatencyCompensationConfigSchema.safeParse(config);
+    if (!validationResult.success) {
+      logger.warn(`Failed to validate latency config for device ${deviceId}:`, validationResult.error);
+      return null;
+    }
+
+    return validationResult.data;
   } catch (error) {
-    console.error('Failed to load latency config:', error);
+    logger.error('Failed to load latency config:', error);
     return null;
   }
 }
@@ -45,9 +57,9 @@ export function saveLatencyConfig(deviceId: string, config: LatencyCompensationC
     };
 
     localStorage.setItem(LATENCY_CONFIG_KEY, JSON.stringify(configs));
-    console.log(`Saved latency config for device ${deviceId}: ${config.offsetMs}ms`);
+    logger.log(`Saved latency config for device ${deviceId}: ${config.offsetMs}ms`);
   } catch (error) {
-    console.error('Failed to save latency config:', error);
+    logger.error('Failed to save latency config:', error);
   }
 }
 
@@ -64,9 +76,9 @@ export function deleteLatencyConfig(deviceId: string): void {
     delete configs[deviceId];
 
     localStorage.setItem(LATENCY_CONFIG_KEY, JSON.stringify(configs));
-    console.log(`Deleted latency config for device ${deviceId}`);
+    logger.log(`Deleted latency config for device ${deviceId}`);
   } catch (error) {
-    console.error('Failed to delete latency config:', error);
+    logger.error('Failed to delete latency config:', error);
   }
 }
 
@@ -89,8 +101,8 @@ export function getAllLatencyConfigs(): Record<string, LatencyCompensationConfig
 export function clearAllLatencyConfigs(): void {
   try {
     localStorage.removeItem(LATENCY_CONFIG_KEY);
-    console.log('Cleared all latency configurations');
+    logger.log('Cleared all latency configurations');
   } catch (error) {
-    console.error('Failed to clear latency configs:', error);
+    logger.error('Failed to clear latency configs:', error);
   }
 }

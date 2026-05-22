@@ -65,7 +65,14 @@ export class GrooveEngine {
   constructor(synth?: DrumSynth) {
     this.synth = synth || new DrumSynth();
   }
-  
+
+  /**
+   * Get the synth instance for external use (e.g., MIDI input)
+   */
+  getSynth(): DrumSynth {
+    return this.synth;
+  }
+
   /**
    * Register event listeners
    */

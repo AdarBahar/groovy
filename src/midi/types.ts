@@ -4,6 +4,7 @@
  * Defines all TypeScript interfaces for the MIDI subsystem.
  */
 
+import { z } from 'zod';
 import { DrumVoice } from '../types';
 
 /**
@@ -154,3 +155,25 @@ export const DEFAULT_DOUBLE_TRIGGER_WINDOWS: DoubleTriggerConfig = {
   // Ride - similar to crash
   51: 30,
 };
+
+/**
+ * Zod Schemas for Runtime Validation
+ */
+
+export const LatencyCompensationConfigSchema = z.object({
+  enabled: z.boolean(),
+  offsetMs: z.number().min(0).max(5000),
+  calibrationDate: z.string().optional(),
+  calibrationDevice: z.string().optional(),
+});
+
+export const MIDIConfigSchema = z.object({
+  enabled: z.boolean().optional(),
+  selectedDeviceId: z.string().nullable().optional(),
+  selectedKitName: z.string().optional(),
+  throughEnabled: z.boolean().optional(),
+  performanceTrackingEnabled: z.boolean().optional(),
+  velocityThresholds: z.record(z.number(), z.number()).optional(),
+  doubleTriggerWindows: z.record(z.number(), z.number()).optional(),
+  latencyCompensation: LatencyCompensationConfigSchema.optional(),
+});

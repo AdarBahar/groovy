@@ -10,6 +10,7 @@ export class DrumSynth {
   private samples: Map<string, AudioBuffer> = new Map();
   private isLoaded = false;
   private masterGainNode: GainNode;
+  private initError: Error | null = null;
 
   // Rate limiting for audio playback (prevent spam/DoS)
   private lastPlayTime = new Map<DrumVoice, number>();
@@ -51,15 +52,35 @@ export class DrumSynth {
   };
 
   constructor() {
-    this.audioContext = new AudioContext();
+    try {
+      this.audioContext = new AudioContext();
 
-    // Initialize master gain node for volume control
-    this.masterGainNode = this.audioContext.createGain();
-    this.masterGainNode.gain.value = 1.0; // Default to full volume
-    this.masterGainNode.connect(this.audioContext.destination);
+      // Initialize master gain node for volume control
+      this.masterGainNode = this.audioContext.createGain();
+      this.masterGainNode.gain.value = 1.0; // Default to full volume
+      this.masterGainNode.connect(this.audioContext.destination);
 
-    this.setupErrorHandling();
-    this.loadSamples();
+      this.setupErrorHandling();
+      this.loadSamples();
+    } catch (error) {
+      this.initError = error instanceof Error ? error : new Error(String(error));
+      logger.error('❌ Failed to initialize AudioContext:', this.initError.message);
+      throw this.initError;
+    }
+  }
+
+  /**
+   * Check if initialization succeeded
+   */
+  isInitialized(): boolean {
+    return !this.initError && this.audioContext !== undefined;
+  }
+
+  /**
+   * Get initialization error if any
+   */
+  getInitError(): Error | null {
+    return this.initError;
   }
 
   /**
@@ -168,7 +189,7 @@ export class DrumSynth {
    * Play a drum hit with rate limiting to prevent audio spam
    */
   playDrum(voice: DrumVoice, time: number = 0, velocity: number = 100) {
-    if (!this.isLoaded) {
+    if (!this.isInitialized() || !this.isLoaded) {
       return;
     }
 
@@ -230,15 +251,21 @@ export class DrumSynth {
    * Resume audio context (required for user interaction)
    */
   async resume() {
+    if (!this.isInitialized()) {
+      return;
+    }
     if (this.audioContext.state === 'suspended') {
       await this.audioContext.resume();
     }
   }
-  
+
   /**
    * Get current audio context time
    */
   getCurrentTime(): number {
+    if (!this.isInitialized()) {
+      return 0;
+    }
     return this.audioContext.currentTime;
   }
 
@@ -246,6 +273,9 @@ export class DrumSynth {
    * Set master volume (0-1)
    */
   setMasterVolume(volume: number): void {
+    if (!this.isInitialized()) {
+      return;
+    }
     // Clamp volume to 0-1 range
     const clampedVolume = Math.max(0, Math.min(1, volume));
     this.masterGainNode.gain.value = clampedVolume;
@@ -255,6 +285,9 @@ export class DrumSynth {
    * Get current master volume (0-1)
    */
   getMasterVolume(): number {
+    if (!this.isInitialized()) {
+      return 1.0;
+    }
     return this.masterGainNode.gain.value;
   }
 }
