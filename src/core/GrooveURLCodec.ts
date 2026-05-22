@@ -14,6 +14,7 @@ import {
   DrumVoice,
   Division,
   TimeSignature,
+  StickingValue,
   createEmptyNotesRecord,
   getFlattenedNotes,
 } from '../types';
@@ -29,7 +30,25 @@ const VALIDATION = {
   AUTHOR_MAX_LENGTH: 100,
   COMMENTS_MAX_LENGTH: 1000,
   PATTERN_MAX_LENGTH: 2000,
+  STICKING_MAX_LENGTH: 600, // 16 measures * 48 subdivisions max = 768, allow some headroom
 } as const;
+
+/**
+ * Sticking encoding: maps StickingValue to a single URL-safe character.
+ * null → '-', 'R' → 'r', 'L' → 'l', 'L/R' → 'b' (both)
+ */
+const STICKING_ENCODE: Record<string, string> = {
+  'R': 'r',
+  'L': 'l',
+  'L/R': 'b',
+};
+const STICKING_DECODE: Record<string, StickingValue> = {
+  'r': 'R',
+  'l': 'L',
+  'b': 'L/R',
+};
+/** Valid decoded sticking characters (excluding rest '-') */
+const VALID_STICKING_CHARS = new Set(['r', 'l', 'b', '-']);
 
 /** Valid divisions - matches Division type in types.ts */
 const VALID_DIVISIONS = [4, 8, 12, 16, 24, 32, 48] as const;
@@ -96,6 +115,15 @@ const patternSchema = z.string()
   .regex(/^[|a-zA-Z0-9\-]*$/, 'Invalid characters in pattern')
   .optional();
 
+/**
+ * Zod schema for sticking parameter — validates character set and length (T-02-07)
+ * Valid chars: 'r', 'l', 'b', '-', '|'
+ */
+const stickingParamSchema = z.string()
+  .max(VALIDATION.STICKING_MAX_LENGTH, 'Sticking parameter too long')
+  .regex(/^[rlb|\-]*$/, 'Invalid characters in sticking parameter')
+  .optional();
+
 /** URL parameter names */
 const PARAM = {
   TIME_SIG: 'TimeSig',
@@ -117,6 +145,8 @@ const PARAM = {
   TITLE: 'Title',
   AUTHOR: 'Author',
   COMMENTS: 'Comments',
+  // Sticking (per D-08)
+  STICKING: 'Stk',
 } as const;
 
 /** Rest character in URL patterns */
@@ -208,6 +238,71 @@ function decodeVoicePattern(
 }
 
 /**
+ * Encode sticking arrays from all measures into a single URL-safe string.
+ * Format: |<measure1chars>|<measure2chars>|...
+ * Characters: 'r'=R, 'l'=L, 'b'=L/R, '-'=null
+ * Returns null if all sticking values are null (nothing to encode).
+ */
+function encodeStickingPattern(groove: GrooveData): string | null {
+  const hasAnySticking = groove.measures.some(m =>
+    m.sticking && m.sticking.some(v => v !== null)
+  );
+  if (!hasAnySticking) return null;
+
+  const parts: string[] = [];
+  for (const measure of groove.measures) {
+    const sticking = measure.sticking;
+    if (!sticking || sticking.length === 0) {
+      // Determine length from notes array to produce correct-length placeholders
+      const firstVoice = Object.keys(measure.notes)[0] as DrumVoice | undefined;
+      const length = firstVoice ? (measure.notes[firstVoice]?.length ?? 0) : 0;
+      parts.push('-'.repeat(length));
+    } else {
+      parts.push(sticking.map(v => (v !== null ? STICKING_ENCODE[v] : '-')).join(''));
+    }
+  }
+
+  return MEASURE_SEP + parts.join(MEASURE_SEP) + MEASURE_SEP;
+}
+
+/**
+ * Decode sticking URL parameter back to per-measure StickingValue arrays.
+ * Validates each character (T-02-07). Invalid characters are treated as null.
+ * Returns an array of sticking arrays (one per measure), or null if no sticking param.
+ */
+function decodeStickingPattern(
+  param: string,
+  numMeasures: number,
+  notesPerMeasure: number
+): (StickingValue[] | undefined)[] {
+  const measurePatterns = param.split(MEASURE_SEP).filter(p => p.length > 0);
+  const result: (StickingValue[] | undefined)[] = [];
+
+  for (let m = 0; m < numMeasures; m++) {
+    const chars = measurePatterns[m] ?? '';
+    if (chars.length === 0) {
+      result.push(undefined);
+      continue;
+    }
+    const sticking: StickingValue[] = [];
+    for (let i = 0; i < notesPerMeasure; i++) {
+      const ch = i < chars.length ? chars[i] : '-';
+      if (!VALID_STICKING_CHARS.has(ch)) {
+        // T-02-07: reject invalid sticking characters — treat as null
+        sticking.push(null);
+      } else {
+        sticking.push(STICKING_DECODE[ch] ?? null);
+      }
+    }
+    // Only return a sticking array if it has at least one non-null value
+    const hasValues = sticking.some(v => v !== null);
+    result.push(hasValues ? sticking : undefined);
+  }
+
+  return result;
+}
+
+/**
  * Encode GrooveData to URL search params string
  */
 export function encodeGrooveToURL(groove: GrooveData): string {
@@ -243,6 +338,12 @@ export function encodeGrooveToURL(groove: GrooveData): string {
     if (hasNotes) {
       params.set(param, encodeVoicePattern(groove, voices));
     }
+  }
+
+  // Sticking (per D-08): only include if any sticking values are set
+  const stickingEncoded = encodeStickingPattern(groove);
+  if (stickingEncoded !== null) {
+    params.set(PARAM.STICKING, stickingEncoded);
   }
 
   return params.toString();
@@ -294,7 +395,7 @@ export function decodeURLToGroove(urlOrParams: string | URLSearchParams): Groove
   const notesPerMeasure = (division / timeSignature.noteValue) * timeSignature.beats;
 
   // Start with empty notes for each measure
-  const measures: { notes: Record<DrumVoice, boolean[]> }[] = [];
+  const measures: { notes: Record<DrumVoice, boolean[]>; sticking?: StickingValue[] }[] = [];
   for (let m = 0; m < numMeasures; m++) {
     measures.push({ notes: createEmptyNotesRecord(notesPerMeasure) });
   }
@@ -319,6 +420,18 @@ export function decodeURLToGroove(urlOrParams: string | URLSearchParams): Groove
             measures[m].notes[voice as DrumVoice] = values;
           }
         }
+      }
+    }
+  }
+
+  // Decode sticking (per D-08): validate and apply per-measure sticking arrays (T-02-07)
+  const rawSticking = params.get(PARAM.STICKING);
+  const validatedSticking = safeParse(stickingParamSchema, rawSticking, undefined);
+  if (validatedSticking) {
+    const decodedSticking = decodeStickingPattern(validatedSticking, numMeasures, notesPerMeasure);
+    for (let m = 0; m < numMeasures; m++) {
+      if (decodedSticking[m]) {
+        measures[m].sticking = decodedSticking[m];
       }
     }
   }
