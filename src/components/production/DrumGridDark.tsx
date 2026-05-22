@@ -1,10 +1,11 @@
-import { memo } from 'react';
+import { memo, useCallback } from 'react';
 import { Copy, Plus, Trash2, X } from 'lucide-react';
-import { GrooveData, DrumVoice, MAX_MEASURES } from '../../types';
+import { GrooveData, DrumVoice, MAX_MEASURES, StickingValue, createEmptySticking } from '../../types';
 import { GrooveUtils } from '../../core';
 import { useDrumGrid, DRUM_ROWS, NoteChange } from '../../hooks/useDrumGrid';
 import BulkOperationsDialog from '../BulkOperationsDialog';
 import NoteIcon from '../NoteIcon';
+import StickingRow from './StickingRow';
 
 // Re-export NoteChange for backward compatibility
 export type { NoteChange };
@@ -92,6 +93,10 @@ interface DrumGridDarkProps {
   onMeasureAdd?: (afterIndex: number) => void;
   onMeasureRemove?: (measureIndex: number) => void;
   onMeasureClear?: (measureIndex: number) => void;
+  /** Whether sticking setup mode is active (shows sticking row) */
+  isStickingSetupActive?: boolean;
+  /** Called when a sticking cell changes; receives measure index, subdivision index, new value */
+  onStickingChange?: (measureIndex: number, subdivIndex: number, value: StickingValue) => void;
 }
 
 export function DrumGridDark({
@@ -104,6 +109,8 @@ export function DrumGridDark({
   onMeasureAdd,
   onMeasureRemove,
   onMeasureClear,
+  isStickingSetupActive = false,
+  onStickingChange,
 }: DrumGridDarkProps) {
   const grid = useDrumGrid({
     groove,
@@ -112,6 +119,10 @@ export function DrumGridDark({
     onPreview,
     advancedEditMode,
   });
+
+  const handleStickingChange = useCallback((measureIndex: number, subdivIndex: number, value: StickingValue) => {
+    onStickingChange?.(measureIndex, subdivIndex, value);
+  }, [onStickingChange]);
 
   return (
     <div className={`flex flex-wrap gap-3 md:gap-4 mt-4 md:mt-6 ${grid.isDragging ? 'select-none' : ''}`}>
@@ -183,6 +194,22 @@ export function DrumGridDark({
                 );
               })}
             </div>
+
+            {/* Sticking Row — appears between beat counter and instrument rows when active */}
+            {isStickingSetupActive && (
+              <StickingRow
+                stickingValues={
+                  measure.sticking && measure.sticking.length === positions.length
+                    ? measure.sticking
+                    : createEmptySticking(positions.length)
+                }
+                onStickingChange={(subdivIndex, value) =>
+                  handleStickingChange(measureIndex, subdivIndex, value)
+                }
+                isActive={isStickingSetupActive}
+                measureIndex={measureIndex}
+              />
+            )}
 
             {/* Drum Rows */}
             {DRUM_ROWS.map((row, rowIndex) => (

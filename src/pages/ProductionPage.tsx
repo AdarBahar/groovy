@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { GrooveData, DEFAULT_GROOVE, DrumVoice, Division, ALL_DRUM_VOICES, TimeSignature } from '../types';
+import { GrooveData, DEFAULT_GROOVE, DrumVoice, Division, ALL_DRUM_VOICES, TimeSignature, StickingValue, createEmptySticking } from '../types';
 import { GrooveUtils, decodeGroove, SavedGroove } from '../core';
 import { useGrooveEngine } from '../hooks/useGrooveEngine';
 import { useHistory } from '../hooks/useHistory';
@@ -37,8 +37,6 @@ import { SaveGrooveModal } from '../components/production/SaveGrooveModal';
 import { GrooveLibraryModal } from '../components/production/GrooveLibraryModal';
 import { ShareModal } from '../components/production/ShareModal';
 import { TimeSignatureSelectorModal } from '../components/production/TimeSignatureSelectorModal';
-import { Button } from '../components/ui/button';
-
 import './ProductionPage.css';
 
 const TITLE_MAX_LENGTH = 50;
@@ -56,6 +54,7 @@ function sanitizeMetadataValue(value: string, maxLength: number): string {
 export default function ProductionPage() {
   const [advancedEditMode] = useState(false);
   const [isNotesOnly, setIsNotesOnly] = useState(false);
+  const [isStickingSetupActive, setIsStickingSetupActive] = useState(false);
   const [isDownloadModalOpen, setIsDownloadModalOpen] = useState(false);
   const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
   const [isMyGroovesModalOpen, setIsMyGroovesModalOpen] = useState(false);
@@ -487,6 +486,37 @@ export default function ProductionPage() {
     analytics.trackMetronomeChange(option);
   };
 
+  const handleStickingSetupToggle = useCallback(() => {
+    setIsStickingSetupActive(prev => !prev);
+  }, []);
+
+  const handleStickingChange = useCallback((measureIndex: number, subdivIndex: number, value: StickingValue) => {
+    const measure = groove.measures[measureIndex];
+    if (!measure) return;
+
+    // Determine subdivision count for this measure
+    const ts = measure.timeSignature || groove.timeSignature;
+    const subdivCount = GrooveUtils.calcNotesPerMeasure(groove.division, ts.beats, ts.noteValue);
+
+    // Validate bounds (T-02-03)
+    if (subdivIndex < 0 || subdivIndex >= subdivCount) return;
+
+    // Build the updated sticking array, validating length invariant (T-02-03)
+    const existingSticking: StickingValue[] = (measure.sticking && measure.sticking.length === subdivCount)
+      ? [...measure.sticking]
+      : createEmptySticking(subdivCount);
+
+    existingSticking[subdivIndex] = value;
+
+    const updatedGroove: GrooveData = {
+      ...groove,
+      measures: groove.measures.map((m, i) =>
+        i === measureIndex ? { ...m, sticking: existingSticking } : m
+      ),
+    };
+    setGroove(updatedGroove);
+  }, [groove, setGroove]);
+
   return (
     <div className="min-h-dvh flex flex-col bg-slate-100 dark:bg-slate-900 text-slate-900 dark:text-white">
       <Header
@@ -552,6 +582,8 @@ export default function ProductionPage() {
                 onTrackingToggle={() => setMidiTrackingEnabled(!midiTrackingEnabled)}
                 masterVolume={masterVolume}
                 onMasterVolumeChange={setMasterVolume}
+                isStickingSetupActive={isStickingSetupActive}
+                onStickingSetupToggle={handleStickingSetupToggle}
               />
 
               {/* Metadata Details - Title, Author, Comments */}
@@ -601,6 +633,8 @@ export default function ProductionPage() {
                         onMeasureAdd={handleMeasureAdd}
                         onMeasureRemove={handleMeasureRemove}
                         onMeasureClear={handleMeasureClear}
+                        isStickingSetupActive={isStickingSetupActive}
+                        onStickingChange={handleStickingChange}
                       />
                     </div>
                   </div>
@@ -609,20 +643,7 @@ export default function ProductionPage() {
 
               {!isNotesOnly && (
                 <div className="flex items-center gap-2">
-                  <div className="flex items-center gap-2">
-                    <ClearButton onClear={handleClearAll} />
-
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center gap-2 h-auto py-2 px-4"
-                    >
-                      <div className="w-4 h-4 flex items-center justify-center font-bold text-sm">
-                        S
-                      </div>
-                      <span className="text-xs uppercase">Stickings</span>
-                    </Button>
-                  </div>
+                  <ClearButton onClear={handleClearAll} />
 
                   <div className="ml-auto">
                     <KeyboardShortcuts inline />
