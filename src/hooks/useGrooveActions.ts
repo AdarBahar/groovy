@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { GrooveData, DrumVoice, createEmptyNotesRecord, MAX_MEASURES } from '../types';
+import { GrooveData, DrumVoice, createEmptyNotesRecord, createEmptySticking, MAX_MEASURES } from '../types';
 import { GrooveUtils } from '../core';
 
 /**
@@ -87,7 +87,9 @@ export function useGrooveActions(
     const copiedNotes = Object.fromEntries(
       Object.entries(measureToCopy.notes).map(([voice, notes]) => [voice, [...notes]])
     ) as typeof measureToCopy.notes;
-    const newMeasure = { ...measureToCopy, notes: copiedNotes };
+    // Deep copy sticking array if it exists (T-02-04: copy, not reference)
+    const copiedSticking = measureToCopy.sticking ? [...measureToCopy.sticking] : undefined;
+    const newMeasure = { ...measureToCopy, notes: copiedNotes, sticking: copiedSticking };
     const newMeasures = [
       ...groove.measures.slice(0, measureIndex + 1),
       newMeasure,
@@ -129,7 +131,8 @@ export function useGrooveActions(
     );
     const newMeasures = groove.measures.map((measure, idx) => {
       if (idx !== measureIndex) return measure;
-      return { ...measure, notes: createEmptyNotesRecord(notesPerMeasure) };
+      // Clear both notes and sticking (D-09: Clear measure resets both)
+      return { ...measure, notes: createEmptyNotesRecord(notesPerMeasure), sticking: createEmptySticking(notesPerMeasure) };
     });
     const newGroove = { ...groove, measures: newMeasures };
     setGroove(newGroove);
@@ -144,6 +147,7 @@ export function useGrooveActions(
     const newMeasures = groove.measures.map((measure) => ({
       ...measure,
       notes: createEmptyNotesRecord(notesPerMeasure),
+      sticking: createEmptySticking(notesPerMeasure),
     }));
     const newGroove = { ...groove, measures: newMeasures };
     setGroove(newGroove);
