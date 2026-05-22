@@ -14,7 +14,7 @@ import { createEmptyNotesRecord, createEmptySticking } from '../types';
 // ---------------------------------------------------------------------------
 
 /** Build a partial notes record where all voices are false except those specified */
-function makeNotes(subdivisions: number, overrides: Partial<Record<string, boolean[]>> = {}): Record<string, boolean[]> {
+function makeNotes(subdivisions: number, overrides: Record<string, boolean[]> = {}): Record<string, boolean[]> {
   const notes = createEmptyNotesRecord(subdivisions);
   for (const [voice, pattern] of Object.entries(overrides)) {
     (notes as Record<string, boolean[]>)[voice] = pattern;
