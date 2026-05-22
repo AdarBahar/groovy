@@ -77,6 +77,15 @@ export const ALL_DRUM_VOICES: DrumVoice[] = [
 ];
 
 /**
+ * Sticking value for a single subdivision
+ * - "L": left hand
+ * - "R": right hand
+ * - "L/R": both hands simultaneously
+ * - null: no sticking set (default)
+ */
+export type StickingValue = 'L' | 'R' | 'L/R' | null;
+
+/**
  * Configuration for a single measure
  * Each measure can have its own time signature (override) and notes
  */
@@ -85,6 +94,13 @@ export interface MeasureConfig {
   timeSignature?: TimeSignature;
   /** Notes for each voice in this measure */
   notes: Record<DrumVoice, boolean[]>;
+  /**
+   * Sticking values per subdivision (optional).
+   * INVARIANT: sticking.length MUST equal the number of subdivisions in this measure
+   * (i.e., calcNotesPerMeasure(division, ts.beats, ts.noteValue)).
+   * Missing sticking is treated as all nulls by the editor.
+   */
+  sticking?: StickingValue[];
 }
 
 /**
@@ -108,6 +124,15 @@ export interface GrooveData {
   author?: string;
   /** Comments/notes about the groove (optional) */
   comments?: string;
+}
+
+/**
+ * Create an empty sticking array for a given subdivision count.
+ * All entries default to null (no sticking set).
+ * @param subdivisionCount - Number of subdivisions (must equal calcNotesPerMeasure for the measure)
+ */
+export function createEmptySticking(subdivisionCount: number): StickingValue[] {
+  return Array(subdivisionCount).fill(null) as StickingValue[];
 }
 
 /** Create empty notes record for all voices */
@@ -327,10 +352,19 @@ const NotesRecordSchema = z.record(
   z.array(z.boolean())
 );
 
+/** Zod schema for StickingValue */
+export const StickingValueSchema = z.union([
+  z.literal('L'),
+  z.literal('R'),
+  z.literal('L/R'),
+  z.null(),
+]);
+
 /** Zod schema for MeasureConfig */
 export const MeasureConfigSchema = z.object({
   timeSignature: TimeSignatureSchema.optional(),
   notes: NotesRecordSchema,
+  sticking: z.array(StickingValueSchema).optional(),
 });
 
 /** Zod schema for GrooveData */
