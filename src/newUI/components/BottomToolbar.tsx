@@ -1,12 +1,21 @@
-import { Download, Printer, Share2, Save } from 'lucide-react';
+import { Download, Github, Printer, Share2, Save } from 'lucide-react';
 import { Button } from './ui/button';
 
 export function BottomToolbar() {
   return (
     <div className="bg-slate-900 border-t border-slate-700 px-6 py-4">
       <div className="flex items-center justify-between">
-        <div className="text-slate-400 text-sm">
-          Groovy by Adar Bahar © 2026
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-slate-400 text-sm">
+          <span>Groovy by Adar Bahar © 2026</span>
+          <a
+            href="https://github.com/AdarBahar/groovy/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1 hover:text-white transition-colors"
+          >
+            <Github className="w-3.5 h-3.5" />
+            <span>AdarBahar/groovy</span>
+          </a>
         </div>
 
         <div className="flex items-center gap-2">

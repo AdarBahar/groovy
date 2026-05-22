@@ -1,4 +1,4 @@
-import { Download, Printer, Share2, Save } from 'lucide-react';
+import { Download, Github, Printer, Share2, Save } from 'lucide-react';
 import { Button } from '../ui/button';
 
 interface BottomToolbarProps {
@@ -15,8 +15,17 @@ export function BottomToolbar({ onShare, onSave, onDownload, onPrint }: BottomTo
     <div className="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-700 px-4 md:px-6 py-3 md:py-4">
       <div className={`flex ${hasActions ? 'flex-col-reverse sm:flex-row items-center justify-between gap-3 sm:gap-0' : 'items-center justify-center'}`}>
         {/* Copyright - hidden on very small screens */}
-        <div className="text-slate-500 dark:text-slate-400 text-xs sm:text-sm">
-          Groovy by Adar Bahar © 2026
+        <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-slate-500 dark:text-slate-400 text-xs sm:text-sm">
+          <span>Groovy by Adar Bahar © 2026</span>
+          <a
+            href="https://github.com/AdarBahar/groovy/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1 hover:text-slate-900 dark:hover:text-white transition-colors"
+          >
+            <Github className="w-3.5 h-3.5" />
+            <span>AdarBahar/groovy</span>
+          </a>
         </div>
 
         {/* Action buttons */}
