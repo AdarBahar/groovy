@@ -190,5 +190,61 @@ All requirements implemented and verified:
 
 ---
 
+---
+
+# Milestone v1.1 — Editor Features: Sticking Notation
+
+**Planned:** 2026-05-22
+**Phases:** 1
+**Requirements:** STK-01 through STK-06
+
+---
+
+## Phase 1: Sticking Notation — Hand Assignment
+
+**Goal:** Add sticking (L/R/L+R) hand assignment notation to drum patterns — editable in the editor grid, displayed in music notation view, with pattern application to similar measures.
+
+**Mode:** standard
+
+**Requirements:** STK-01, STK-02, STK-03, STK-04, STK-05, STK-06
+
+**Success Criteria:**
+1. Editor displays sticking row above beat counter when Sticking mode is active
+2. User can cycle through sticking values (Empty → R → L → L/R → Empty) via click or keyboard
+3. Sticking values appear above the staff in notes view as ABC annotations
+4. "Apply to Similar Measures" finds measures with matching note patterns and copies sticking
+5. Sticking data persists in saved grooves, URL shares, and exports
+6. Measure actions (duplicate, delete, clear) handle sticking data correctly
+
+**Key Features:**
+- Per-subdivision sticking (not per-instrument)
+- Keyboard shortcuts: R, L, /, B for values; Backspace/Delete to clear; Space/Enter to cycle
+- Measure similarity detection (same time signature, subdivision, note positions including articulation)
+- Responsive layout, accessibility support (ARIA labels)
+
+**Key Files:**
+- `src/types.ts` — Add StickingValue type, extend Measure interface
+- `src/components/production/StickingRow.tsx` — New component for editor row
+- `src/components/production/PlaybackControls.tsx` — Sticking button/toggle
+- `src/core/ABCTranscoder.ts` — Add sticking annotation rendering
+- `src/core/GrooveStorage.ts` — Persist sticking in saved grooves
+- `src/core/GrooveURLCodec.ts` — Include sticking in shared URLs
+
+**Implementation Approach:**
+- Extend Measure type with optional `sticking?: StickingValue[]`
+- Editor state tracks sticking setup mode (true/false)
+- Keyboard-driven interaction for fast editing
+- ABCjs text annotations above staff for notation
+- Similarity detection compares notes array structure (ignoring sticking)
+
+**Plans:** 3 plans
+
+Plans:
+- [ ] 02-01-PLAN.md — Data model + StickingRow component + editor state (STK-01, STK-02)
+- [ ] 02-02-PLAN.md — Notes view integration (ABCjs) + measure actions (STK-03, STK-06, STK-09)
+- [ ] 02-03-PLAN.md — Apply to Similar Measures + persistence + tests (STK-04, STK-05, STK-06)
+
+---
+
 *Roadmap created: 2026-05-15*
-*Last updated: 2026-05-15 after initialization*
+*Last updated: 2026-05-22 — Phase v1.1.1 planning complete with 3 executable plans*
