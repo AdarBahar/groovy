@@ -600,6 +600,32 @@ export default function ProductionPage() {
     setGroove(updatedGroove);
   }, [groove, setGroove]);
 
+  /**
+   * Apply sticking from the given measure to all measures with identical note patterns.
+   * Returns a message describing the result (for display in the measure header feedback).
+   * Uses deep copy for each target to prevent shared references (T-02-09).
+   */
+  const handleApplyToSimilar = useCallback((measureIndex: number): string => {
+    const similarIndices = applyStickingToSimilar(groove, measureIndex);
+    if (similarIndices.length === 0) {
+      return 'No similar measures found.';
+    }
+
+    const sourceSticking = groove.measures[measureIndex].sticking!;
+    const updatedGroove: GrooveData = {
+      ...groove,
+      measures: groove.measures.map((m, i) =>
+        similarIndices.includes(i)
+          ? { ...m, sticking: [...sourceSticking] } // T-02-09: deep copy
+          : m
+      ),
+    };
+    setGroove(updatedGroove);
+
+    const count = similarIndices.length;
+    return `Applied to ${count} similar ${count === 1 ? 'measure' : 'measures'}.`;
+  }, [groove, setGroove]);
+
   return (
     <div className="min-h-dvh flex flex-col bg-slate-100 dark:bg-slate-900 text-slate-900 dark:text-white">
       <Header
@@ -718,6 +744,7 @@ export default function ProductionPage() {
                         onMeasureClear={handleMeasureClear}
                         isStickingSetupActive={isStickingSetupActive}
                         onStickingChange={handleStickingChange}
+                        onApplyToSimilar={handleApplyToSimilar}
                       />
                     </div>
                   </div>

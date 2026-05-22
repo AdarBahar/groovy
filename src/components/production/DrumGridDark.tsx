@@ -1,5 +1,5 @@
-import { memo, useCallback } from 'react';
-import { Copy, Plus, Trash2, X } from 'lucide-react';
+import { memo, useCallback, useRef, useState } from 'react';
+import { Copy, Plus, Trash2, X, CopyCheck } from 'lucide-react';
 import { GrooveData, DrumVoice, MAX_MEASURES, StickingValue, createEmptySticking } from '../../types';
 import { GrooveUtils } from '../../core';
 import { useDrumGrid, DRUM_ROWS, NoteChange } from '../../hooks/useDrumGrid';
@@ -97,6 +97,8 @@ interface DrumGridDarkProps {
   isStickingSetupActive?: boolean;
   /** Called when a sticking cell changes; receives measure index, subdivision index, new value */
   onStickingChange?: (measureIndex: number, subdivIndex: number, value: StickingValue) => void;
+  /** Called when "Apply to Similar Measures" is clicked; receives measure index */
+  onApplyToSimilar?: (measureIndex: number) => string;
 }
 
 export function DrumGridDark({
@@ -111,6 +113,7 @@ export function DrumGridDark({
   onMeasureClear,
   isStickingSetupActive = false,
   onStickingChange,
+  onApplyToSimilar,
 }: DrumGridDarkProps) {
   const grid = useDrumGrid({
     groove,
@@ -123,6 +126,27 @@ export function DrumGridDark({
   const handleStickingChange = useCallback((measureIndex: number, subdivIndex: number, value: StickingValue) => {
     onStickingChange?.(measureIndex, subdivIndex, value);
   }, [onStickingChange]);
+
+  // Per-measure transient notification for "Apply to Similar" feedback
+  const [applyMessages, setApplyMessages] = useState<Record<number, string>>({});
+  const applyTimerRefs = useRef<Record<number, ReturnType<typeof setTimeout>>>({});
+
+  const handleApplyToSimilarClick = useCallback((measureIndex: number) => {
+    if (!onApplyToSimilar) return;
+    const message = onApplyToSimilar(measureIndex);
+    // Clear any existing timer for this measure
+    if (applyTimerRefs.current[measureIndex]) {
+      clearTimeout(applyTimerRefs.current[measureIndex]);
+    }
+    setApplyMessages(prev => ({ ...prev, [measureIndex]: message }));
+    applyTimerRefs.current[measureIndex] = setTimeout(() => {
+      setApplyMessages(prev => {
+        const next = { ...prev };
+        delete next[measureIndex];
+        return next;
+      });
+    }, 2500);
+  }, [onApplyToSimilar]);
 
   return (
     <div className={`flex flex-wrap gap-3 md:gap-4 mt-4 md:mt-6 ${grid.isDragging ? 'select-none' : ''}`}>
@@ -138,11 +162,24 @@ export function DrumGridDark({
             className="inline-block bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 md:p-3 min-w-0"
           >
             {/* Measure Header */}
-            <div className="flex items-center justify-between mb-3 md:mb-4">
+            <div className="flex items-center justify-between mb-2 md:mb-2">
               <span className="text-base md:text-lg font-semibold text-purple-600 dark:text-purple-400">
                 Measure {measureIndex + 1}
               </span>
               <div className="flex items-center gap-1 md:gap-2">
+                {/* Apply to Similar Measures button — only visible in sticking setup mode (D-11) */}
+                {isStickingSetupActive && onApplyToSimilar && (
+                  <button
+                    onClick={() => handleApplyToSimilarClick(measureIndex)}
+                    disabled={
+                      !measure.sticking || !measure.sticking.some(v => v !== null)
+                    }
+                    className="w-9 h-9 md:w-8 md:h-8 flex items-center justify-center rounded hover:bg-purple-100 dark:hover:bg-purple-900/30 transition-colors disabled:opacity-40 disabled:cursor-not-allowed group touch-target"
+                    title="Apply sticking to similar measures"
+                  >
+                    <CopyCheck className="w-4 h-4 text-purple-500 dark:text-purple-400 group-hover:text-purple-700 dark:group-hover:text-purple-300" />
+                  </button>
+                )}
                 <button
                   onClick={() => onMeasureClear?.(measureIndex)}
                   className="w-9 h-9 md:w-8 md:h-8 flex items-center justify-center rounded hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors group touch-target"
@@ -176,6 +213,13 @@ export function DrumGridDark({
                 </button>
               </div>
             </div>
+
+            {/* Apply to Similar feedback message */}
+            {applyMessages[measureIndex] && (
+              <div className="text-xs text-purple-600 dark:text-purple-400 mb-2 text-right font-medium">
+                {applyMessages[measureIndex]}
+              </div>
+            )}
 
             {/* Beat Labels Row */}
             <div className="flex items-center mb-1.5">
