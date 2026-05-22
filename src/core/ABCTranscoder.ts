@@ -1,11 +1,11 @@
 /**
  * ABC Notation Transcoder
- * 
+ *
  * Converts GrooveData to ABC notation string for sheet music rendering.
  * Supports multi-voice notation with hands (stems up) and feet (stems down).
  */
 
-import { GrooveData, DrumVoice, getFlattenedNotes } from '../types';
+import { GrooveData, DrumVoice, StickingValue, getFlattenedNotes } from '../types';
 import {
   ABC_SYMBOLS,
   ABC_DECORATIONS,
@@ -17,6 +17,20 @@ import {
   getNoteDurationSuffix,
   isTripletDivision,
 } from './ABCConstants';
+
+/** Valid sticking values for annotation validation (T-02-05) */
+const VALID_STICKING_VALUES = new Set<StickingValue>(['L', 'R', 'L/R', null]);
+
+/**
+ * Return the ABC annotation prefix for a sticking value, or empty string if none.
+ * Validates the value before rendering (T-02-05: only L, R, L/R, null allowed).
+ */
+function getStickingAnnotation(value: StickingValue | undefined): string {
+  if (value === null || value === undefined) return '';
+  // Validate: only known sticking values render annotations
+  if (!VALID_STICKING_VALUES.has(value)) return '';
+  return `^"${value}"`;
+}
 
 export interface ABCTranscoderOptions {
   title?: string;
@@ -51,27 +65,31 @@ function getDecoratedSymbol(voice: DrumVoice): string {
  * Generate ABC symbols for a single position
  * Returns a chord [abc] if multiple voices, single note otherwise
  *
- * For single notes: decoration + symbol + duration (e.g., "!accent!^g2")
- * For chords: decorations before chord, symbols inside (e.g., "!accent![^g c]2")
+ * For single notes: sticking + decoration + symbol + duration (e.g., `^"R"!accent!^g2`)
+ * For chords: sticking + decorations before chord, symbols inside (e.g., `^"R"!accent![^g c]2`)
  *
  * Note: When multiple notes have decorations in a chord, decorations are
  * placed before the chord bracket. This is a limitation of ABC notation.
+ *
+ * Sticking annotations use ABCjs text annotations (^"text") and appear above the staff.
+ * Only non-null, valid sticking values produce annotations (T-02-05).
  */
 function generatePositionABC(
   notes: Record<DrumVoice, boolean[]>,
   position: number,
   voiceFilter: DrumVoice[],
-  durationSuffix: string
+  durationSuffix: string,
+  stickingAnnotation: string = ''
 ): string {
   const activeVoices = getActiveVoicesAtPosition(notes, position, voiceFilter);
 
   if (activeVoices.length === 0) {
-    return ABC_REST + durationSuffix;
+    return stickingAnnotation + ABC_REST + durationSuffix;
   }
 
   if (activeVoices.length === 1) {
-    // Single note: decoration + symbol + duration
-    return getDecoratedSymbol(activeVoices[0]) + durationSuffix;
+    // Single note: sticking + decoration + symbol + duration
+    return stickingAnnotation + getDecoratedSymbol(activeVoices[0]) + durationSuffix;
   }
 
   // Multiple voices at same position: create chord
@@ -83,7 +101,7 @@ function generatePositionABC(
 
   const symbols = activeVoices.map((voice) => ABC_SYMBOLS[voice]);
 
-  return decorations + '[' + symbols.join('') + ']' + durationSuffix;
+  return stickingAnnotation + decorations + '[' + symbols.join('') + ']' + durationSuffix;
 }
 
 /** Number of measures per line in sheet music */
@@ -93,11 +111,15 @@ const MEASURES_PER_LINE = 3;
  * Generate ABC notation for a single voice part (Hands or Feet)
  * Handles multiple measures with measure bars between them
  * Adds line breaks every MEASURES_PER_LINE measures for readability
+ *
+ * @param includeSticking - Whether to include sticking annotations in output.
+ *   Annotations should only appear on one voice (Hands) to avoid duplication.
  */
 function generateVoicePart(
   groove: GrooveData,
   voiceFilter: DrumVoice[],
-  durationSuffix: string
+  durationSuffix: string,
+  includeSticking: boolean = false
 ): string {
   const division = groove.division;
   const isTriplet = isTripletDivision(division);
@@ -118,7 +140,19 @@ function generateVoicePart(
         parts.push(' ');
       }
 
-      const abc = generatePositionABC(measure.notes, i, voiceFilter, durationSuffix);
+      // Resolve sticking annotation for this position (D-06).
+      // Sticking is global per subdivision — render only on the Hands voice to avoid duplication.
+      // If sticking array exists and has the right length, read the value; otherwise skip.
+      let stickingAnnotation = '';
+      if (includeSticking) {
+        const stickingValue: StickingValue | undefined =
+          measure.sticking && measure.sticking.length === notesPerMeasure
+            ? measure.sticking[i]
+            : undefined;
+        stickingAnnotation = getStickingAnnotation(stickingValue);
+      }
+
+      const abc = generatePositionABC(measure.notes, i, voiceFilter, durationSuffix, stickingAnnotation);
       parts.push(abc);
     }
 
@@ -165,15 +199,15 @@ export function grooveToABC(
   // Key and clef
   lines.push('K:C clef=perc');
 
-  // Hands voice (stems up)
+  // Hands voice (stems up) — sticking annotations rendered here only to avoid duplication
   lines.push('V:Hands stem=up');
   lines.push('%%voicemap drum');
-  lines.push(generateVoicePart(groove, HANDS_VOICES, durationSuffix));
+  lines.push(generateVoicePart(groove, HANDS_VOICES, durationSuffix, /* includeSticking */ true));
 
-  // Feet voice (stems down)
+  // Feet voice (stems down) — no sticking annotations (already shown on Hands voice)
   lines.push('V:Feet stem=down');
   lines.push('%%voicemap drum');
-  lines.push(generateVoicePart(groove, FEET_VOICES, durationSuffix));
+  lines.push(generateVoicePart(groove, FEET_VOICES, durationSuffix, /* includeSticking */ false));
 
   return lines.join('\n');
 }
