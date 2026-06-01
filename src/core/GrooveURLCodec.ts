@@ -141,6 +141,7 @@ const PARAM = {
   TOM4: 'T4',
   CRASH: 'C',
   RIDE: 'R',
+  PERCUSSION: 'P',
   // Metadata
   TITLE: 'Title',
   AUTHOR: 'Author',

@@ -394,6 +394,7 @@ export const URL_VOICE_GROUPS = {
   T4: ['tom-16'] as DrumVoice[],
   C: ['crash'] as DrumVoice[],
   R: ['ride', 'ride-bell'] as DrumVoice[],
+  P: ['cowbell', 'stacker'] as DrumVoice[],
 } as const;
 
 /**
