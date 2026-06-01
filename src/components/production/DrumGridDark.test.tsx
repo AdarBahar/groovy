@@ -1,7 +1,8 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import type React from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { DrumGridDark } from './DrumGridDark';
-import { createEmptyNotesRecord, GrooveData } from '../../types';
+import { createEmptyNotesRecord, GrooveData, MAX_MEASURES } from '../../types';
 
 function createEmptyGroove(): GrooveData {
   return {
@@ -13,7 +14,10 @@ function createEmptyGroove(): GrooveData {
   };
 }
 
-function renderGrid(groove = createEmptyGroove()) {
+function renderGrid(
+  groove = createEmptyGroove(),
+  overrides: Partial<React.ComponentProps<typeof DrumGridDark>> = {}
+) {
   const props = {
     groove,
     onNoteToggle: vi.fn(),
@@ -21,13 +25,15 @@ function renderGrid(groove = createEmptyGroove()) {
     onPreview: vi.fn(),
     onMeasureCopy: vi.fn(),
     onMeasurePaste: vi.fn().mockReturnValue(true),
+    ...overrides,
   };
 
-  render(<DrumGridDark {...props} />);
+  const renderResult = render(<DrumGridDark {...props} />);
 
   return {
     app: screen.getByRole('application', { name: /keyboard editor/i }),
     props,
+    renderResult,
   };
 }
 
@@ -90,6 +96,16 @@ describe('DrumGridDark keyboard editing', () => {
     ]);
   });
 
+  it('positions the keyboard variation menu as fixed viewport UI', async () => {
+    const { app } = renderGrid();
+
+    fireEvent.keyDown(app, { key: 'Tab' });
+    const menuHeader = await screen.findByText('Hi-Hat - Select Sound');
+    const menu = menuHeader.closest('[data-placement]');
+
+    expect(menu?.className).toContain('fixed');
+  });
+
   it('copies and pastes the current measure with ctrl-c and ctrl-v', () => {
     const { app, props } = renderGrid();
 
@@ -98,5 +114,41 @@ describe('DrumGridDark keyboard editing', () => {
 
     expect(props.onMeasureCopy).toHaveBeenCalledWith(0);
     expect(props.onMeasurePaste).toHaveBeenCalledWith(0);
+  });
+
+  it('shows feedback when measure paste fails at the measure limit', async () => {
+    const groove = createEmptyGroove();
+    groove.measures = Array.from({ length: MAX_MEASURES }, () => ({
+      notes: createEmptyNotesRecord(8),
+    }));
+    const onMeasurePaste = vi.fn().mockReturnValue(false);
+    const { app } = renderGrid(groove, { onMeasurePaste });
+
+    fireEvent.keyDown(app, { key: 'v', ctrlKey: true });
+
+    expect((await screen.findByRole('status')).textContent).toContain('Measure limit reached');
+  });
+
+  it('clamps the keyboard cursor when division changes reduce measure length', async () => {
+    const groove = createEmptyGroove();
+    groove.division = 16;
+    groove.measures[0].notes = createEmptyNotesRecord(16);
+    const { app, props, renderResult } = renderGrid(groove);
+
+    for (let i = 0; i < 12; i++) {
+      fireEvent.keyDown(app, { key: 'ArrowRight' });
+    }
+
+    const shorterGroove = createEmptyGroove();
+    shorterGroove.division = 8;
+    shorterGroove.measures[0].notes = createEmptyNotesRecord(8);
+    renderResult.rerender(<DrumGridDark {...props} groove={shorterGroove} />);
+
+    await waitFor(() => {
+      fireEvent.keyDown(app, { key: ' ' });
+      expect(props.onSetNotes).toHaveBeenLastCalledWith([
+        { voice: 'hihat-closed', position: 7, measureIndex: 0, value: true },
+      ]);
+    });
   });
 });

@@ -121,7 +121,7 @@ const patternSchema = z.string()
  */
 const stickingParamSchema = z.string()
   .max(VALIDATION.STICKING_MAX_LENGTH, 'Sticking parameter too long')
-  .regex(/^[rlb|\-]*$/, 'Invalid characters in sticking parameter')
+  .regex(/^[rlb|-]*$/, 'Invalid characters in sticking parameter')
   .optional();
 
 /** URL parameter names */
@@ -175,7 +175,8 @@ function encodeVoicePattern(groove: GrooveData, voices: DrumVoice[]): string {
 
   const parts: string[] = [];
   const firstVoice = voices[0];
-  const isHihatGroup = voices.includes('hihat-closed') && voices.includes('hihat-foot');
+  const canEncodeHihatClosed = voices.includes('hihat-closed');
+  const canEncodeHihatFoot = voices.includes('hihat-foot');
 
   for (const measure of groove.measures) {
     const measureNotes = measure.notes;
@@ -185,8 +186,12 @@ function encodeVoicePattern(groove: GrooveData, voices: DrumVoice[]): string {
     for (let i = 0; i < notesPerMeasure; i++) {
       let char = REST_CHAR;
 
-      // Special case: hihat group with both closed and foot at same position
-      if (isHihatGroup && measureNotes['hihat-closed']?.[i] && measureNotes['hihat-foot']?.[i]) {
+      const hasHihatClosed = canEncodeHihatClosed && measureNotes['hihat-closed']?.[i];
+      const hasHihatFoot = canEncodeHihatFoot && measureNotes['hihat-foot']?.[i];
+
+      // Special case: hihat group with both closed and foot at same position.
+      // A lone hihat-foot still falls through to its own URL char below.
+      if (hasHihatClosed && hasHihatFoot) {
         char = '^'; // Combination character for both
       } else {
         // Check each voice in priority order, take first match
@@ -585,4 +590,3 @@ export const GrooveURLCodec = {
   /** Validation constraints for URL parameters */
   VALIDATION,
 };
-

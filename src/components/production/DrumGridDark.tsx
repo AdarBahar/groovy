@@ -160,7 +160,9 @@ export function DrumGridDark({
     position: 0,
   });
   const [keyboardVariationIndex, setKeyboardVariationIndex] = useState(0);
+  const [keyboardMessage, setKeyboardMessage] = useState<string | null>(null);
   const cellRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+  const keyboardMessageTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const getCellKey = useCallback((cursor: KeyboardCursor) => {
     return `${cursor.measureIndex}-${cursor.rowIndex}-${cursor.position}`;
@@ -327,18 +329,15 @@ export function DrumGridDark({
     ));
 
     setKeyboardVariationIndex(selectedIndex);
-    // The menu is rendered in a body portal with `position: absolute`, so these
-    // are document coordinates. Keeping scroll offsets lets page scrolling move
-    // the open menu together with the grid cell it belongs to.
     grid.setContextMenu({
       visible: true,
       x: Math.min(
-        Math.max(rect.left + window.scrollX, window.scrollX + viewportPadding),
-        window.scrollX + window.innerWidth - menuWidth - viewportPadding
+        Math.max(rect.left, viewportPadding),
+        window.innerWidth - menuWidth - viewportPadding
       ),
       y: placement === 'below'
-        ? rect.bottom + window.scrollY + gap
-        : rect.top + window.scrollY - menuHeight - gap,
+        ? rect.bottom + gap
+        : rect.top - menuHeight - gap,
       placement,
       rowIndex: keyboardCursor.rowIndex,
       position: keyboardCursor.position,
@@ -371,12 +370,19 @@ export function DrumGridDark({
 
     if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'v') {
       event.preventDefault();
-      const pasted = onMeasurePaste?.(keyboardCursor.measureIndex);
+      const pasted = onMeasurePaste?.(keyboardCursor.measureIndex) ?? false;
       if (pasted) {
+        setKeyboardMessage(null);
         setKeyboardCursor(current => ({
           ...current,
           measureIndex: Math.min(current.measureIndex + 1, groove.measures.length),
         }));
+      } else {
+        setKeyboardMessage(
+          groove.measures.length >= MAX_MEASURES
+            ? `Measure limit reached (${MAX_MEASURES}). Cannot paste more measures.`
+            : 'Copy a measure before pasting.'
+        );
       }
       return;
     }
@@ -484,6 +490,25 @@ export function DrumGridDark({
     }
   }, [getCellKey, keyboardCursor]);
 
+  useEffect(() => {
+    if (!keyboardMessage) return;
+
+    if (keyboardMessageTimerRef.current) {
+      clearTimeout(keyboardMessageTimerRef.current);
+    }
+    keyboardMessageTimerRef.current = setTimeout(() => {
+      setKeyboardMessage(null);
+      keyboardMessageTimerRef.current = null;
+    }, 2500);
+
+    return () => {
+      if (keyboardMessageTimerRef.current) {
+        clearTimeout(keyboardMessageTimerRef.current);
+        keyboardMessageTimerRef.current = null;
+      }
+    };
+  }, [keyboardMessage]);
+
   // Per-measure transient notification for "Apply to Similar" feedback
   const [applyMessages, setApplyMessages] = useState<Record<number, string>>({});
   const applyTimerRefs = useRef<Record<number, ReturnType<typeof setTimeout>>>({});
@@ -520,6 +545,16 @@ export function DrumGridDark({
         }
       }}
     >
+      {keyboardMessage && (
+        <div
+          role="status"
+          aria-live="polite"
+          className="w-full text-xs font-medium text-amber-700 dark:text-amber-300 bg-amber-100 dark:bg-amber-900/40 border border-amber-200 dark:border-amber-800 rounded-md px-3 py-2"
+        >
+          {keyboardMessage}
+        </div>
+      )}
+
       {groove.measures.map((measure, measureIndex) => {
         const positions = grid.getPositionsForMeasure(measureIndex);
         const ts = measure.timeSignature || groove.timeSignature;
@@ -699,7 +734,7 @@ export function DrumGridDark({
         <div
           ref={grid.contextMenuRef}
           data-placement={grid.contextMenu.placement}
-          className="absolute z-50 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg shadow-lg py-2 min-w-[200px]"
+          className="fixed z-50 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg shadow-lg py-2 min-w-[200px]"
           style={{ left: `${grid.contextMenu.x}px`, top: `${grid.contextMenu.y}px` }}
         >
           <div className="px-3 py-1 text-xs font-semibold text-slate-600 dark:text-slate-300 border-b border-slate-200 dark:border-slate-600 mb-1">

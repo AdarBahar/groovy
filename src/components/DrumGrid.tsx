@@ -182,7 +182,7 @@ function DrumGrid({
           className="context-menu"
           data-placement={grid.contextMenu.placement}
           style={{
-            position: 'absolute',
+            position: 'fixed',
             left: `${grid.contextMenu.x}px`,
             top: `${grid.contextMenu.y}px`,
           }}
