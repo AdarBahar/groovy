@@ -47,15 +47,17 @@ function getDecoratedSymbol(voice: DrumVoice): string {
   return decoration + symbol;
 }
 
+function isNoteheadStyleDecoration(decoration: string): boolean {
+  return decoration.startsWith('!style=');
+}
+
 /**
  * Generate ABC symbols for a single position
  * Returns a chord [abc] if multiple voices, single note otherwise
  *
  * For single notes: sticking + decoration + symbol + duration (e.g., `^"R"!accent!^g2`)
- * For chords: sticking + decorations before chord, symbols inside (e.g., `^"R"!accent![^g c]2`)
- *
- * Note: When multiple notes have decorations in a chord, decorations are
- * placed before the chord bracket. This is a limitation of ABC notation.
+ * For chords: sticking + decorations before chord, symbols inside (e.g., `^"R"!accent![^g c]2`).
+ * Notehead style decorations remain attached to individual chord notes.
  *
  * Sticking annotations use ABCjs text annotations (^"text") and appear above the staff.
  * Only non-null, valid sticking values produce annotations (T-02-05).
@@ -78,14 +80,18 @@ function generatePositionABC(
     return stickingAnnotation + getDecoratedSymbol(activeVoices[0]) + durationSuffix;
   }
 
-  // Multiple voices at same position: create chord
-  // Collect all decorations and place them before the chord
+  // Multiple voices at same position: create chord. General decorations are
+  // placed before the chord, while notehead styles stay attached to each note.
   const decorations = activeVoices
     .map((voice) => ABC_DECORATIONS[voice] || '')
-    .filter((d) => d !== '')
+    .filter((d) => d !== '' && !isNoteheadStyleDecoration(d))
     .join('');
 
-  const symbols = activeVoices.map((voice) => ABC_SYMBOLS[voice]);
+  const symbols = activeVoices.map((voice) => {
+    const decoration = ABC_DECORATIONS[voice] || '';
+    const symbol = ABC_SYMBOLS[voice];
+    return isNoteheadStyleDecoration(decoration) ? decoration + symbol : symbol;
+  });
 
   return stickingAnnotation + decorations + '[' + symbols.join('') + ']' + durationSuffix;
 }
