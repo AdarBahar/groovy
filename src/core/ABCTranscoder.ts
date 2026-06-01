@@ -14,6 +14,7 @@ import {
   FEET_VOICES,
   ABC_BOILERPLATE,
   generateABCHeader,
+  getMeasuresPerLine,
   getNoteDurationSuffix,
   isTripletDivision,
 } from './ABCConstants';
@@ -47,15 +48,17 @@ function getDecoratedSymbol(voice: DrumVoice): string {
   return decoration + symbol;
 }
 
+function isNoteheadStyleDecoration(decoration: string): boolean {
+  return decoration.startsWith('!style=');
+}
+
 /**
  * Generate ABC symbols for a single position
  * Returns a chord [abc] if multiple voices, single note otherwise
  *
  * For single notes: sticking + decoration + symbol + duration (e.g., `^"R"!accent!^g2`)
- * For chords: sticking + decorations before chord, symbols inside (e.g., `^"R"!accent![^g c]2`)
- *
- * Note: When multiple notes have decorations in a chord, decorations are
- * placed before the chord bracket. This is a limitation of ABC notation.
+ * For chords: sticking + decorations before chord, symbols inside (e.g., `^"R"!accent![^g c]2`).
+ * Notehead style decorations remain attached to individual chord notes.
  *
  * Sticking annotations use ABCjs text annotations (^"text") and appear above the staff.
  * Only non-null, valid sticking values produce annotations (T-02-05).
@@ -78,20 +81,30 @@ function generatePositionABC(
     return stickingAnnotation + getDecoratedSymbol(activeVoices[0]) + durationSuffix;
   }
 
-  // Multiple voices at same position: create chord
-  // Collect all decorations and place them before the chord
+  // Multiple voices at same position: create chord. General decorations are
+  // placed before the chord, while notehead styles stay attached to each note.
   const decorations = activeVoices
     .map((voice) => ABC_DECORATIONS[voice] || '')
-    .filter((d) => d !== '')
+    .filter((d) => d !== '' && !isNoteheadStyleDecoration(d))
     .join('');
 
-  const symbols = activeVoices.map((voice) => ABC_SYMBOLS[voice]);
+  const symbols = activeVoices.map((voice) => {
+    const decoration = ABC_DECORATIONS[voice] || '';
+    const symbol = ABC_SYMBOLS[voice];
+    return isNoteheadStyleDecoration(decoration) ? decoration + symbol : symbol;
+  });
 
   return stickingAnnotation + decorations + '[' + symbols.join('') + ']' + durationSuffix;
 }
 
-/** Number of measures per line in sheet music */
-const MEASURES_PER_LINE = 3;
+function generateSpacerMeasureABC(positionCount: number, groupSize: number, durationSuffix: string): string {
+  const rest = ABC_REST + durationSuffix;
+  const rests = Array.from(
+    { length: positionCount },
+    (_, i) => `${i > 0 && i % groupSize === 0 ? ' ' : ''}${rest}`
+  );
+  return `${rests.join('')} |`;
+}
 
 /**
  * Generate ABC notation for a single voice part (Hands or Feet)
@@ -110,6 +123,7 @@ function generateVoicePart(
 
   // Group notes for readability (every 4 notes for straight, every 3 for triplets)
   const groupSize = isTriplet ? 3 : 4;
+  const measuresPerLine = getMeasuresPerLine(division);
 
   // Process each measure
   for (let measureIndex = 0; measureIndex < groove.measures.length; measureIndex++) {
@@ -130,10 +144,22 @@ function generateVoicePart(
     // Add measure bar
     parts.push(' |');
 
-    // Add line break after every MEASURES_PER_LINE measures (but not at the very end)
+    // Add line break after every row of measures (but not at the very end)
     const measureNumber = measureIndex + 1;
-    if (measureNumber % MEASURES_PER_LINE === 0 && measureIndex < groove.measures.length - 1) {
+    if (measureNumber % measuresPerLine === 0 && measureIndex < groove.measures.length - 1) {
       parts.push('\n');
+    }
+  }
+
+  const finalLineMeasureCount = groove.measures.length % measuresPerLine;
+  if (finalLineMeasureCount > 0) {
+    const lastMeasure = groove.measures[groove.measures.length - 1];
+    const ts = lastMeasure.timeSignature || groove.timeSignature;
+    const notesPerMeasure = (division / ts.noteValue) * ts.beats;
+    const spacerCount = measuresPerLine - finalLineMeasureCount;
+
+    for (let i = 0; i < spacerCount; i++) {
+      parts.push(generateSpacerMeasureABC(notesPerMeasure, groupSize, durationSuffix));
     }
   }
 

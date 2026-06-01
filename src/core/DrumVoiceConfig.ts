@@ -93,7 +93,8 @@ export const DRUM_VOICE_CONFIG = {
     name: 'Hi-Hat Foot',
     group: 'hihat',
     part: 'feet',
-    abcSymbol: 'd,',
+    abcSymbol: 'C',
+    abcDecoration: '!style=x!',
     urlTabChar: '+',
     midiNote: 44,
     velocity: 100,
@@ -394,6 +395,7 @@ export const URL_VOICE_GROUPS = {
   T4: ['tom-16'] as DrumVoice[],
   C: ['crash'] as DrumVoice[],
   R: ['ride', 'ride-bell'] as DrumVoice[],
+  P: ['cowbell', 'stacker'] as DrumVoice[],
 } as const;
 
 /**

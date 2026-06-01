@@ -112,7 +112,7 @@ const commentsSchema = z.string()
 /** Zod schema for voice patterns - validates format and length */
 const patternSchema = z.string()
   .max(VALIDATION.PATTERN_MAX_LENGTH, `Pattern too long`)
-  .regex(/^[|a-zA-Z0-9\-]*$/, 'Invalid characters in pattern')
+  .regex(/^[|a-zA-Z0-9\-+^]*$/, 'Invalid characters in pattern')
   .optional();
 
 /**
@@ -121,7 +121,7 @@ const patternSchema = z.string()
  */
 const stickingParamSchema = z.string()
   .max(VALIDATION.STICKING_MAX_LENGTH, 'Sticking parameter too long')
-  .regex(/^[rlb|\-]*$/, 'Invalid characters in sticking parameter')
+  .regex(/^[rlb|-]*$/, 'Invalid characters in sticking parameter')
   .optional();
 
 /** URL parameter names */
@@ -141,6 +141,7 @@ const PARAM = {
   TOM4: 'T4',
   CRASH: 'C',
   RIDE: 'R',
+  PERCUSSION: 'P',
   // Metadata
   TITLE: 'Title',
   AUTHOR: 'Author',
@@ -164,6 +165,7 @@ const VOICE_GROUPS = URL_VOICE_GROUPS as Record<string, DrumVoice[]>;
 /**
  * Encode a single voice group to URL pattern string
  * Encodes all measures with | separators
+ * Special handling for hihat group: encodes both hihat-closed and hihat-foot if present
  */
 function encodeVoicePattern(groove: GrooveData, voices: DrumVoice[]): string {
   // Guard against empty voices array
@@ -173,6 +175,8 @@ function encodeVoicePattern(groove: GrooveData, voices: DrumVoice[]): string {
 
   const parts: string[] = [];
   const firstVoice = voices[0];
+  const canEncodeHihatClosed = voices.includes('hihat-closed');
+  const canEncodeHihatFoot = voices.includes('hihat-foot');
 
   for (const measure of groove.measures) {
     const measureNotes = measure.notes;
@@ -181,11 +185,21 @@ function encodeVoicePattern(groove: GrooveData, voices: DrumVoice[]): string {
 
     for (let i = 0; i < notesPerMeasure; i++) {
       let char = REST_CHAR;
-      // Check each voice in priority order
-      for (const voice of voices) {
-        if (measureNotes[voice]?.[i]) {
-          char = URL_TAB_CHARS[voice] || REST_CHAR;
-          break;
+
+      const hasHihatClosed = canEncodeHihatClosed && measureNotes['hihat-closed']?.[i];
+      const hasHihatFoot = canEncodeHihatFoot && measureNotes['hihat-foot']?.[i];
+
+      // Special case: hihat group with both closed and foot at same position.
+      // A lone hihat-foot still falls through to its own URL char below.
+      if (hasHihatClosed && hasHihatFoot) {
+        char = '^'; // Combination character for both
+      } else {
+        // Check each voice in priority order, take first match
+        for (const voice of voices) {
+          if (measureNotes[voice]?.[i]) {
+            char = URL_TAB_CHARS[voice] || REST_CHAR;
+            break;
+          }
         }
       }
       pattern.push(char);
@@ -199,6 +213,7 @@ function encodeVoicePattern(groove: GrooveData, voices: DrumVoice[]): string {
 
 /**
  * Decode URL pattern string to voice states
+ * Special handling: '^' represents both hihat-closed and hihat-foot at same position
  */
 function decodeVoicePattern(
   pattern: string,
@@ -208,12 +223,12 @@ function decodeVoicePattern(
   // Remove measure separators and get characters
   const chars = pattern.replace(/\|/g, '').split('');
   const result: Partial<Record<DrumVoice, boolean[]>> = {};
-  
+
   // Initialize all voices with false
   for (const voice of voices) {
     result[voice] = Array(notesPerMeasure).fill(false);
   }
-  
+
   // Build reverse lookup: char → voice
   const charToVoice: Record<string, DrumVoice> = {};
   for (const voice of voices) {
@@ -222,18 +237,22 @@ function decodeVoicePattern(
       charToVoice[char] = voice;
     }
   }
-  
+
   // Decode each position
   for (let i = 0; i < Math.min(chars.length, notesPerMeasure); i++) {
     const char = chars[i];
-    if (char !== REST_CHAR) {
+    if (char === '^') {
+      // Special combination character: both hihat-closed and hihat-foot
+      if (result['hihat-closed']) result['hihat-closed']![i] = true;
+      if (result['hihat-foot']) result['hihat-foot']![i] = true;
+    } else if (char !== REST_CHAR) {
       const voice = charToVoice[char];
       if (voice && result[voice]) {
         result[voice]![i] = true;
       }
     }
   }
-  
+
   return result;
 }
 
@@ -571,4 +590,3 @@ export const GrooveURLCodec = {
   /** Validation constraints for URL parameters */
   VALIDATION,
 };
-

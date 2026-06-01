@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { StickingValue } from '../../types';
 
 export interface StickingRowProps {
@@ -73,11 +73,72 @@ export default function StickingRow({
   isActive,
   measureIndex,
 }: StickingRowProps) {
-  const handleClick = useCallback((index: number, current: StickingValue) => {
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragMode, setDragMode] = useState<'paint' | 'erase' | null>(null);
+  const [dragSourceValue, setDragSourceValue] = useState<StickingValue>(null);
+  const suppressNextClickRef = useRef(false);
+
+  const applyDragAction = useCallback((
+    mode: 'paint' | 'erase',
+    index: number,
+    sourceValue: StickingValue
+  ) => {
+    const next: StickingValue = mode === 'erase' ? null : sourceValue;
+    if (!isValidStickingValue(next) || stickingValues[index] === next) return;
+    onStickingChange(index, next);
+  }, [onStickingChange, stickingValues]);
+
+  const handleClick = useCallback((
+    e: React.MouseEvent<HTMLButtonElement>,
+    index: number,
+    current: StickingValue
+  ) => {
+    if (suppressNextClickRef.current) {
+      suppressNextClickRef.current = false;
+      e.preventDefault();
+      return;
+    }
+
+    if (e.ctrlKey || e.metaKey || e.altKey || e.shiftKey) {
+      e.preventDefault();
+      return;
+    }
+
     const next = cycleValue(current);
     if (!isValidStickingValue(next)) return; // defensive: should never happen
     onStickingChange(index, next);
   }, [onStickingChange]);
+
+  const handleMouseDown = useCallback((
+    e: React.MouseEvent<HTMLButtonElement>,
+    index: number,
+    current: StickingValue
+  ) => {
+    // Modifier drags intentionally suppress the click that browsers dispatch
+    // after mouseup. The order is: mark suppression, start drag state, apply
+    // the first cell immediately, clear drag state on document mouseup, then
+    // let handleClick consume the one suppressed click without cycling values.
+    if (e.ctrlKey || e.metaKey) {
+      e.preventDefault();
+      suppressNextClickRef.current = true;
+      setIsDragging(true);
+      setDragMode('paint');
+      setDragSourceValue(current);
+      applyDragAction('paint', index, current);
+    } else if (e.altKey || e.shiftKey) {
+      e.preventDefault();
+      suppressNextClickRef.current = true;
+      setIsDragging(true);
+      setDragMode('erase');
+      setDragSourceValue(null);
+      applyDragAction('erase', index, null);
+    }
+  }, [applyDragAction]);
+
+  const handleMouseEnter = useCallback((index: number) => {
+    if (!isDragging || !dragMode) return;
+    applyDragAction(dragMode, index, dragSourceValue);
+  }, [applyDragAction, dragMode, dragSourceValue, isDragging]);
 
   const handleKeyDown = useCallback((
     e: React.KeyboardEvent<HTMLButtonElement>,
@@ -105,6 +166,19 @@ export default function StickingRow({
     onStickingChange(index, next);
   }, [onStickingChange]);
 
+  useEffect(() => {
+    const handleMouseUp = () => {
+      setIsDragging(false);
+      setDragMode(null);
+      setDragSourceValue(null);
+    };
+
+    document.addEventListener('mouseup', handleMouseUp);
+    return () => {
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, []);
+
   if (!isActive) return null;
 
   const total = stickingValues.length;
@@ -129,7 +203,10 @@ export default function StickingRow({
           <button
             key={index}
             tabIndex={0}
-            onClick={() => handleClick(index, value)}
+            onClick={(e) => handleClick(e, index, value)}
+            onMouseDown={(e) => handleMouseDown(e, index, value)}
+            onMouseEnter={() => handleMouseEnter(index)}
+            onContextMenu={(e) => e.preventDefault()}
             onKeyDown={(e) => handleKeyDown(e, index, value)}
             aria-label={`${positionLabel} sticking: ${valueLabel}`}
             className={`

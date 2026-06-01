@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { GrooveData, DEFAULT_GROOVE, DrumVoice, Division, ALL_DRUM_VOICES, TimeSignature, StickingValue, createEmptySticking } from '../types';
+import { GrooveData, DEFAULT_GROOVE, DrumVoice, Division, ALL_DRUM_VOICES, TimeSignature, StickingValue, createEmptySticking, MeasureConfig, MAX_MEASURES } from '../types';
 import { GrooveUtils, decodeGroove, SavedGroove } from '../core';
 import { useGrooveEngine } from '../hooks/useGrooveEngine';
 import { useHistory } from '../hooks/useHistory';
@@ -129,6 +129,7 @@ export function applyStickingToSimilar(groove: GrooveData, sourceMeasureIndex: n
 function sanitizeMetadataValue(value: string, maxLength: number): string {
   return value
     .normalize('NFKC')
+    // eslint-disable-next-line no-control-regex -- strips control characters from user-entered metadata.
     .replace(/[\u0000-\u001F\u007F-\u009F]/g, '')
     .trim()
     .slice(0, maxLength);
@@ -156,6 +157,7 @@ export default function ProductionPage() {
   const playStartTimeRef = useRef<number | null>(null);
   const countInTimeoutRef = useRef<number | null>(null);
   const metadataFieldsRef = useRef<MetadataFieldsRef>(null);
+  const copiedMeasureRef = useRef<MeasureConfig | null>(null);
 
   // Responsive detection
   const { isMobile } = useResponsive();
@@ -600,6 +602,38 @@ export default function ProductionPage() {
     setGroove(updatedGroove);
   }, [groove, setGroove]);
 
+  const cloneMeasure = useCallback((measure: MeasureConfig): MeasureConfig => ({
+    ...measure,
+    notes: Object.fromEntries(
+      Object.entries(measure.notes).map(([voice, notes]) => [voice, [...notes]])
+    ) as MeasureConfig['notes'],
+    sticking: measure.sticking ? [...measure.sticking] : undefined,
+  }), []);
+
+  const handleMeasureCopy = useCallback((measureIndex: number) => {
+    const measure = groove.measures[measureIndex];
+    if (!measure) return;
+    copiedMeasureRef.current = cloneMeasure(measure);
+  }, [cloneMeasure, groove.measures]);
+
+  const handleMeasurePaste = useCallback((afterIndex: number): boolean => {
+    if (!copiedMeasureRef.current || groove.measures.length >= MAX_MEASURES) {
+      return false;
+    }
+
+    const measureToPaste = cloneMeasure(copiedMeasureRef.current);
+    const insertIndex = Math.min(afterIndex + 1, groove.measures.length);
+    setGroove({
+      ...groove,
+      measures: [
+        ...groove.measures.slice(0, insertIndex),
+        measureToPaste,
+        ...groove.measures.slice(insertIndex),
+      ],
+    });
+    return true;
+  }, [cloneMeasure, groove, setGroove]);
+
   /**
    * Apply sticking from the given measure to all measures with identical note patterns.
    * Returns a message describing the result (for display in the measure header feedback).
@@ -742,6 +776,8 @@ export default function ProductionPage() {
                         onMeasureAdd={handleMeasureAdd}
                         onMeasureRemove={handleMeasureRemove}
                         onMeasureClear={handleMeasureClear}
+                        onMeasureCopy={handleMeasureCopy}
+                        onMeasurePaste={handleMeasurePaste}
                         isStickingSetupActive={isStickingSetupActive}
                         onStickingChange={handleStickingChange}
                         onApplyToSimilar={handleApplyToSimilar}

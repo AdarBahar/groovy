@@ -1,3 +1,4 @@
+import { createPortal } from 'react-dom';
 import { GrooveData, DrumVoice, MAX_MEASURES } from '../types';
 import { GrooveUtils } from '../core';
 import { useDrumGrid, DRUM_ROWS, NoteChange } from '../hooks/useDrumGrid';
@@ -175,10 +176,11 @@ function DrumGrid({
       </div>
 
       {/* Context Menu */}
-      {grid.contextMenu?.visible && (
+      {grid.contextMenu?.visible && createPortal(
         <div
           ref={grid.contextMenuRef}
           className="context-menu"
+          data-placement={grid.contextMenu.placement}
           style={{
             position: 'fixed',
             left: `${grid.contextMenu.x}px`,
@@ -211,7 +213,8 @@ function DrumGrid({
               </button>
             );
           })}
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Bulk Operations Dialog */}

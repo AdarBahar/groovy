@@ -1,4 +1,5 @@
-import { memo, useCallback, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Copy, Plus, Trash2, X, CopyCheck } from 'lucide-react';
 import { GrooveData, DrumVoice, MAX_MEASURES, StickingValue, createEmptySticking } from '../../types';
 import { GrooveUtils } from '../../core';
@@ -26,11 +27,14 @@ interface DrumCellProps {
   activeVoices: DrumVoice[];
   hasVariations: boolean;
   isNonDefault: boolean;
+  isKeyboardCursor: boolean;
   rowName: string;
+  cellRef: (element: HTMLButtonElement | null) => void;
   onLeftClick: (e: React.MouseEvent) => void;
   onMouseDown: (e: React.MouseEvent) => void;
   onMouseEnter: () => void;
   onRightClick: (e: React.MouseEvent) => void;
+  onFocus: () => void;
   onTouchStart: (e: React.TouchEvent) => void;
   onTouchMove: (e: React.TouchEvent) => void;
   onTouchEnd: (e: React.TouchEvent) => void;
@@ -47,20 +51,26 @@ const DrumCell = memo(function DrumCell({
   activeVoices,
   hasVariations,
   isNonDefault,
+  isKeyboardCursor,
   rowName,
+  cellRef,
   onLeftClick,
   onMouseDown,
   onMouseEnter,
   onRightClick,
+  onFocus,
   onTouchStart,
   onTouchMove,
   onTouchEnd,
 }: DrumCellProps) {
   return (
     <button
+      ref={cellRef}
+      tabIndex={isKeyboardCursor ? 0 : -1}
       className={`drum-cell w-11 h-11 sm:w-12 sm:h-10 md:w-10 md:h-9 border cursor-pointer transition-all duration-150 flex items-center justify-center relative touch-target
         ${isActive ? 'bg-purple-600 hover:bg-purple-700 border-purple-500' : 'bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 border-slate-300 dark:border-slate-600'}
         ${isDownbeat ? 'border-l-slate-400 dark:border-l-slate-500' : ''}
+        ${isKeyboardCursor ? 'ring-2 ring-cyan-400 ring-offset-2 ring-offset-white dark:ring-offset-slate-800 z-10' : ''}
       `}
       data-measure-index={measureIndex}
       data-row-index={rowIndex}
@@ -70,6 +80,7 @@ const DrumCell = memo(function DrumCell({
       onMouseDown={onMouseDown}
       onMouseEnter={onMouseEnter}
       onContextMenu={onRightClick}
+      onFocus={onFocus}
       onTouchStart={onTouchStart}
       onTouchMove={onTouchMove}
       onTouchEnd={onTouchEnd}
@@ -100,7 +111,20 @@ interface DrumGridDarkProps {
   onStickingChange?: (measureIndex: number, subdivIndex: number, value: StickingValue) => void;
   /** Called when "Apply to Similar Measures" is clicked; receives measure index */
   onApplyToSimilar?: (measureIndex: number) => string;
+  /** Called when the keyboard editor copies the current measure */
+  onMeasureCopy?: (measureIndex: number) => void;
+  /** Called when the keyboard editor pastes the copied measure after the current measure */
+  onMeasurePaste?: (afterIndex: number) => boolean;
 }
+
+interface KeyboardCursor {
+  measureIndex: number;
+  rowIndex: number;
+  position: number;
+}
+
+const INITIAL_KEYBOARD_ROW_INDEX = Math.max(0, DRUM_ROWS.findIndex(row => row.name === 'Hi-Hat'));
+const KEYBOARD_HELP_TEXT = 'Keyboard editor. Arrow keys move between cells. Space toggles the default note. Tab opens variations. Shift or Alt with left and right arrows erases the adjacent cell. Control or Command with left and right arrows duplicates the current note. Control or Command C copies a measure. Control or Command V pastes it to the right.';
 
 export function DrumGridDark({
   groove,
@@ -115,6 +139,8 @@ export function DrumGridDark({
   isStickingSetupActive = false,
   onStickingChange,
   onApplyToSimilar,
+  onMeasureCopy,
+  onMeasurePaste,
 }: DrumGridDarkProps) {
   const grid = useDrumGrid({
     groove,
@@ -127,6 +153,361 @@ export function DrumGridDark({
   const handleStickingChange = useCallback((measureIndex: number, subdivIndex: number, value: StickingValue) => {
     onStickingChange?.(measureIndex, subdivIndex, value);
   }, [onStickingChange]);
+
+  const [keyboardCursor, setKeyboardCursor] = useState<KeyboardCursor>({
+    measureIndex: 0,
+    rowIndex: INITIAL_KEYBOARD_ROW_INDEX,
+    position: 0,
+  });
+  const [keyboardVariationIndex, setKeyboardVariationIndex] = useState(0);
+  const [keyboardMessage, setKeyboardMessage] = useState<string | null>(null);
+  const cellRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+  const keyboardMessageTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const getCellKey = useCallback((cursor: KeyboardCursor) => {
+    return `${cursor.measureIndex}-${cursor.rowIndex}-${cursor.position}`;
+  }, []);
+
+  const registerCellRef = useCallback((cursor: KeyboardCursor, element: HTMLButtonElement | null) => {
+    cellRefs.current[getCellKey(cursor)] = element;
+  }, [getCellKey]);
+
+  const getPositionCount = useCallback((measureIndex: number) => {
+    const measure = groove.measures[measureIndex];
+    const ts = measure?.timeSignature || groove.timeSignature;
+    return GrooveUtils.calcNotesPerMeasure(groove.division, ts.beats, ts.noteValue);
+  }, [groove.division, groove.measures, groove.timeSignature]);
+
+  const getHorizontalNeighbor = useCallback((cursor: KeyboardCursor, direction: -1 | 1): KeyboardCursor | null => {
+    const positionCount = getPositionCount(cursor.measureIndex);
+    const nextPosition = cursor.position + direction;
+
+    if (nextPosition >= 0 && nextPosition < positionCount) {
+      return { ...cursor, position: nextPosition };
+    }
+
+    const nextMeasureIndex = cursor.measureIndex + direction;
+    if (nextMeasureIndex < 0 || nextMeasureIndex >= groove.measures.length) {
+      return null;
+    }
+
+    return {
+      measureIndex: nextMeasureIndex,
+      rowIndex: cursor.rowIndex,
+      position: direction === 1 ? 0 : getPositionCount(nextMeasureIndex) - 1,
+    };
+  }, [getPositionCount, groove.measures.length]);
+
+  const moveKeyboardCursor = useCallback((direction: 'up' | 'down' | 'left' | 'right') => {
+    setKeyboardCursor(current => {
+      if (direction === 'left' || direction === 'right') {
+        return getHorizontalNeighbor(current, direction === 'right' ? 1 : -1) || current;
+      }
+
+      const nextRowIndex = Math.min(
+        DRUM_ROWS.length - 1,
+        Math.max(0, current.rowIndex + (direction === 'down' ? 1 : -1))
+      );
+
+      return { ...current, rowIndex: nextRowIndex };
+    });
+  }, [getHorizontalNeighbor]);
+
+  const getRowVoices = useCallback((cursor: KeyboardCursor) => {
+    const measure = groove.measures[cursor.measureIndex];
+    if (!measure) return [];
+    const row = DRUM_ROWS[cursor.rowIndex];
+    const activeVoices: DrumVoice[] = [];
+    row.variations.forEach(variation => {
+      variation.voices.forEach(voice => {
+        if (measure.notes[voice]?.[cursor.position] && !activeVoices.includes(voice)) {
+          activeVoices.push(voice);
+        }
+      });
+    });
+    return activeVoices;
+  }, [groove.measures]);
+
+  const setRowVoices = useCallback((cursor: KeyboardCursor, voices: DrumVoice[]) => {
+    const measure = groove.measures[cursor.measureIndex];
+    if (!measure) return;
+
+    const row = DRUM_ROWS[cursor.rowIndex];
+    const changes: NoteChange[] = [];
+
+    row.variations.forEach(variation => {
+      variation.voices.forEach(voice => {
+        if (measure.notes[voice]?.[cursor.position]) {
+          changes.push({
+            voice,
+            position: cursor.position,
+            measureIndex: cursor.measureIndex,
+            value: false,
+          });
+        }
+      });
+    });
+
+    voices.forEach(voice => {
+      changes.push({
+        voice,
+        position: cursor.position,
+        measureIndex: cursor.measureIndex,
+        value: true,
+      });
+    });
+
+    if (changes.length === 0) return;
+
+    if (onSetNotes) {
+      onSetNotes(changes);
+    } else {
+      changes.forEach(change => {
+        if (measure.notes[change.voice]?.[change.position] !== change.value) {
+          onNoteToggle(change.voice, change.position, change.measureIndex);
+        }
+      });
+    }
+
+    if (voices[0]) {
+      onPreview(voices[0]);
+    }
+  }, [groove.measures, onNoteToggle, onPreview, onSetNotes]);
+
+  const toggleKeyboardCell = useCallback(() => {
+    const activeVoices = getRowVoices(keyboardCursor);
+    setRowVoices(
+      keyboardCursor,
+      activeVoices.length > 0 ? [] : DRUM_ROWS[keyboardCursor.rowIndex].defaultVoices
+    );
+  }, [getRowVoices, keyboardCursor, setRowVoices]);
+
+  const duplicateKeyboardCell = useCallback((direction: -1 | 1) => {
+    const target = getHorizontalNeighbor(keyboardCursor, direction);
+    if (!target) return;
+
+    const sourceVoices = getRowVoices(keyboardCursor);
+    if (sourceVoices.length === 0) return;
+
+    setRowVoices(target, sourceVoices);
+    setKeyboardCursor(target);
+  }, [getHorizontalNeighbor, getRowVoices, keyboardCursor, setRowVoices]);
+
+  const eraseKeyboardCell = useCallback((direction: -1 | 1) => {
+    const target = getHorizontalNeighbor(keyboardCursor, direction);
+    if (!target) return;
+
+    setRowVoices(target, []);
+    setKeyboardCursor(target);
+  }, [getHorizontalNeighbor, keyboardCursor, setRowVoices]);
+
+  const openKeyboardVariationMenu = useCallback(() => {
+    const row = DRUM_ROWS[keyboardCursor.rowIndex];
+    if (row.variations.length <= 1) return;
+
+    const cell = cellRefs.current[getCellKey(keyboardCursor)];
+    if (!cell) return;
+
+    const rect = cell.getBoundingClientRect();
+    const menuWidth = 200;
+    const menuHeight = 34 + row.variations.length * 38 + 8;
+    const gap = 6;
+    const viewportPadding = 8;
+    const roomBelow = window.innerHeight - rect.bottom - gap - viewportPadding;
+    const roomAbove = rect.top - gap - viewportPadding;
+    const hasRoomBelow = roomBelow >= menuHeight;
+    const hasRoomAbove = roomAbove >= menuHeight;
+    const placement = hasRoomBelow || (!hasRoomAbove && roomBelow >= roomAbove) ? 'below' : 'above';
+    const selectedVoices = grid.getVoicesForPosition(
+      keyboardCursor.measureIndex,
+      keyboardCursor.rowIndex,
+      keyboardCursor.position
+    );
+    const selectedIndex = Math.max(0, row.variations.findIndex(variation =>
+      variation.voices.length === selectedVoices.length &&
+      variation.voices.every(voice => selectedVoices.includes(voice))
+    ));
+
+    setKeyboardVariationIndex(selectedIndex);
+    grid.setContextMenu({
+      visible: true,
+      x: Math.min(
+        Math.max(rect.left, viewportPadding),
+        window.innerWidth - menuWidth - viewportPadding
+      ),
+      y: placement === 'below'
+        ? rect.bottom + gap
+        : rect.top - menuHeight - gap,
+      placement,
+      rowIndex: keyboardCursor.rowIndex,
+      position: keyboardCursor.position,
+      measureIndex: keyboardCursor.measureIndex,
+    });
+  }, [getCellKey, grid, keyboardCursor]);
+
+  const handleKeyboardVariationSelect = useCallback((variationIndex: number) => {
+    const row = DRUM_ROWS[keyboardCursor.rowIndex];
+    const variation = row.variations[variationIndex];
+    if (!variation) return;
+
+    setKeyboardVariationIndex(variationIndex);
+    grid.handleVoiceSelect(variation.voices);
+  }, [grid, keyboardCursor.rowIndex]);
+
+  const isEditableTarget = useCallback((target: EventTarget | null) => {
+    if (!(target instanceof HTMLElement)) return false;
+    return Boolean(target.closest('input, textarea, select, [contenteditable="true"]'));
+  }, []);
+
+  const handleKeyboardEditKeyDown = useCallback((event: React.KeyboardEvent<HTMLDivElement>) => {
+    if (isEditableTarget(event.target)) return;
+
+    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'c') {
+      event.preventDefault();
+      onMeasureCopy?.(keyboardCursor.measureIndex);
+      return;
+    }
+
+    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'v') {
+      event.preventDefault();
+      const pasted = onMeasurePaste?.(keyboardCursor.measureIndex) ?? false;
+      if (pasted) {
+        setKeyboardMessage(null);
+        setKeyboardCursor(current => ({
+          ...current,
+          measureIndex: Math.min(current.measureIndex + 1, groove.measures.length),
+        }));
+      } else {
+        setKeyboardMessage(
+          groove.measures.length >= MAX_MEASURES
+            ? `Measure limit reached (${MAX_MEASURES}). Cannot paste more measures.`
+            : 'Copy a measure before pasting.'
+        );
+      }
+      return;
+    }
+
+    if (grid.contextMenu?.visible) {
+      const row = DRUM_ROWS[grid.contextMenu.rowIndex];
+      if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+        event.preventDefault();
+        setKeyboardVariationIndex(current => {
+          const delta = event.key === 'ArrowDown' ? 1 : -1;
+          return (current + delta + row.variations.length) % row.variations.length;
+        });
+        return;
+      }
+
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        handleKeyboardVariationSelect(keyboardVariationIndex);
+        return;
+      }
+
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        grid.setContextMenu(null);
+        return;
+      }
+    }
+
+    if (
+      (event.shiftKey || event.altKey) &&
+      (event.key === 'ArrowLeft' || event.key === 'ArrowRight')
+    ) {
+      event.preventDefault();
+      eraseKeyboardCell(event.key === 'ArrowRight' ? 1 : -1);
+      return;
+    }
+
+    if (
+      (event.ctrlKey || event.metaKey) &&
+      (event.key === 'ArrowLeft' || event.key === 'ArrowRight')
+    ) {
+      event.preventDefault();
+      duplicateKeyboardCell(event.key === 'ArrowRight' ? 1 : -1);
+      return;
+    }
+
+    if (event.key === 'ArrowLeft' || event.key === 'ArrowRight' || event.key === 'ArrowUp' || event.key === 'ArrowDown') {
+      event.preventDefault();
+      const direction = event.key.replace('Arrow', '').toLowerCase() as 'up' | 'down' | 'left' | 'right';
+      moveKeyboardCursor(direction);
+      return;
+    }
+
+    if (event.key === ' ') {
+      event.preventDefault();
+      toggleKeyboardCell();
+      return;
+    }
+
+    if (event.key === 'Tab') {
+      event.preventDefault();
+      openKeyboardVariationMenu();
+    }
+  }, [
+    duplicateKeyboardCell,
+    eraseKeyboardCell,
+    grid,
+    groove.measures.length,
+    handleKeyboardVariationSelect,
+    isEditableTarget,
+    keyboardCursor,
+    keyboardVariationIndex,
+    moveKeyboardCursor,
+    onMeasureCopy,
+    onMeasurePaste,
+    openKeyboardVariationMenu,
+    toggleKeyboardCell,
+  ]);
+
+  useEffect(() => {
+    setKeyboardCursor(current => {
+      const maxMeasureIndex = Math.max(0, groove.measures.length - 1);
+      const maxRowIndex = DRUM_ROWS.length - 1;
+
+      if (
+        current.measureIndex <= maxMeasureIndex &&
+        current.rowIndex <= maxRowIndex &&
+        current.position < getPositionCount(current.measureIndex)
+      ) {
+        return current;
+      }
+
+      const measureIndex = Math.min(current.measureIndex, maxMeasureIndex);
+      const position = Math.min(current.position, Math.max(0, getPositionCount(measureIndex) - 1));
+      const rowIndex = Math.min(current.rowIndex, maxRowIndex);
+      return { measureIndex, rowIndex, position };
+    });
+  }, [getPositionCount, groove.measures.length]);
+
+  useEffect(() => {
+    const cell = cellRefs.current[getCellKey(keyboardCursor)];
+    if (cell && document.activeElement?.closest('[data-keyboard-editor="true"]')) {
+      cell.focus({ preventScroll: true });
+      cell.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+    }
+  }, [getCellKey, keyboardCursor]);
+
+  useEffect(() => {
+    if (!keyboardMessage) return;
+
+    if (keyboardMessageTimerRef.current) {
+      clearTimeout(keyboardMessageTimerRef.current);
+    }
+    keyboardMessageTimerRef.current = setTimeout(() => {
+      setKeyboardMessage(null);
+      keyboardMessageTimerRef.current = null;
+    }, 2500);
+
+    return () => {
+      if (keyboardMessageTimerRef.current) {
+        clearTimeout(keyboardMessageTimerRef.current);
+        keyboardMessageTimerRef.current = null;
+      }
+    };
+  }, [keyboardMessage]);
 
   // Per-measure transient notification for "Apply to Similar" feedback
   const [applyMessages, setApplyMessages] = useState<Record<number, string>>({});
@@ -150,7 +531,30 @@ export function DrumGridDark({
   }, [onApplyToSimilar]);
 
   return (
-    <div className={`flex flex-wrap gap-3 md:gap-4 mt-4 md:mt-6 ${grid.isDragging ? 'select-none' : ''}`}>
+    <div
+      className={`flex flex-wrap gap-3 md:gap-4 mt-4 md:mt-6 ${grid.isDragging ? 'select-none' : ''}`}
+      data-keyboard-editor="true"
+      role="application"
+      aria-label={KEYBOARD_HELP_TEXT}
+      tabIndex={0}
+      onKeyDown={handleKeyboardEditKeyDown}
+      onFocus={(event) => {
+        if (event.currentTarget === event.target) {
+          const cell = cellRefs.current[getCellKey(keyboardCursor)];
+          cell?.focus({ preventScroll: true });
+        }
+      }}
+    >
+      {keyboardMessage && (
+        <div
+          role="status"
+          aria-live="polite"
+          className="w-full text-xs font-medium text-amber-700 dark:text-amber-300 bg-amber-100 dark:bg-amber-900/40 border border-amber-200 dark:border-amber-800 rounded-md px-3 py-2"
+        >
+          {keyboardMessage}
+        </div>
+      )}
+
       {groove.measures.map((measure, measureIndex) => {
         const positions = grid.getPositionsForMeasure(measureIndex);
         const ts = measure.timeSignature || groove.timeSignature;
@@ -286,6 +690,11 @@ export function DrumGridDark({
                   const variationLabel = grid.getVariationLabel(measureIndex, rowIndex, pos);
                   const isNonDefault = variationLabel !== row.variations[0].label;
                   const activeVoices = grid.getActiveVoices(measureIndex, rowIndex, pos);
+                  const cellCursor = { measureIndex, rowIndex, position: pos };
+                  const isKeyboardCursor =
+                    keyboardCursor.measureIndex === measureIndex &&
+                    keyboardCursor.rowIndex === rowIndex &&
+                    keyboardCursor.position === pos;
 
                   return (
                     <DrumCell
@@ -300,11 +709,14 @@ export function DrumGridDark({
                       activeVoices={activeVoices}
                       hasVariations={hasVariations}
                       isNonDefault={isNonDefault}
+                      isKeyboardCursor={isKeyboardCursor}
                       rowName={row.name}
+                      cellRef={(element) => registerCellRef(cellCursor, element)}
                       onLeftClick={(e) => grid.handleLeftClick(e, measureIndex, rowIndex, pos)}
                       onMouseDown={(e) => grid.handleMouseDown(e, measureIndex, rowIndex, pos)}
                       onMouseEnter={() => grid.handleMouseEnter(measureIndex, rowIndex, pos)}
                       onRightClick={(e) => grid.handleRightClick(e, measureIndex, rowIndex, pos)}
+                      onFocus={() => setKeyboardCursor(cellCursor)}
                       onTouchStart={(e) => grid.handleTouchStart(e, measureIndex, rowIndex, pos)}
                       onTouchMove={grid.handleTouchMove}
                       onTouchEnd={(e) => grid.handleTouchEnd(e, measureIndex, rowIndex, pos)}
@@ -318,9 +730,10 @@ export function DrumGridDark({
       })}
 
       {/* Context Menu */}
-      {grid.contextMenu?.visible && (
+      {grid.contextMenu?.visible && createPortal(
         <div
           ref={grid.contextMenuRef}
+          data-placement={grid.contextMenu.placement}
           className="fixed z-50 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg shadow-lg py-2 min-w-[200px]"
           style={{ left: `${grid.contextMenu.x}px`, top: `${grid.contextMenu.y}px` }}
         >
@@ -335,14 +748,16 @@ export function DrumGridDark({
             );
             const isSelected = variation.voices.length === selectedVoices.length &&
               variation.voices.every(v => selectedVoices.includes(v));
+            const isKeyboardHighlighted = index === keyboardVariationIndex;
 
             return (
               <button
                 key={index}
                 className={`w-full px-3 py-2 text-left text-sm flex items-center justify-between hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors
                   ${isSelected ? 'text-purple-600 dark:text-purple-400' : 'text-slate-700 dark:text-slate-200'}
+                  ${isKeyboardHighlighted ? 'bg-slate-100 dark:bg-slate-600' : ''}
                 `}
-                onClick={() => grid.handleVoiceSelect(variation.voices)}
+                onClick={() => handleKeyboardVariationSelect(index)}
                 onMouseEnter={() => onPreview(variation.voices[0])}
               >
                 <span className="flex items-center gap-2">
@@ -355,7 +770,8 @@ export function DrumGridDark({
               </button>
             );
           })}
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Bulk Operations Dialog */}

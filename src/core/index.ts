@@ -36,6 +36,7 @@ export {
   ABC_BOILERPLATE,
   ABC_REST,
   generateABCHeader,
+  getMeasuresPerLine,
   getNoteDurationSuffix,
   isTripletDivision,
 } from './ABCConstants';
