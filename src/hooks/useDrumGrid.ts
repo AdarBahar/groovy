@@ -23,6 +23,7 @@ export interface ContextMenuState {
   visible: boolean;
   x: number;
   y: number;
+  placement: 'above' | 'below';
   rowIndex: number;
   position: number;
   measureIndex: number;
@@ -123,6 +124,34 @@ export function useDrumGrid({
 
   // Bulk operations dialog state
   const [bulkDialog, setBulkDialog] = useState<BulkDialogState | null>(null);
+
+  const getContextMenuPosition = useCallback((
+    eventTarget: EventTarget,
+    rowIndex: number
+  ): Pick<ContextMenuState, 'x' | 'y' | 'placement'> => {
+    const target = eventTarget as HTMLElement;
+    const rect = target.getBoundingClientRect();
+    const menuWidth = 200;
+    const menuHeight = 34 + DRUM_ROWS[rowIndex].variations.length * 38 + 8;
+    const gap = 6;
+    const viewportPadding = 8;
+    const roomBelow = window.innerHeight - rect.bottom - gap - viewportPadding;
+    const roomAbove = rect.top - gap - viewportPadding;
+    const hasRoomBelow = roomBelow >= menuHeight;
+    const hasRoomAbove = roomAbove >= menuHeight;
+    const placement = hasRoomBelow || (!hasRoomAbove && roomBelow >= roomAbove) ? 'below' : 'above';
+
+    return {
+      x: Math.min(
+        Math.max(rect.left + window.scrollX, window.scrollX + viewportPadding),
+        window.scrollX + window.innerWidth - menuWidth - viewportPadding
+      ),
+      y: placement === 'below'
+        ? rect.bottom + window.scrollY + gap
+        : rect.top + window.scrollY - menuHeight - gap,
+      placement,
+    };
+  }, []);
 
   // ==========================================================================
   // Helper functions
@@ -308,11 +337,10 @@ export function useDrumGrid({
       const row = DRUM_ROWS[rowIndex];
       if (row.variations.length > 1) {
         // Get touch position for context menu
-        const rect = (event.target as HTMLElement).getBoundingClientRect();
+        const menuPosition = getContextMenuPosition(event.currentTarget, rowIndex);
         setContextMenu({
           visible: true,
-          x: rect.left,
-          y: rect.bottom,
+          ...menuPosition,
           rowIndex,
           position,
           measureIndex,
@@ -324,7 +352,7 @@ export function useDrumGrid({
     setDragMode(null);
     setDragSourceVoices(null);
     setTouchMoved(false);
-  }, [touchStartTime, touchMoved]);
+  }, [touchStartTime, touchMoved, getContextMenuPosition]);
 
   const handleLeftClick = useCallback((
     event: React.MouseEvent,
@@ -342,10 +370,10 @@ export function useDrumGrid({
       event.preventDefault();
       const row = DRUM_ROWS[rowIndex];
       if (row.variations.length > 1) {
+        const menuPosition = getContextMenuPosition(event.currentTarget, rowIndex);
         setContextMenu({
           visible: true,
-          x: event.clientX,
-          y: event.clientY,
+          ...menuPosition,
           rowIndex,
           position,
           measureIndex,
@@ -383,7 +411,7 @@ export function useDrumGrid({
       });
       onPreview(voices[0]);
     }
-  }, [isDragging, groove.measures, advancedEditMode, getVoicesForPosition, isPositionActive, onNoteToggle, onPreview]);
+  }, [isDragging, groove.measures, advancedEditMode, getContextMenuPosition, getVoicesForPosition, isPositionActive, onNoteToggle, onPreview]);
 
   const handleRightClick = useCallback((
     event: React.MouseEvent,
@@ -394,16 +422,16 @@ export function useDrumGrid({
     event.preventDefault();
     const row = DRUM_ROWS[rowIndex];
     if (row.variations.length > 1) {
+      const menuPosition = getContextMenuPosition(event.currentTarget, rowIndex);
       setContextMenu({
         visible: true,
-        x: event.clientX,
-        y: event.clientY,
+        ...menuPosition,
         rowIndex,
         position,
         measureIndex,
       });
     }
-  }, []);
+  }, [getContextMenuPosition]);
 
   const handleVoiceSelect = useCallback((voices: DrumVoice[]) => {
     if (!contextMenu) return;

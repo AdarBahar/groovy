@@ -14,6 +14,7 @@ import {
   FEET_VOICES,
   ABC_BOILERPLATE,
   generateABCHeader,
+  getMeasuresPerLine,
   getNoteDurationSuffix,
   isTripletDivision,
 } from './ABCConstants';
@@ -96,8 +97,19 @@ function generatePositionABC(
   return stickingAnnotation + decorations + '[' + symbols.join('') + ']' + durationSuffix;
 }
 
-/** Number of measures per line in sheet music */
-const MEASURES_PER_LINE = 3;
+function generateSpacerMeasureABC(positionCount: number, groupSize: number, durationSuffix: string): string {
+  const parts: string[] = [];
+
+  for (let i = 0; i < positionCount; i++) {
+    if (i > 0 && i % groupSize === 0) {
+      parts.push(' ');
+    }
+    parts.push(ABC_REST + durationSuffix);
+  }
+
+  parts.push(' |');
+  return parts.join('');
+}
 
 /**
  * Generate ABC notation for a single voice part (Hands or Feet)
@@ -116,6 +128,7 @@ function generateVoicePart(
 
   // Group notes for readability (every 4 notes for straight, every 3 for triplets)
   const groupSize = isTriplet ? 3 : 4;
+  const measuresPerLine = getMeasuresPerLine(division);
 
   // Process each measure
   for (let measureIndex = 0; measureIndex < groove.measures.length; measureIndex++) {
@@ -136,10 +149,22 @@ function generateVoicePart(
     // Add measure bar
     parts.push(' |');
 
-    // Add line break after every MEASURES_PER_LINE measures (but not at the very end)
+    // Add line break after every row of measures (but not at the very end)
     const measureNumber = measureIndex + 1;
-    if (measureNumber % MEASURES_PER_LINE === 0 && measureIndex < groove.measures.length - 1) {
+    if (measureNumber % measuresPerLine === 0 && measureIndex < groove.measures.length - 1) {
       parts.push('\n');
+    }
+  }
+
+  const finalLineMeasureCount = groove.measures.length % measuresPerLine;
+  if (finalLineMeasureCount > 0) {
+    const lastMeasure = groove.measures[groove.measures.length - 1];
+    const ts = lastMeasure.timeSignature || groove.timeSignature;
+    const notesPerMeasure = (division / ts.noteValue) * ts.beats;
+    const spacerCount = measuresPerLine - finalLineMeasureCount;
+
+    for (let i = 0; i < spacerCount; i++) {
+      parts.push(generateSpacerMeasureABC(notesPerMeasure, groupSize, durationSuffix));
     }
   }
 

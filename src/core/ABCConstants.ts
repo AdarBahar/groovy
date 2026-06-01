@@ -47,12 +47,21 @@ export function isTripletDivision(division: number): boolean {
 }
 
 /**
+ * Get how many measures to render per staff line.
+ * Dense divisions need wider measures so notes and annotations remain readable.
+ */
+export function getMeasuresPerLine(division: number): number {
+  return division >= 24 ? 2 : 3;
+}
+
+/**
  * ABC boilerplate header for drum notation
  * Using standard abcjs percussion notation
  */
 export const ABC_BOILERPLATE = `%%flatbeams 1
 %%ornament up
 %%barnumbers 1
+%%stretchlast 1
 %%staffsep 110`;
 
 /**

@@ -1,11 +1,12 @@
-import { GrooveData, StickingValue } from '../types';
+import { Division, GrooveData, StickingValue } from '../types';
+import { getMeasuresPerLine } from './ABCConstants';
+import { GrooveUtils } from './GrooveUtils';
 
 const TEMPO_TO_STICKING_GAP = 5;
 const NOTE_ROW_GAP = 4;
 const ROW_GAP = 1;
 const ANNOTATION_FONT_SIZE = '11px';
 const COUNT_FONT_WEIGHT = 'normal';
-const MEASURES_PER_LINE = 3;
 
 interface SvgBox {
   x: number;
@@ -20,32 +21,8 @@ interface CountAnchor {
 }
 
 function getCountLabel(position: number, division: number, beats: number): string {
-  const subdivisionsPerBeat = division / 4;
-  const beatIndex = Math.floor(position / subdivisionsPerBeat);
-  const subIndex = position % subdivisionsPerBeat;
-
-  if (beatIndex >= beats) {
-    return '';
-  }
-
-  const beatNum = beatIndex + 1;
-
-  if (subdivisionsPerBeat === 1) {
-    return String(beatNum);
-  }
-  if (subdivisionsPerBeat === 2) {
-    return subIndex === 0 ? String(beatNum) : '&';
-  }
-  if (subdivisionsPerBeat === 3) {
-    const tripletLabels = ['', 'trip', 'let'];
-    return subIndex === 0 ? String(beatNum) : tripletLabels[subIndex] || '';
-  }
-  if (subdivisionsPerBeat === 4) {
-    const sixteenthLabels = ['', 'e', '&', 'a'];
-    return subIndex === 0 ? String(beatNum) : sixteenthLabels[subIndex] || '';
-  }
-
-  return subIndex === 0 ? String(beatNum) : '';
+  const label = GrooveUtils.getCountLabel(position, division as Division, beats);
+  return Number.parseInt(label, 10) > beats ? '' : label;
 }
 
 function getSvgBox(element: SVGGraphicsElement): SvgBox | null {
@@ -231,15 +208,16 @@ function getPositionsPerMeasure(groove: GrooveData): number[] {
 function getSyntheticCountAnchors(svg: SVGSVGElement, groove: GrooveData): CountAnchor[] {
   const wrappers = Array.from(svg.querySelectorAll<SVGGraphicsElement>('.abcjs-staff-wrapper'));
   const positionsPerMeasure = getPositionsPerMeasure(groove);
+  const measuresPerLine = getMeasuresPerLine(groove.division);
   const anchors: CountAnchor[] = [];
 
   wrappers.forEach((wrapper, lineIndex) => {
-    const firstMeasureIndex = lineIndex * MEASURES_PER_LINE;
+    const firstMeasureIndex = lineIndex * measuresPerLine;
     if (firstMeasureIndex >= positionsPerMeasure.length) {
       return;
     }
 
-    const measureCount = Math.min(MEASURES_PER_LINE, positionsPerMeasure.length - firstMeasureIndex);
+    const measureCount = Math.min(measuresPerLine, positionsPerMeasure.length - firstMeasureIndex);
     const barXs = Array.from(wrapper.querySelectorAll<SVGGraphicsElement>('.abcjs-bar'))
       .map(getSvgBox)
       .filter((box): box is SvgBox => box !== null)
@@ -328,6 +306,15 @@ function createStickingText(x: number, y: number, value: Exclude<StickingValue, 
   return stickingText;
 }
 
+function removePaddedMeasureNumbers(svg: SVGSVGElement, groove: GrooveData): void {
+  svg.querySelectorAll<SVGTextElement>('.abcjs-bar-number').forEach((barNumber) => {
+    const value = Number.parseInt(barNumber.textContent || '', 10);
+    if (value > groove.measures.length) {
+      barNumber.remove();
+    }
+  });
+}
+
 function moveTempoAboveFirstRow(svg: SVGSVGElement, firstRowElements: SVGGraphicsElement[]): void {
   const tempo = svg.querySelector<SVGGraphicsElement>('.abcjs-tempo');
   if (!tempo) {
@@ -357,6 +344,8 @@ export function hasVisibleStickings(groove: GrooveData): boolean {
 }
 
 export function layoutStickingAndCountRows(svg: SVGSVGElement, groove: GrooveData): void {
+  removePaddedMeasureNumbers(svg, groove);
+
   svg.querySelectorAll('.groovy-count-row').forEach((node) => node.remove());
   svg.querySelectorAll('.groovy-sticking-row').forEach((node) => node.remove());
 

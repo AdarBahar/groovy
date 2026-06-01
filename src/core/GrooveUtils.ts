@@ -214,13 +214,22 @@ export class GrooveUtils {
     division: Division,
     beats: number
   ): string {
-    const notesPerBeat = division / beats;
+    const notesPerBeat = division / 4;
     const beatNumber = Math.floor(position / notesPerBeat) + 1;
     const positionInBeat = position % notesPerBeat;
 
+    if (beatNumber > beats) {
+      return '';
+    }
+
     // For triplets
     if (this.isTripletDivision(division)) {
-      const tripletLabels = ['', 'trip', 'let'];
+      const tripletLabelsByDivision: Partial<Record<Division, string[]>> = {
+        12: ['', 'trip', 'let'],
+        24: ['', 'trip', 'let', '+', 'trip', 'let'],
+        48: ['', 'trip', 'let', '+', 'trip', 'let', '&', 'trip', 'let', 'a', 'trip', 'let'],
+      };
+      const tripletLabels = tripletLabelsByDivision[division] || ['', 'trip', 'let'];
       if (positionInBeat === 0) {
         return beatNumber.toString();
       }
@@ -482,4 +491,3 @@ export class GrooveUtils {
     return { ...groove, measures: newMeasures };
   }
 }
-

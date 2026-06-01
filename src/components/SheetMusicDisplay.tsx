@@ -13,13 +13,12 @@ import {
   grooveToABC,
   renderABC,
   GrooveUtils,
+  getMeasuresPerLine,
   hasVisibleStickings,
   layoutStickingAndCountRows
 } from '../core';
 import './SheetMusicDisplay.css';
 
-/** Number of measures per line (must match ABCTranscoder.MEASURES_PER_LINE) */
-const MEASURES_PER_LINE = 3;
 const MIN_STAFF_WIDTH = 740;
 const SHEET_CONTAINER_HORIZONTAL_PADDING = 16;
 
@@ -69,6 +68,8 @@ function SheetMusicDisplay({
     const ts = groove.timeSignature;
     return (groove.division / ts.noteValue) * ts.beats;
   }, [groove]);
+
+  const measuresPerLine = useMemo(() => getMeasuresPerLine(groove.division), [groove.division]);
 
   // Calculate transition duration for smooth cursor movement
   const transitionDurationMs = useMemo(() => {
@@ -214,7 +215,7 @@ function SheetMusicDisplay({
               const svgRect = svg.getBoundingClientRect();
               const numMeasures = groove.measures.length;
               const posPerMeasure = positionsPerMeasure;
-              const numLines = Math.ceil(numMeasures / MEASURES_PER_LINE);
+              const numLines = Math.ceil(numMeasures / measuresPerLine);
 
               // Get barlines to determine measure boundaries (more accurate than notes)
               const barlines = Array.from(svg.querySelectorAll('.abcjs-bar'));
@@ -244,8 +245,8 @@ function SheetMusicDisplay({
                 const bottomPct = ((lineBottom - wrapperRect.top) / wrapperRect.height) * 100;
 
                 // Calculate which positions are on this line
-                const measuresOnLine = Math.min(MEASURES_PER_LINE, numMeasures - lineIdx * MEASURES_PER_LINE);
-                const startPos = lineIdx * MEASURES_PER_LINE * posPerMeasure;
+                const measuresOnLine = Math.min(measuresPerLine, numMeasures - lineIdx * measuresPerLine);
+                const startPos = lineIdx * measuresPerLine * posPerMeasure;
                 const endPos = startPos + measuresOnLine * posPerMeasure - 1;
 
                 // Find barlines on this line to get accurate measure boundaries
@@ -280,7 +281,8 @@ function SheetMusicDisplay({
                       const bRect = b.getBoundingClientRect();
                       return aRect.left - bRect.left;
                     });
-                    const lastRect = sortedBarlines[sortedBarlines.length - 1].getBoundingClientRect();
+                    const lastRealMeasureBar = sortedBarlines[Math.min(measuresOnLine - 1, sortedBarlines.length - 1)];
+                    const lastRect = lastRealMeasureBar.getBoundingClientRect();
                     maxX = ((lastRect.right - wrapperRect.left) / wrapperRect.width) * 100;
                   }
                 } else if (barlinesOnLine.length >= 2) {
@@ -291,7 +293,8 @@ function SheetMusicDisplay({
                   });
 
                   const firstRect = sortedBarlines[0].getBoundingClientRect();
-                  const lastRect = sortedBarlines[sortedBarlines.length - 1].getBoundingClientRect();
+                  const lastRealMeasureBar = sortedBarlines[Math.min(measuresOnLine - 1, sortedBarlines.length - 1)];
+                  const lastRect = lastRealMeasureBar.getBoundingClientRect();
 
                   minX = ((firstRect.left - wrapperRect.left) / wrapperRect.width) * 100;
                   maxX = ((lastRect.right - wrapperRect.left) / wrapperRect.width) * 100;
@@ -332,7 +335,7 @@ function SheetMusicDisplay({
       console.error('SheetMusicDisplay error:', err);
       setError(err instanceof Error ? err.message : 'Unknown error');
     }
-  }, [groove, visible, title, positionsPerMeasure, totalPositions]);
+  }, [groove, visible, title, positionsPerMeasure, measuresPerLine, totalPositions]);
 
   if (!visible) {
     return null;

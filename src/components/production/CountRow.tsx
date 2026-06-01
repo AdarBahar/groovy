@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { TimeSignature, Division } from '../../types';
+import { GrooveUtils } from '../../core';
 
 export interface CountRowProps {
   /** Division: number of subdivisions per quarter note */
@@ -18,47 +19,8 @@ export interface CountRowProps {
  * - 4/4 with 16th notes: 1, e, &, a, 2, e, &, a, 3, e, &, a, 4, e, &, a
  */
 function getCountLabel(position: number, timeSignature: TimeSignature, division: Division): string {
-  const { beats } = timeSignature;
-
-  // Calculate how many subdivisions per beat
-  const subdivisionsPerBeat = division / 4;
-
-  // Which beat are we on? (0-indexed)
-  const beatIndex = Math.floor(position / subdivisionsPerBeat);
-
-  // Which subdivision within the beat? (0-indexed)
-  const subIndex = position % subdivisionsPerBeat;
-
-  // If we're past the last beat, return empty
-  if (beatIndex >= beats) {
-    return '';
-  }
-
-  // Beat number (1-indexed)
-  const beatNum = beatIndex + 1;
-
-  // Subdivision label depends on how many subdivisions per beat
-  if (subdivisionsPerBeat === 1) {
-    // Whole notes per beat - just show beat number
-    return String(beatNum);
-  } else if (subdivisionsPerBeat === 2) {
-    // Half notes per beat (e.g., 8th notes in 4/4)
-    // Pattern: 1, &, 2, &, 3, &, 4, &
-    return subIndex === 0 ? String(beatNum) : '&';
-  } else if (subdivisionsPerBeat === 3) {
-    // Triplets
-    // Pattern: 1, trip, let, 2, trip, let, etc.
-    const tripletLabels = ['', 'trip', 'let'];
-    return subIndex === 0 ? String(beatNum) : tripletLabels[subIndex] || '';
-  } else if (subdivisionsPerBeat === 4) {
-    // 16th notes in 4/4 or 8th notes in 2/4
-    // Pattern: 1, e, &, a, 2, e, &, a, etc.
-    const sixteenthLabels = ['', 'e', '&', 'a'];
-    return subIndex === 0 ? String(beatNum) : sixteenthLabels[subIndex] || '';
-  }
-
-  // Fallback for other divisions
-  return subIndex === 0 ? String(beatNum) : '';
+  const label = GrooveUtils.getCountLabel(position, division, timeSignature.beats);
+  return Number.parseInt(label, 10) > timeSignature.beats ? '' : label;
 }
 
 /**
