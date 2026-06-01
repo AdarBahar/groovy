@@ -112,7 +112,7 @@ const commentsSchema = z.string()
 /** Zod schema for voice patterns - validates format and length */
 const patternSchema = z.string()
   .max(VALIDATION.PATTERN_MAX_LENGTH, `Pattern too long`)
-  .regex(/^[|a-zA-Z0-9\-]*$/, 'Invalid characters in pattern')
+  .regex(/^[|a-zA-Z0-9\-+]*$/, 'Invalid characters in pattern')
   .optional();
 
 /**
