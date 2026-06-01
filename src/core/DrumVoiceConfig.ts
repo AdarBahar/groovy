@@ -93,7 +93,7 @@ export const DRUM_VOICE_CONFIG = {
     name: 'Hi-Hat Foot',
     group: 'hihat',
     part: 'feet',
-    abcSymbol: 'A,,',
+    abcSymbol: 'E,,,',
     urlTabChar: '+',
     midiNote: 44,
     velocity: 100,
