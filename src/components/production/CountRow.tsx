@@ -12,18 +12,6 @@ export interface CountRowProps {
 }
 
 /**
- * Returns the count label for a specific subdivision position.
- * Accounts for the time signature and division to display beat positions.
- * Examples:
- * - 4/4 with 8th notes: 1, &, 2, &, 3, &, 4, &
- * - 4/4 with 16th notes: 1, e, &, a, 2, e, &, a, 3, e, &, a, 4, e, &, a
- */
-function getCountLabel(position: number, timeSignature: TimeSignature, division: Division): string {
-  const label = GrooveUtils.getCountLabel(position, division, timeSignature.beats);
-  return Number.parseInt(label, 10) > timeSignature.beats ? '' : label;
-}
-
-/**
  * CountRow displays the beat counting above the drum grid.
  * Shows measure numbers and beat subdivisions (1, &, 2, &, etc.)
  * aligned with the sticking row and drum grid columns.
@@ -42,7 +30,7 @@ export default function CountRow({
   const countLabels = useMemo(() => {
     const labels: string[] = [];
     for (let i = 0; i < notesPerMeasure; i++) {
-      labels.push(getCountLabel(i, timeSignature, division));
+      labels.push(GrooveUtils.getCountLabel(i, division, timeSignature.beats));
     }
     return labels;
   }, [notesPerMeasure, timeSignature, division]);

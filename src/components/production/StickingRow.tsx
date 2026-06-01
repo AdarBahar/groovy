@@ -114,6 +114,10 @@ export default function StickingRow({
     index: number,
     current: StickingValue
   ) => {
+    // Modifier drags intentionally suppress the click that browsers dispatch
+    // after mouseup. The order is: mark suppression, start drag state, apply
+    // the first cell immediately, clear drag state on document mouseup, then
+    // let handleClick consume the one suppressed click without cycling values.
     if (e.ctrlKey || e.metaKey) {
       e.preventDefault();
       suppressNextClickRef.current = true;

@@ -1,4 +1,4 @@
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Copy, Plus, Trash2, X, CopyCheck } from 'lucide-react';
 import { GrooveData, DrumVoice, MAX_MEASURES, StickingValue, createEmptySticking } from '../../types';
@@ -124,6 +124,7 @@ interface KeyboardCursor {
 }
 
 const INITIAL_KEYBOARD_ROW_INDEX = Math.max(0, DRUM_ROWS.findIndex(row => row.name === 'Hi-Hat'));
+const KEYBOARD_HELP_TEXT = 'Keyboard editor. Arrow keys move between cells. Space toggles the default note. Tab opens variations. Shift or Alt with left and right arrows erases the adjacent cell. Control or Command with left and right arrows duplicates the current note. Control or Command C copies a measure. Control or Command V pastes it to the right.';
 
 export function DrumGridDark({
   groove,
@@ -326,6 +327,9 @@ export function DrumGridDark({
     ));
 
     setKeyboardVariationIndex(selectedIndex);
+    // The menu is rendered in a body portal with `position: absolute`, so these
+    // are document coordinates. Keeping scroll offsets lets page scrolling move
+    // the open menu together with the grid cell it belongs to.
     grid.setContextMenu({
       visible: true,
       x: Math.min(
@@ -454,16 +458,20 @@ export function DrumGridDark({
 
   useEffect(() => {
     setKeyboardCursor(current => {
-      const measureIndex = Math.min(current.measureIndex, Math.max(0, groove.measures.length - 1));
-      const position = Math.min(current.position, Math.max(0, getPositionCount(measureIndex) - 1));
-      const rowIndex = Math.min(current.rowIndex, DRUM_ROWS.length - 1);
+      const maxMeasureIndex = Math.max(0, groove.measures.length - 1);
+      const maxRowIndex = DRUM_ROWS.length - 1;
+
       if (
-        measureIndex === current.measureIndex &&
-        position === current.position &&
-        rowIndex === current.rowIndex
+        current.measureIndex <= maxMeasureIndex &&
+        current.rowIndex <= maxRowIndex &&
+        current.position < getPositionCount(current.measureIndex)
       ) {
         return current;
       }
+
+      const measureIndex = Math.min(current.measureIndex, maxMeasureIndex);
+      const position = Math.min(current.position, Math.max(0, getPositionCount(measureIndex) - 1));
+      const rowIndex = Math.min(current.rowIndex, maxRowIndex);
       return { measureIndex, rowIndex, position };
     });
   }, [getPositionCount, groove.measures.length]);
@@ -475,10 +483,6 @@ export function DrumGridDark({
       cell.scrollIntoView({ block: 'nearest', inline: 'nearest' });
     }
   }, [getCellKey, keyboardCursor]);
-
-  const keyboardHelpText = useMemo(() => (
-    'Keyboard editor. Arrow keys move between cells. Space toggles the default note. Tab opens variations. Shift or Control with left and right arrows duplicates the current note. Control C copies a measure. Control V pastes it to the right.'
-  ), []);
 
   // Per-measure transient notification for "Apply to Similar" feedback
   const [applyMessages, setApplyMessages] = useState<Record<number, string>>({});
@@ -506,7 +510,7 @@ export function DrumGridDark({
       className={`flex flex-wrap gap-3 md:gap-4 mt-4 md:mt-6 ${grid.isDragging ? 'select-none' : ''}`}
       data-keyboard-editor="true"
       role="application"
-      aria-label={keyboardHelpText}
+      aria-label={KEYBOARD_HELP_TEXT}
       tabIndex={0}
       onKeyDown={handleKeyboardEditKeyDown}
       onFocus={(event) => {

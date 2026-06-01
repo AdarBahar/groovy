@@ -98,17 +98,12 @@ function generatePositionABC(
 }
 
 function generateSpacerMeasureABC(positionCount: number, groupSize: number, durationSuffix: string): string {
-  const parts: string[] = [];
-
-  for (let i = 0; i < positionCount; i++) {
-    if (i > 0 && i % groupSize === 0) {
-      parts.push(' ');
-    }
-    parts.push(ABC_REST + durationSuffix);
-  }
-
-  parts.push(' |');
-  return parts.join('');
+  const rest = ABC_REST + durationSuffix;
+  const rests = Array.from(
+    { length: positionCount },
+    (_, i) => `${i > 0 && i % groupSize === 0 ? ' ' : ''}${rest}`
+  );
+  return `${rests.join('')} |`;
 }
 
 /**

@@ -141,6 +141,9 @@ export function useDrumGrid({
     const hasRoomAbove = roomAbove >= menuHeight;
     const placement = hasRoomBelow || (!hasRoomAbove && roomBelow >= roomAbove) ? 'below' : 'above';
 
+    // The menu is rendered in a body portal with `position: absolute`, so these
+    // are document coordinates. Keeping scroll offsets lets page scrolling move
+    // the open menu together with the grid cell it belongs to.
     return {
       x: Math.min(
         Math.max(rect.left + window.scrollX, window.scrollX + viewportPadding),
