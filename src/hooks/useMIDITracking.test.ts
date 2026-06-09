@@ -20,6 +20,7 @@ vi.mock('../midi/PerformanceTracker', () => ({
     disable: vi.fn(),
     setTempo: vi.fn(),
     analyzeHit: vi.fn(),
+    getPerformedBpm: vi.fn(() => null),
   },
 }));
 

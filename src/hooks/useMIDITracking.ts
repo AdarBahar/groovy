@@ -71,6 +71,9 @@ export function useMIDITracking(
         const rangeScore = ((accuracy + 100) / 200) * 100;
         logger.log(`timing-debug: error=${analysis.timingErrorMs.toFixed(1)}ms, score=${rangeScore.toFixed(0)} (0=slow, 50=on-time, 100=fast)`);
 
+        // Get performed BPM (actual tempo from drummer's hits)
+        const performedBpm = performanceTracker.getPerformedBpm();
+
         // Dispatch tracking event with analysis results
         window.dispatchEvent(new CustomEvent('midi-tracking-hit', {
           detail: {
@@ -79,6 +82,7 @@ export function useMIDITracking(
             analysis,  // { timingAccuracy, noteAccuracy, overall, feedback, timingErrorMs }
             timingError: analysis.timingErrorMs, // Signed error in ms (negative=slow, positive=fast)
             tempo: groove.tempo, // Pass actual tempo for accurate scaling
+            performedBpm, // Actual BPM from drummer's hits (null if not yet estimated)
           }
         }));
       }
