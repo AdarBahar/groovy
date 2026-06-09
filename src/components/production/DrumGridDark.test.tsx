@@ -38,10 +38,10 @@ function renderGrid(
 }
 
 describe('DrumGridDark keyboard editing', () => {
-  it('starts on hi-hat and toggles the default note with Space', () => {
+  it('starts on hi-hat and toggles the default note with Enter', () => {
     const { app, props } = renderGrid();
 
-    fireEvent.keyDown(app, { key: ' ' });
+    fireEvent.keyDown(app, { key: 'Enter' });
 
     expect(props.onSetNotes).toHaveBeenCalledWith([
       { voice: 'hihat-closed', position: 0, measureIndex: 0, value: true },
@@ -52,7 +52,7 @@ describe('DrumGridDark keyboard editing', () => {
     const { app, props } = renderGrid();
 
     fireEvent.keyDown(app, { key: 'ArrowDown' });
-    fireEvent.keyDown(app, { key: ' ' });
+    fireEvent.keyDown(app, { key: 'Enter' });
 
     expect(props.onSetNotes).toHaveBeenCalledWith([
       { voice: 'tom-10', position: 0, measureIndex: 0, value: true },
@@ -145,7 +145,7 @@ describe('DrumGridDark keyboard editing', () => {
     renderResult.rerender(<DrumGridDark {...props} groove={shorterGroove} />);
 
     await waitFor(() => {
-      fireEvent.keyDown(app, { key: ' ' });
+      fireEvent.keyDown(app, { key: 'Enter' });
       expect(props.onSetNotes).toHaveBeenLastCalledWith([
         { voice: 'hihat-closed', position: 7, measureIndex: 0, value: true },
       ]);

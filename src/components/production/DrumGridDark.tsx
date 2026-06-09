@@ -124,7 +124,7 @@ interface KeyboardCursor {
 }
 
 const INITIAL_KEYBOARD_ROW_INDEX = Math.max(0, DRUM_ROWS.findIndex(row => row.name === 'Hi-Hat'));
-const KEYBOARD_HELP_TEXT = 'Keyboard editor. Arrow keys move between cells. Space toggles the default note. Tab opens variations. Shift or Alt with left and right arrows erases the adjacent cell. Control or Command with left and right arrows duplicates the current note. Control or Command C copies a measure. Control or Command V pastes it to the right.';
+const KEYBOARD_HELP_TEXT = 'Keyboard editor. Space plays/pauses. Arrow keys move between cells. Enter toggles the default note. Tab opens variations. Shift or Alt with left and right arrows erases the adjacent cell. Control or Command with left and right arrows duplicates the current note. Control or Command C copies a measure. Control or Command V pastes it to the right.';
 
 export function DrumGridDark({
   groove,
@@ -436,7 +436,7 @@ export function DrumGridDark({
       return;
     }
 
-    if (event.key === ' ') {
+    if (event.key === 'Enter') {
       event.preventDefault();
       toggleKeyboardCell();
       return;

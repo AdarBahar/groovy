@@ -4,8 +4,9 @@ interface KeyboardShortcutsProps {
 
 export function KeyboardShortcuts({ inline = false }: KeyboardShortcutsProps) {
   const shortcuts = [
+    { key: 'Space', description: 'Play/pause' },
     { key: 'Arrows', description: 'Move editor cursor' },
-    { key: 'Space', description: 'Toggle note' },
+    { key: 'Enter', description: 'Toggle note' },
     { key: 'Tab', description: 'Note menu' },
     { key: '⌘/Ctrl+C/V', description: 'Copy/paste measure' },
     { key: '⌘/Ctrl', description: '+drag Paint' },
