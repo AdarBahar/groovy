@@ -337,31 +337,6 @@ export default function ProductionPage() {
   }, [isPlaying]);
 
   // Keyboard shortcuts
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (isMetadataEditing) return;
-
-      if ((event.ctrlKey || event.metaKey) && event.key === 'z' && !event.shiftKey) {
-        event.preventDefault();
-        if (canUndo) {
-          undo();
-          // Engine sync handled by centralized useEffect
-        }
-      } else if (
-        ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key === 'z') ||
-        ((event.ctrlKey || event.metaKey) && event.key === 'y')
-      ) {
-        event.preventDefault();
-        if (canRedo) {
-          redo();
-          // Engine sync handled by centralized useEffect
-        }
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [canUndo, canRedo, undo, redo, isMetadataEditing]);
 
   // Cancel count-in helper
   const cancelCountIn = useCallback(() => {
@@ -403,7 +378,7 @@ export default function ProductionPage() {
     });
   }, [groove.tempo, playPreview]);
 
-  const handlePlay = async () => {
+  const handlePlay = useCallback(async () => {
     if (autoSpeedUp.isActive) autoSpeedUp.stop();
 
     // If counting in, cancel it
@@ -426,7 +401,7 @@ export default function ProductionPage() {
       analytics.trackPlay('normal', groove.tempo, `${groove.timeSignature.beats}/${groove.timeSignature.noteValue}`);
       await play(groove);
     }
-  };
+  }, [autoSpeedUp, isCountingIn, cancelCountIn, isPlaying, playStartTimeRef, stop, metronomeConfig.countIn, playCountIn, analytics, groove, play]);
 
   const handlePlayWithSpeedUp = async () => {
     // If counting in, cancel it
@@ -450,6 +425,40 @@ export default function ProductionPage() {
       autoSpeedUp.start();
     }
   };
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (isMetadataEditing) return;
+
+      // Space to toggle play/pause
+      if (event.key === ' ') {
+        event.preventDefault();
+        handlePlay();
+        return;
+      }
+
+      if ((event.ctrlKey || event.metaKey) && event.key === 'z' && !event.shiftKey) {
+        event.preventDefault();
+        if (canUndo) {
+          undo();
+          // Engine sync handled by centralized useEffect
+        }
+      } else if (
+        ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key === 'z') ||
+        ((event.ctrlKey || event.metaKey) && event.key === 'y')
+      ) {
+        event.preventDefault();
+        if (canRedo) {
+          redo();
+          // Engine sync handled by centralized useEffect
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [canUndo, canRedo, undo, redo, isMetadataEditing, handlePlay]);
 
   const handleTempoChange = (tempo: number) => {
     const newGroove = { ...groove, tempo };

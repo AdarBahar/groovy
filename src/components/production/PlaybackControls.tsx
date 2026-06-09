@@ -3,6 +3,7 @@ import { Button } from '../ui/button';
 import { Slider } from '../ui/slider';
 import { TimeSignature } from '../../types';
 import { useMIDITimingAccuracy } from '../../hooks/useMIDITimingAccuracy';
+import { useMIDIPerformedBpm } from '../../hooks/useMIDIPerformedBpm';
 
 interface PlaybackControlsProps {
   isPlaying: boolean;
@@ -40,6 +41,8 @@ export function PlaybackControls({
   countingInButton,
   isEmbedded,
   trackingEnabled,
+  midiConnected,
+  onTrackingToggle,
 }: PlaybackControlsProps) {
   // Use the enhanced MIDI timing accuracy hook
   const {
@@ -47,6 +50,9 @@ export function PlaybackControls({
     averageScore: _averageScore,
     showingAverage: _showingAverage,
   } = useMIDITimingAccuracy(isPlaying, trackingEnabled);
+
+  // Track performed BPM from MIDI hits
+  const { performedBpm } = useMIDIPerformedBpm(isPlaying, trackingEnabled);
 
   // Swing display conversion (internal 0–100 maps to DAW convention 50–67%)
   // 0 = no swing (straight), 100 = triplet swing (2:1 ratio)
@@ -124,7 +130,14 @@ export function PlaybackControls({
         <div className="flex-1 lg:max-w-md">
           <div className="flex items-center justify-between mb-2">
             <label className="text-sm text-slate-500 dark:text-slate-400">Tempo (BPM)</label>
-            <span className="text-sm text-purple-600 dark:text-purple-400 font-semibold">{tempo}</span>
+            <div className="flex items-center gap-3">
+              <span className="text-sm text-purple-600 dark:text-purple-400 font-semibold">{tempo}</span>
+              {performedBpm !== null && trackingEnabled && (
+                <span className="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-2 py-1 rounded">
+                  Playing: {performedBpm}
+                </span>
+              )}
+            </div>
           </div>
           <Slider
             value={[tempo]}
@@ -155,6 +168,24 @@ export function PlaybackControls({
           />
         </div>
       </div>
+
+      {/* MIDI Tracking Toggle - shown when MIDI connected */}
+      {midiConnected && (
+        <div className="flex items-center gap-2 lg:border-l lg:border-slate-200 lg:dark:border-slate-700 lg:pl-6">
+          <Button
+            onClick={onTrackingToggle}
+            size="sm"
+            variant={trackingEnabled ? 'default' : 'outline'}
+            className={`text-xs sm:text-sm ${
+              trackingEnabled
+                ? 'bg-blue-600 hover:bg-blue-700 text-white'
+                : 'border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-400'
+            }`}
+          >
+            {trackingEnabled ? '✓ Tracking On' : 'Tracking Off'}
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
