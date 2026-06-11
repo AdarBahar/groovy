@@ -54,6 +54,10 @@ export class GrooveEngine {
   private visualRAFId: number | null = null;
   private lastEmittedPosition: number = -1;
 
+  // Performance.now() anchor captured at the instant playback begins.
+  // Shared with useMIDITracking so PerformanceTracker uses the same clock.
+  private playStartPerformanceTime: number | null = null;
+
   // Metronome state
   private metronomeConfig: MetronomeConfig = { ...DEFAULT_METRONOME_CONFIG };
   private currentRotationOffset = 0; // For ROTATE mode
@@ -71,6 +75,16 @@ export class GrooveEngine {
    */
   getSynth(): DrumSynth {
     return this.synth;
+  }
+
+  /**
+   * Get the performance.now() timestamp captured at the start of playback.
+   * Use this as the anchor for PerformanceTracker.enable() so MIDI hit
+   * timestamps (which use the same clock) align correctly.
+   * Returns null when not playing or before the first play() call.
+   */
+  getPlayStartPerformanceTime(): number | null {
+    return this.playStartPerformanceTime;
   }
 
   /**
@@ -291,7 +305,10 @@ export class GrooveEngine {
 
     this.isPlaying = true;
     this.currentPosition = 0;
+    // Capture both the audio-context start time and the performance.now() anchor
+    // at the same instant so MIDI tracking can use the same clock reference.
     this.startTime = this.synth.getCurrentTime();
+    this.playStartPerformanceTime = performance.now();
     this.currentGroove = groove;
     this.pendingGroove = null;
     this.loopEnabled = loop;
@@ -614,6 +631,7 @@ export class GrooveEngine {
   stop(): void {
     this.isPlaying = false;
     this.currentPosition = 0;
+    this.playStartPerformanceTime = null;
 
     if (this.timerID !== null) {
       clearTimeout(this.timerID);

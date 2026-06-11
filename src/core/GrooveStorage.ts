@@ -111,10 +111,23 @@ export function saveGroove(
     const result = safeStorage.setItem(STORAGE_KEY, JSON.stringify(grooves));
     if (!result.success) {
       if (result.quotaExceeded) {
-        // Attempt cleanup and retry once
-        logger.warn('Storage quota exceeded, attempting cleanup...');
-        safeStorage.cleanup('groove-');
-        const retryResult = safeStorage.setItem(STORAGE_KEY, JSON.stringify(grooves));
+        // Drop the oldest 25% of grooves (by modifiedAt ascending) to free space,
+        // but never remove the groove that is being saved right now.
+        logger.warn('Storage quota exceeded, trimming oldest grooves...');
+        const dropCount = Math.max(1, Math.floor(grooves.length * 0.25));
+        const sorted = [...grooves].sort((a, b) => a.modifiedAt - b.modifiedAt);
+        let dropped = 0;
+        const trimmed: SavedGroove[] = [];
+        for (const g of sorted) {
+          if (dropped < dropCount && g.id !== savedGroove.id) {
+            dropped++;
+            // Skip (drop) this groove
+          } else {
+            trimmed.push(g);
+          }
+        }
+        logger.warn(`Dropped ${dropped} oldest groove(s) to reclaim storage space`);
+        const retryResult = safeStorage.setItem(STORAGE_KEY, JSON.stringify(trimmed));
         if (!retryResult.success) {
           return {
             success: false,

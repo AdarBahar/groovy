@@ -40,8 +40,21 @@ interface UseMIDIInputReturn {
  * @returns MIDI state and control methods
  */
 export function useMIDIInput(synth?: DrumSynth): UseMIDIInputReturn {
-  // Use provided synth or create one (should be provided from GrooveEngine)
-  const synthRef = useRef<DrumSynth>(synth || new DrumSynth());
+  // Lazy-init: only create a fallback DrumSynth once, and only when no synth is provided.
+  // Using null as initial value avoids constructing DrumSynth on every render when synth
+  // is undefined (the eager `synth || new DrumSynth()` ran new DrumSynth() each render).
+  const synthRef = useRef<DrumSynth | null>(synth ?? null);
+  if (synthRef.current === null) {
+    // First render with no synth provided — construct the fallback exactly once
+    synthRef.current = new DrumSynth();
+  }
+
+  // Adopt a late-provided synth (e.g. parent renders the synth after the hook mounts)
+  useEffect(() => {
+    if (synth && synthRef.current !== synth) {
+      synthRef.current = synth;
+    }
+  }, [synth]);
 
   const [config, setConfig] = useState<MIDIConfig>(loadMIDIConfig);
   const [devices, setDevices] = useState<MIDIDeviceInfo[]>([]);
@@ -182,10 +195,11 @@ export function useMIDIInput(synth?: DrumSynth): UseMIDIInputReturn {
 
         if (config.throughEnabled) {
           // Resume AudioContext if suspended (required for user interaction on Web Audio API)
-          synthRef.current.resume();
+          // synthRef.current is guaranteed non-null by the lazy init guard above
+          synthRef.current!.resume();
 
           // Play sound immediately (time=0)
-          synthRef.current.playDrum(voice, 0, velocity);
+          synthRef.current!.playDrum(voice, 0, velocity);
         }
 
         // Emit event for UI feedback (always emit, independent of audio playback)

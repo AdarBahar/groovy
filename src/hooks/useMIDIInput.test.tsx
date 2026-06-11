@@ -45,6 +45,19 @@ vi.mock('../utils/latencyStorage', () => ({
   loadLatencyConfig: vi.fn().mockReturnValue(null),
 }));
 
+// Track DrumSynth constructor calls to verify no duplicates are created
+let drumSynthInstanceCount = 0;
+vi.mock('../core/DrumSynth', () => {
+  class MockDrumSynth {
+    resume = vi.fn();
+    playDrum = vi.fn();
+    constructor() {
+      drumSynthInstanceCount++;
+    }
+  }
+  return { DrumSynth: MockDrumSynth };
+});
+
 vi.mock('../utils/analytics', () => ({
   trackMIDIDeviceDisconnected: vi.fn(),
 }));
@@ -59,6 +72,49 @@ vi.mock('../midi/MIDIDrumMapping', () => ({
     }),
   },
 }));
+
+describe('useMIDIInput - DrumSynth instantiation (#115)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    // Reset instance counter before each test
+    drumSynthInstanceCount = 0;
+  });
+
+  afterEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('constructs at most one fallback DrumSynth across multiple renders (no synth provided)', async () => {
+    const { rerender } = await act(async () => {
+      return renderHook(() => useMIDIInput(undefined));
+    });
+
+    const instancesAfterMount = drumSynthInstanceCount;
+
+    // Re-render with undefined synth — must NOT construct a second DrumSynth
+    await act(async () => {
+      rerender();
+    });
+
+    expect(drumSynthInstanceCount).toBe(instancesAfterMount);
+    // Exactly one fallback should have been created
+    expect(instancesAfterMount).toBe(1);
+  });
+
+  it('adopts the provided synth when one is given and constructs no fallback DrumSynth', async () => {
+    const providedSynth = {
+      resume: vi.fn(),
+      playDrum: vi.fn(),
+    } as any;
+
+    await act(async () => {
+      renderHook(() => useMIDIInput(providedSynth));
+    });
+
+    // When a synth is provided, no DrumSynth fallback should be constructed
+    expect(drumSynthInstanceCount).toBe(0);
+  });
+});
 
 describe('useMIDIInput - Listener Attachment', () => {
   let setNoteOnHandlerSpy: any;
