@@ -217,7 +217,7 @@ export default function ProductionPage() {
   useMIDIFeedback();
 
   // Use MIDI Tracking hook to analyze MIDI hits
-  useMIDITracking(midiTrackingEnabled, isPlaying, groove, currentPosition);
+  useMIDITracking(midiTrackingEnabled, isPlaying, groove, currentPosition, engine);
 
   // Use MIDI Tracking Feedback hook for green/red cell visualization
   useMIDITrackingFeedback();
