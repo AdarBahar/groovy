@@ -9,7 +9,27 @@
 import { LatencyCompensationConfig, LatencyCompensationConfigSchema } from '../midi/types';
 import { logger } from './logger';
 
-const LATENCY_CONFIG_KEY = 'groovy_midi_latency_config';
+const LATENCY_CONFIG_KEY = 'groovy-midi-latency-config';
+/** Previous snake_case key — kept only for one-time migration on first load (C7) */
+const OLD_LATENCY_CONFIG_KEY = 'groovy_midi_latency_config';
+
+/**
+ * Migrate latency config from old snake_case key to new kebab-case key (C7).
+ * Runs once: reads old value, writes to new key, removes old key.
+ * No-op if new key already present or old key absent.
+ */
+function migrateLatencyConfigKey(): void {
+  try {
+    if (localStorage.getItem(LATENCY_CONFIG_KEY) !== null) return; // already migrated
+    const oldValue = localStorage.getItem(OLD_LATENCY_CONFIG_KEY);
+    if (oldValue === null) return; // nothing to migrate
+    localStorage.setItem(LATENCY_CONFIG_KEY, oldValue);
+    localStorage.removeItem(OLD_LATENCY_CONFIG_KEY);
+    logger.log('Migrated latency config from legacy key to groovy-midi-latency-config');
+  } catch (error) {
+    logger.error('Failed to migrate latency config key:', error);
+  }
+}
 
 /**
  * Load latency configuration for a specific MIDI device
@@ -17,6 +37,7 @@ const LATENCY_CONFIG_KEY = 'groovy_midi_latency_config';
  * @returns Latency config or null if not calibrated
  */
 export function loadLatencyConfig(deviceId: string): LatencyCompensationConfig | null {
+  migrateLatencyConfigKey();
   try {
     const stored = localStorage.getItem(LATENCY_CONFIG_KEY);
     if (!stored) return null;
@@ -86,11 +107,12 @@ export function deleteLatencyConfig(deviceId: string): void {
  * Get all stored latency configurations
  */
 export function getAllLatencyConfigs(): Record<string, LatencyCompensationConfig> {
+  migrateLatencyConfigKey();
   try {
     const stored = localStorage.getItem(LATENCY_CONFIG_KEY);
     return stored ? JSON.parse(stored) : {};
   } catch (error) {
-    console.error('Failed to load all latency configs:', error);
+    logger.error('Failed to load all latency configs:', error);
     return {};
   }
 }
