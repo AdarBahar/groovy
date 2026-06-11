@@ -10,7 +10,8 @@
  * Spec: https://github.com/AdarBahar/portfolio-tracker/issues/264
  */
 
-import { DrumVoice, GrooveData } from '../types';
+import { DrumVoice, GrooveData, getFlattenedNotes } from '../types';
+import { GrooveUtils } from '../core/GrooveUtils';
 
 export interface PerformanceStats {
   totalHits: number;
@@ -51,6 +52,9 @@ class PerformanceTracker {
   private swing: number = 0; // 0-100 internal storage, maps to 0-0.33 ratio
   private beatOffsets: number[] = []; // ms offsets within one beat (accounts for swing)
 
+  // Total steps across all measures (for wrapping getCurrentStep)
+  private totalSteps: number = 0;
+
   // Performed BPM estimation (EWMA smoothing)
   private globalStepIndex: number = 0;
   private bpmEstimate: number | null = null;
@@ -89,13 +93,15 @@ class PerformanceTracker {
     this.timeSignature = groove.timeSignature;
     this.startTime = startTime;
 
-    // Create pattern object from groove (needed for checkNoteAccuracy)
-    // Uses first measure's notes as the pattern
+    // Build flattened pattern across ALL measures (fixes single-measure grading bug #121)
     this.loadedPattern = {
       division: groove.division,
       timeSignature: groove.timeSignature,
-      voices: groove.measures[0]?.notes,
+      voices: getFlattenedNotes(groove),
     };
+
+    // Compute total steps: sum of each measure's step count (respects per-measure time sig overrides)
+    this.totalSteps = this.computeTotalSteps(groove);
 
     // Build swing-aware quantization grid
     this.buildOffsetGrid();
@@ -134,6 +140,58 @@ class PerformanceTracker {
 
     this.tempo = tempo;
     this.buildOffsetGrid();
+  }
+
+  /**
+   * Compute total step count across all measures, respecting per-measure time signature overrides.
+   * Each measure contributes GrooveUtils.calcNotesPerMeasure(division, beats, noteValue) steps.
+   * @private
+   */
+  private computeTotalSteps(groove: GrooveData): number {
+    const div = groove.division as import('../types').Division;
+    let total = 0;
+    for (const measure of groove.measures) {
+      const ts = measure.timeSignature ?? groove.timeSignature;
+      total += GrooveUtils.calcNotesPerMeasure(div, ts.beats, ts.noteValue);
+    }
+    return total;
+  }
+
+  /**
+   * Update groove pattern mid-session (for live editing during playback).
+   * Rebuilds the flattened pattern, total step count, and offset grid.
+   * Does NOT reset startTime or stats — preserves accumulated performance data.
+   * @param groove - Updated GrooveData
+   */
+  updateGroove(groove: GrooveData): void {
+    if (!this.enabled) return;
+
+    // Validate like enable()
+    if (!groove.tempo || groove.tempo <= 0) {
+      console.warn('PerformanceTracker.updateGroove: Invalid tempo.');
+      return;
+    }
+    if (!groove.division || !groove.timeSignature?.beats || !groove.timeSignature?.noteValue) {
+      console.warn('PerformanceTracker.updateGroove: Groove missing required timing metadata.');
+      return;
+    }
+
+    this.tempo = groove.tempo;
+    this.division = groove.division;
+    this.swing = groove.swing;
+    this.timeSignature = groove.timeSignature;
+
+    // Rebuild flattened pattern and total step count
+    this.loadedPattern = {
+      division: groove.division,
+      timeSignature: groove.timeSignature,
+      voices: getFlattenedNotes(groove),
+    };
+    this.totalSteps = this.computeTotalSteps(groove);
+
+    // Rebuild offset grid with possibly new tempo/swing/division
+    this.buildOffsetGrid();
+    // startTime, globalStepIndex, bpmEstimate, and stats are intentionally preserved
   }
 
   /**
@@ -285,12 +343,14 @@ class PerformanceTracker {
 
     const elapsedMs = timestamp - this.startTime;
     const beatDurationMs = (60 / this.tempo) * 1000;
-    const stepsPerBeat = this.division / this.timeSignature.noteValue;
+    // Beat = quarter note (engine source of truth: note duration = (60/tempo)/(division/4))
+    const stepsPerBeat = this.division / 4;
     const stepDurationMs = beatDurationMs / stepsPerBeat;
 
     const stepNumber = Math.round(elapsedMs / stepDurationMs);
-    const measureLength = (this.division / this.timeSignature.noteValue) * this.timeSignature.beats;
-    return stepNumber % measureLength;
+    // Wrap by total steps across ALL measures (not just one measure's length)
+    const wrapLength = this.totalSteps > 0 ? this.totalSteps : stepsPerBeat * this.timeSignature.beats;
+    return stepNumber % wrapLength;
   }
 
   /**
