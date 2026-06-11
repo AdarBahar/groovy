@@ -493,11 +493,10 @@ describe('PerformanceTracker', () => {
       };
 
       // Engine note duration: (60/120) / (8/4) = 0.5 / 2 = 0.25s = 250ms
-      const stepDurMs = (60 / TEMPO) / (8 / 4) * 1000; // 250ms
+      // Hit exactly on step 0 (the downbeat)
       const startTime = 1000;
       performanceTracker.enable(groove68, startTime);
 
-      // Hit exactly on step 0 (the downbeat)
       const result = performanceTracker.analyzeHit('kick', startTime + 0);
       expect(result).not.toBeNull();
       expect(result!.timingAccuracy).toBe(100);
@@ -546,7 +545,6 @@ describe('PerformanceTracker', () => {
       };
 
       // Engine note duration: (60/120) / (8/4) = 250ms
-      const stepDurMs = (60 / TEMPO) / (8 / 4) * 1000;
       const startTime = 1000;
       performanceTracker.enable(groove34, startTime);
 
