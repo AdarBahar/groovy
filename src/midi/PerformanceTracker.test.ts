@@ -472,6 +472,90 @@ describe('PerformanceTracker', () => {
     });
   });
 
+  describe('Non-4/4 time signature grid alignment (#123)', () => {
+    // Engine note duration = (60/tempo) / (division/4) seconds
+    // PerformanceTracker step grid must match this, NOT use (division/noteValue)
+    const TEMPO = 120;
+
+    it('6/8 groove: on-grid hits grade 100 timing accuracy', () => {
+      const groove68: GrooveData = {
+        division: 8,
+        swing: 0,
+        timeSignature: { beats: 6, noteValue: 8 },
+        tempo: TEMPO,
+        measures: [
+          {
+            notes: {
+              'kick': [true, false, true, false, true, false],
+            } as any,
+          },
+        ],
+      };
+
+      // Engine note duration: (60/120) / (8/4) = 0.5 / 2 = 0.25s = 250ms
+      const stepDurMs = (60 / TEMPO) / (8 / 4) * 1000; // 250ms
+      const startTime = 1000;
+      performanceTracker.enable(groove68, startTime);
+
+      // Hit exactly on step 0 (the downbeat)
+      const result = performanceTracker.analyzeHit('kick', startTime + 0);
+      expect(result).not.toBeNull();
+      expect(result!.timingAccuracy).toBe(100);
+    });
+
+    it('6/8 groove: step spacing matches engine note duration', () => {
+      const groove68: GrooveData = {
+        division: 8,
+        swing: 0,
+        timeSignature: { beats: 6, noteValue: 8 },
+        tempo: TEMPO,
+        measures: [
+          {
+            notes: {
+              'kick': [true, false, true, false, true, false],
+            } as any,
+          },
+        ],
+      };
+
+      // Engine note duration = (60/tempo) / (division/4) = 250ms (not 500ms as division/noteValue would give)
+      const engineStepDurMs = (60 / TEMPO) / (8 / 4) * 1000; // 250ms
+
+      const startTime = 1000;
+      performanceTracker.enable(groove68, startTime);
+
+      // Hit exactly 1 step after start → should be on-grid → timing 100
+      const result = performanceTracker.analyzeHit('kick', startTime + engineStepDurMs);
+      expect(result).not.toBeNull();
+      expect(result!.timingAccuracy).toBe(100);
+    });
+
+    it('3/4 groove: on-grid hits grade 100 timing accuracy', () => {
+      const groove34: GrooveData = {
+        division: 8,
+        swing: 0,
+        timeSignature: { beats: 3, noteValue: 4 },
+        tempo: TEMPO,
+        measures: [
+          {
+            notes: {
+              'kick': [true, false, true, false, true, false],
+            } as any,
+          },
+        ],
+      };
+
+      // Engine note duration: (60/120) / (8/4) = 250ms
+      const stepDurMs = (60 / TEMPO) / (8 / 4) * 1000;
+      const startTime = 1000;
+      performanceTracker.enable(groove34, startTime);
+
+      const result = performanceTracker.analyzeHit('kick', startTime + 0);
+      expect(result).not.toBeNull();
+      expect(result!.timingAccuracy).toBe(100);
+    });
+  });
+
   describe('Tempo-aware grading bands', () => {
     it('scales thresholds with fast tempo', () => {
       const fastGroove: GrooveData = { ...mockGroove, tempo: 240 }; // Double tempo

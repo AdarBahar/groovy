@@ -201,7 +201,9 @@ class PerformanceTracker {
    */
   private buildOffsetGrid(): void {
     const beatDurMs = (60 / this.tempo) * 1000;
-    const stepsPerBeat = this.division / this.timeSignature.noteValue;
+    // Beat = quarter note (engine source of truth: note duration = (60/tempo)/(division/4))
+    // Do NOT use division/noteValue here — that would disagree with the engine in non-4/4 (#123).
+    const stepsPerBeat = this.division / 4;
 
     // Triplet divisions: 12, 24, 48 (don't support swing)
     const isTriplet = [12, 24, 48].includes(this.division);
@@ -442,7 +444,8 @@ class PerformanceTracker {
   private updatePerformedBpmEstimate(timestamp: number): void {
     if (this.startTime == null || this.globalStepIndex === 0) return;
 
-    const stepsPerBeat = this.division / this.timeSignature.noteValue;
+    // Beat = quarter note — consistent with engine and buildOffsetGrid (#123)
+    const stepsPerBeat = this.division / 4;
     const elapsedSecs = (timestamp - this.startTime) / 1000;
     const secondsPerStep = elapsedSecs / this.globalStepIndex;
     const stepsPerMinute = 60 / secondsPerStep;
