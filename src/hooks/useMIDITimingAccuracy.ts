@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { logger } from '../utils/logger';
 
 /**
  * useMIDITimingAccuracy
@@ -38,7 +39,7 @@ export function useMIDITimingAccuracy(isPlaying: boolean = true, trackingEnabled
       setTimingAccuracy(0);
       setIsTracking(false);
 
-      console.log(`📊 Playback stopped. Average timing: ${avg.toFixed(1)}, display score: ${displayScore.toFixed(0)}`);
+      logger.log(`📊 Playback stopped. Average timing: ${avg.toFixed(1)}, display score: ${displayScore.toFixed(0)}`);
 
       // Clear scores for next session
       scoresRef.current = [];
@@ -91,7 +92,7 @@ export function useMIDITimingAccuracy(isPlaying: boolean = true, trackingEnabled
         const rounded = Math.round(scaledAccuracy);
 
         // Debug: Log scaling calculation
-        console.log(`📊 Timing Accuracy: error=${timingError.toFixed(1)}ms, quarterBeat=${quarterBeatMs.toFixed(1)}ms, scaled=${scaledAccuracy.toFixed(1)}, rounded=${rounded}`);
+        logger.log(`📊 Timing Accuracy: error=${timingError.toFixed(1)}ms, quarterBeat=${quarterBeatMs.toFixed(1)}ms, scaled=${scaledAccuracy.toFixed(1)}, rounded=${rounded}`);
 
         setTimingAccuracy(rounded);
 

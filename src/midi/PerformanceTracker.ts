@@ -12,6 +12,7 @@
 
 import { DrumVoice, GrooveData, getFlattenedNotes } from '../types';
 import { GrooveUtils } from '../core/GrooveUtils';
+import { logger } from '../utils/logger';
 
 export interface PerformanceStats {
   totalHits: number;
@@ -79,13 +80,13 @@ class PerformanceTracker {
   enable(groove: GrooveData, startTime: number): void {
     // Validate tempo (Issue #94)
     if (!groove.tempo || groove.tempo <= 0) {
-      console.warn('PerformanceTracker: Invalid tempo. Must be positive number.');
+      logger.warn('PerformanceTracker: Invalid tempo. Must be positive number.');
       return;
     }
 
     // Validate groove has required timing metadata
     if (!groove.division || !groove.timeSignature?.beats || !groove.timeSignature?.noteValue) {
-      console.warn('PerformanceTracker: Groove missing required timing metadata.');
+      logger.warn('PerformanceTracker: Groove missing required timing metadata.');
       return;
     }
 
@@ -117,7 +118,7 @@ class PerformanceTracker {
     this.resetStats();
 
     this.enabled = true;
-    console.log(`Performance tracking enabled: ${groove.tempo}BPM, division=${groove.division}, swing=${groove.swing}%`);
+    logger.log(`Performance tracking enabled: ${groove.tempo}BPM, division=${groove.division}, swing=${groove.swing}%`);
   }
 
   /**
@@ -125,7 +126,7 @@ class PerformanceTracker {
    */
   disable(): void {
     this.enabled = false;
-    console.log('Performance tracking disabled');
+    logger.log('Performance tracking disabled');
   }
 
   /**
@@ -173,11 +174,11 @@ class PerformanceTracker {
 
     // Validate like enable()
     if (!groove.tempo || groove.tempo <= 0) {
-      console.warn('PerformanceTracker.updateGroove: Invalid tempo.');
+      logger.warn('PerformanceTracker.updateGroove: Invalid tempo.');
       return;
     }
     if (!groove.division || !groove.timeSignature?.beats || !groove.timeSignature?.noteValue) {
-      console.warn('PerformanceTracker.updateGroove: Groove missing required timing metadata.');
+      logger.warn('PerformanceTracker.updateGroove: Groove missing required timing metadata.');
       return;
     }
 
