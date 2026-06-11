@@ -79,6 +79,7 @@ None currently. Ready to begin Phase 1 planning.
 | # | Description | Date | Commit | Directory |
 |---|-------------|------|--------|-----------|
 | 260611-ev2 | Fix top code-review findings (GitHub issues #114-#118) with tests | 2026-06-11 | 6a1c7b6 | [260611-ev2-fix-top-code-review-findings-issues-114-](./quick/260611-ev2-fix-top-code-review-findings-issues-114-/) |
+| 260611-fcv | Fix code-review issues #119-#124 with tests | 2026-06-11 | 3af43e8 | [260611-fcv-fix-code-review-issues-119-124-with-test](./quick/260611-fcv-fix-code-review-issues-119-124-with-test/) |
 
 ## Next Steps
 
@@ -100,4 +101,4 @@ None currently. Ready to begin Phase 1 planning.
 - Decisions captured: 4 (Handler Lifecycle, Listener Dependencies, Cleanup Strategy, Memory Verification)
 - Next: Plan Phase 1
 
-Last activity: 2026-06-11 - Completed quick task 260611-ev2: Fix top code-review findings (GitHub issues #114-#118) with tests
+Last activity: 2026-06-11 - Completed quick task 260611-fcv: Fix code-review issues #119-#124 with tests
