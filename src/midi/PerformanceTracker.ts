@@ -194,7 +194,10 @@ class PerformanceTracker {
     const beatStart = beatIndex * beatDurMs;
     const posInBeat = elapsedMs - beatStart;
 
-    // Find nearest offset in the grid
+    // Find nearest offset in the grid.
+    // Also consider beatDurMs as the next beat's downbeat (offset === beatDurMs),
+    // so a hit just before the downbeat (e.g. posInBeat=490, beatDurMs=500)
+    // reports a small negative error (-10ms) instead of a large late error.
     let minDist = Infinity;
     let nearestOffset = 0;
     for (const offset of this.beatOffsets) {
@@ -203,6 +206,11 @@ class PerformanceTracker {
         minDist = dist;
         nearestOffset = offset;
       }
+    }
+    // Check next-beat downbeat candidate
+    const nextDownbeatDist = Math.abs(posInBeat - beatDurMs);
+    if (nextDownbeatDist < minDist) {
+      nearestOffset = beatDurMs;
     }
 
     const errorMs = posInBeat - nearestOffset; // signed: negative=slow, positive=fast

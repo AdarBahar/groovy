@@ -332,6 +332,60 @@ describe('PerformanceTracker', () => {
     });
   });
 
+  describe('Beat-boundary quantization (#116)', () => {
+    // beatDurMs = (60 / 120) * 1000 = 500ms at 120 BPM, division=8
+    const startTime = 1000; // arbitrary fixed anchor
+
+    beforeEach(() => {
+      performanceTracker.disable();
+      performanceTracker.resetStats();
+    });
+
+    it('hit 10ms before the next downbeat reports small negative error (~-10ms), not large positive', () => {
+      const groove: GrooveData = { ...mockGroove, tempo: 120, swing: 0 };
+      // beatDurMs = 500ms
+      performanceTracker.enable(groove, startTime);
+
+      // posInBeat = 490ms (10ms before the next downbeat at 500ms)
+      const hitTimestamp = startTime + 500 + 490; // second beat + 490ms into it
+      const result = performanceTracker.analyzeHit('kick', hitTimestamp);
+
+      expect(result).not.toBeNull();
+      // Error should be negative (approaching next downbeat from below) and small
+      expect(result!.timingErrorMs).toBeCloseTo(-10, 0);
+      expect(Math.abs(result!.timingErrorMs)).toBeLessThan(20);
+    });
+
+    it('hit 10ms after a downbeat reports small positive error (~+10ms)', () => {
+      const groove: GrooveData = { ...mockGroove, tempo: 120, swing: 0 };
+      performanceTracker.enable(groove, startTime);
+
+      // posInBeat = 10ms (10ms after beat downbeat)
+      const hitTimestamp = startTime + 500 + 10; // second beat + 10ms into it
+      const result = performanceTracker.analyzeHit('kick', hitTimestamp);
+
+      expect(result).not.toBeNull();
+      expect(result!.timingErrorMs).toBeCloseTo(10, 0);
+      expect(Math.abs(result!.timingErrorMs)).toBeLessThan(20);
+    });
+
+    it('nearest-offset selection is correct for the wrapped next-downbeat candidate in swing grid', () => {
+      // With swing, offbeats move later; the downbeat candidate (beatDurMs) must still win
+      // when posInBeat is closest to it (e.g. posInBeat=480, beatDurMs=500)
+      const groove: GrooveData = { ...mockGroove, tempo: 120, swing: 50 };
+      performanceTracker.enable(groove, startTime);
+
+      // posInBeat = 480ms — closer to beatDurMs (500ms) than any swing-offset step
+      const hitTimestamp = startTime + 500 + 480;
+      const result = performanceTracker.analyzeHit('kick', hitTimestamp);
+
+      expect(result).not.toBeNull();
+      // Error relative to next downbeat (500ms): 480 - 500 = -20ms
+      expect(result!.timingErrorMs).toBeCloseTo(-20, 0);
+      expect(Math.abs(result!.timingErrorMs)).toBeLessThan(50);
+    });
+  });
+
   describe('Tempo-aware grading bands', () => {
     it('scales thresholds with fast tempo', () => {
       const fastGroove: GrooveData = { ...mockGroove, tempo: 240 }; // Double tempo
