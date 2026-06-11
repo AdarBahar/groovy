@@ -161,7 +161,7 @@ export function useMIDIInput(synth?: DrumSynth): UseMIDIInputReturn {
     keyboardMIDISimulator.start(handleKeyboardMIDI);
 
     logger.log('🎹 Keyboard MIDI simulator enabled (localhost)');
-    logger.log('📝 Key bindings: K=Kick, S=Snare, Space=Hi-hat');
+    logger.log('Key bindings: K=Kick, S=Snare, H=Hi-hat (Space=play/pause)');
 
     return () => {
       keyboardMIDISimulator.stop();

@@ -17,7 +17,7 @@ import { logger } from '../utils/logger';
 export interface PerformanceStats {
   totalHits: number;
   accurateHits: number;
-  timingErrors: number[];
+  timingScores: number[];
   averageAccuracy: number;
 }
 
@@ -38,7 +38,6 @@ export interface GroovePattern {
   voices?: Record<DrumVoice, boolean[]>;
   division?: number; // 4, 8, 12, 16, 24, 32, 48
   timeSignature?: TimeSignature;
-  [key: string]: any;
 }
 
 const MAX_TIMING_ERRORS = 500;
@@ -67,7 +66,7 @@ class PerformanceTracker {
   private stats: PerformanceStats = {
     totalHits: 0,
     accurateHits: 0,
-    timingErrors: [],
+    timingScores: [],
     averageAccuracy: 0,
   };
 
@@ -290,7 +289,7 @@ class PerformanceTracker {
     this.stats = {
       totalHits: 0,
       accurateHits: 0,
-      timingErrors: [],
+      timingScores: [],
       averageAccuracy: 0,
     };
   }
@@ -324,9 +323,9 @@ class PerformanceTracker {
       this.stats.accurateHits++;
     }
     // Keep rolling window of timing errors
-    this.stats.timingErrors.push(timingAccuracy);
-    if (this.stats.timingErrors.length > MAX_TIMING_ERRORS) {
-      this.stats.timingErrors.shift();
+    this.stats.timingScores.push(timingAccuracy);
+    if (this.stats.timingScores.length > MAX_TIMING_ERRORS) {
+      this.stats.timingScores.shift();
     }
     this.stats.averageAccuracy =
       (this.stats.averageAccuracy * (this.stats.totalHits - 1) + overall) / this.stats.totalHits;
@@ -527,7 +526,7 @@ class PerformanceTracker {
    */
   getStats(): PerformanceStats {
     // Return deep copy to prevent external mutation of internal state (Issue #95)
-    return { ...this.stats, timingErrors: [...this.stats.timingErrors] };
+    return { ...this.stats, timingScores: [...this.stats.timingScores] };
   }
 
   /**

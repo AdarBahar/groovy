@@ -8,6 +8,7 @@
  */
 
 import { DrumVoice } from '../types';
+import { logger } from '../utils/logger';
 
 type NoteOnCallback = (note: number, velocity: number, grooveVoice: DrumVoice | null, timestamp: number) => void;
 type NoteOffCallback = (note: number, timestamp: number) => void;
@@ -57,13 +58,9 @@ class MIDIHandler {
    * @private
    */
   private handleNoteOn(note: number, velocity: number, timestamp: number): void {
-    // Gate console logging behind dev flag to avoid hot-path performance impact (Issue #96)
-    if (process.env.NODE_ENV === 'development') {
-      console.log('MIDI Note ON:', {
-        note,
-        velocity,
-        timestamp,
-      });
+    // Gate logging behind dev flag to avoid hot-path performance impact (Issue #96)
+    if (import.meta.env.DEV) {
+      logger.log('MIDI Note ON:', { note, velocity, timestamp });
     }
 
     if (this.onNoteOn) {
@@ -77,9 +74,9 @@ class MIDIHandler {
    * @private
    */
   private handleNoteOff(note: number, timestamp: number): void {
-    // Gate console logging behind dev flag to avoid hot-path performance impact (Issue #96)
-    if (process.env.NODE_ENV === 'development') {
-      console.log('MIDI Note OFF:', note);
+    // Gate logging behind dev flag to avoid hot-path performance impact (Issue #96)
+    if (import.meta.env.DEV) {
+      logger.log('MIDI Note OFF:', note);
     }
 
     if (this.onNoteOff) {
@@ -92,9 +89,9 @@ class MIDIHandler {
    * @private
    */
   private handleControlChange(controller: number, value: number, timestamp: number): void {
-    // Gate console logging behind dev flag to avoid hot-path performance impact (Issue #96)
-    if (process.env.NODE_ENV === 'development') {
-      console.log('MIDI Control Change:', { controller, value });
+    // Gate logging behind dev flag to avoid hot-path performance impact (Issue #96)
+    if (import.meta.env.DEV) {
+      logger.log('MIDI Control Change:', { controller, value });
     }
 
     if (this.onControlChange) {

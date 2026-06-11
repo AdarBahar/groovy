@@ -61,7 +61,7 @@ Groovy is a drum tutorial web application that helps drummers learn by creating 
 - TypeScript - Type safety across codebase
 - Radix UI - Accessible component primitives
 - zod - Type-safe validation for data structures
-- dompurify - HTML sanitization for ShareModal and display
+- dompurify - HTML sanitization in ExportUtils
 - lz-string - URL compression for groove data encoding
 - Web Audio API (built-in) - Audio playback and synthesis
 - Web MIDI API (built-in) - MIDI device input

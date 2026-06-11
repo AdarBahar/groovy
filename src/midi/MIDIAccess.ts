@@ -148,7 +148,7 @@ class MIDIAccessManager {
       };
 
       logger.log(`✅ Connected to fake MIDI device: ${FAKE_MIDI_DEVICE_NAME}`);
-      logger.log('🎹 Use keyboard: K=Kick, S=Snare, Space=Hi-hat');
+      logger.log('Use keyboard: K=Kick, S=Snare, H=Hi-hat (Space=play/pause)');
       return true;
     }
 

@@ -45,12 +45,14 @@ export function isStorageNearQuota(): boolean {
  */
 export function safeSetItem(key: string, value: string): StorageResult {
   try {
-    // Check if we're approaching quota before setting
-    const currentUsage = getStorageUsage();
-    const estimatedSize = (key.length + value.length) * 2;
-
-    if (currentUsage + estimatedSize > STORAGE_QUOTA_THRESHOLD) {
-      logger.warn(`localStorage approaching quota: ${(currentUsage / 1024 / 1024).toFixed(2)}MB used`);
+    // Pre-write quota check is expensive (iterates all localStorage keys).
+    // Only run it in debug mode to keep the happy path cheap (P4).
+    if (logger.isDebugMode()) {
+      const currentUsage = getStorageUsage();
+      const estimatedSize = (key.length + value.length) * 2;
+      if (currentUsage + estimatedSize > STORAGE_QUOTA_THRESHOLD) {
+        logger.warn(`localStorage approaching quota: ${(currentUsage / 1024 / 1024).toFixed(2)}MB used`);
+      }
     }
 
     localStorage.setItem(key, value);
