@@ -96,6 +96,55 @@ describe('useMIDITracking', () => {
     expect(performanceTracker.analyzeHit).toHaveBeenCalled();
   });
 
+  describe('audio-start clock anchor (#117)', () => {
+    it('passes the engine anchor to performanceTracker.enable when provided', () => {
+      const engineAnchor = 12345.6;
+      const mockEngine = {
+        getPlayStartPerformanceTime: vi.fn().mockReturnValue(engineAnchor),
+      };
+
+      renderHook(() =>
+        useMIDITracking(true, true, DEFAULT_GROOVE, 0, mockEngine)
+      );
+
+      expect(performanceTracker.enable).toHaveBeenCalledWith(
+        DEFAULT_GROOVE,
+        engineAnchor
+      );
+    });
+
+    it('falls back to performance.now() when engine anchor is null', () => {
+      const before = performance.now();
+      const mockEngine = {
+        getPlayStartPerformanceTime: vi.fn().mockReturnValue(null),
+      };
+
+      renderHook(() =>
+        useMIDITracking(true, true, DEFAULT_GROOVE, 0, mockEngine)
+      );
+
+      const after = performance.now();
+      expect(performanceTracker.enable).toHaveBeenCalled();
+      const anchor = (performanceTracker.enable as ReturnType<typeof vi.fn>).mock.calls[0][1] as number;
+      expect(anchor).toBeGreaterThanOrEqual(before - 5);
+      expect(anchor).toBeLessThanOrEqual(after + 5);
+    });
+
+    it('falls back to performance.now() when no engine is provided', () => {
+      const before = performance.now();
+
+      renderHook(() =>
+        useMIDITracking(true, true, DEFAULT_GROOVE, 0)
+      );
+
+      const after = performance.now();
+      expect(performanceTracker.enable).toHaveBeenCalled();
+      const anchor = (performanceTracker.enable as ReturnType<typeof vi.fn>).mock.calls[0][1] as number;
+      expect(anchor).toBeGreaterThanOrEqual(before - 5);
+      expect(anchor).toBeLessThanOrEqual(after + 5);
+    });
+  });
+
   it('should clean up listeners on unmount', () => {
     const { unmount } = renderHook(() =>
       useMIDITracking(true, true, DEFAULT_GROOVE, 0)
