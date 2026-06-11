@@ -202,4 +202,132 @@ describe('useMIDITracking', () => {
 
     removeEventListenerSpy.mockRestore();
   });
+
+  describe('P2: single-subscription listener (no churn on position/tempo change)', () => {
+    it('does NOT re-subscribe to midi-note-hit when currentPosition changes', () => {
+      const addEventListenerSpy = vi.spyOn(window, 'addEventListener');
+
+      const { rerender } = renderHook(
+        ({ position }) =>
+          useMIDITracking(true, true, DEFAULT_GROOVE, position),
+        { initialProps: { position: 0 } }
+      );
+
+      // Count initial subscriptions for midi-note-hit
+      const initialCount = addEventListenerSpy.mock.calls.filter(
+        ([type]) => type === 'midi-note-hit'
+      ).length;
+
+      // Change position multiple times
+      rerender({ position: 1 });
+      rerender({ position: 2 });
+      rerender({ position: 3 });
+
+      const totalCount = addEventListenerSpy.mock.calls.filter(
+        ([type]) => type === 'midi-note-hit'
+      ).length;
+
+      // Should have subscribed exactly once (on initial mount) despite multiple position changes
+      expect(totalCount).toBe(initialCount);
+
+      addEventListenerSpy.mockRestore();
+    });
+
+    it('does NOT re-subscribe when groove.tempo changes', () => {
+      const addEventListenerSpy = vi.spyOn(window, 'addEventListener');
+
+      const { rerender } = renderHook(
+        ({ tempo }) =>
+          useMIDITracking(true, true, { ...DEFAULT_GROOVE, tempo }, 0),
+        { initialProps: { tempo: 120 } }
+      );
+
+      const initialCount = addEventListenerSpy.mock.calls.filter(
+        ([type]) => type === 'midi-note-hit'
+      ).length;
+
+      rerender({ tempo: 130 });
+      rerender({ tempo: 140 });
+
+      const totalCount = addEventListenerSpy.mock.calls.filter(
+        ([type]) => type === 'midi-note-hit'
+      ).length;
+
+      expect(totalCount).toBe(initialCount);
+
+      addEventListenerSpy.mockRestore();
+    });
+
+    it('dispatched midi-tracking-hit event carries the CURRENT position (not stale)', () => {
+      const mockAnalysis = {
+        timingErrorMs: 5,
+        timingAccuracy: 90,
+        noteAccuracy: 85,
+        overall: 87,
+        feedback: 'Great!',
+      };
+      vi.mocked(performanceTracker.analyzeHit).mockReturnValue(mockAnalysis);
+
+      const { rerender } = renderHook(
+        ({ position }) =>
+          useMIDITracking(true, true, DEFAULT_GROOVE, position),
+        { initialProps: { position: 0 } }
+      );
+
+      // Advance position to 5
+      rerender({ position: 5 });
+
+      const trackingHitEvents: CustomEvent[] = [];
+      const trackingListener = (e: Event) => trackingHitEvents.push(e as CustomEvent);
+      window.addEventListener('midi-tracking-hit', trackingListener);
+
+      act(() => {
+        window.dispatchEvent(new CustomEvent('midi-note-hit', {
+          detail: { voice: 'kick', timestamp: performance.now() },
+        }));
+      });
+
+      window.removeEventListener('midi-tracking-hit', trackingListener);
+
+      // Event must carry position=5, not stale position=0
+      expect(trackingHitEvents.length).toBe(1);
+      expect(trackingHitEvents[0].detail.position).toBe(5);
+    });
+
+    it('dispatched midi-tracking-hit event carries the CURRENT tempo (not stale)', () => {
+      const mockAnalysis = {
+        timingErrorMs: 5,
+        timingAccuracy: 90,
+        noteAccuracy: 85,
+        overall: 87,
+        feedback: 'Great!',
+      };
+      vi.mocked(performanceTracker.analyzeHit).mockReturnValue(mockAnalysis);
+
+      const { rerender } = renderHook(
+        ({ tempo }) =>
+          useMIDITracking(true, true, { ...DEFAULT_GROOVE, tempo }, 0),
+        { initialProps: { tempo: 120 } }
+      );
+
+      // Change tempo to 160
+      rerender({ tempo: 160 });
+
+      const trackingHitEvents: CustomEvent[] = [];
+      const trackingListener = (e: Event) => trackingHitEvents.push(e as CustomEvent);
+      window.addEventListener('midi-tracking-hit', trackingListener);
+
+      act(() => {
+        window.dispatchEvent(new CustomEvent('midi-note-hit', {
+          detail: { voice: 'kick', timestamp: performance.now() },
+        }));
+      });
+
+      window.removeEventListener('midi-tracking-hit', trackingListener);
+
+      // Event must carry tempo=160, not stale tempo=120
+      expect(trackingHitEvents.length).toBe(1);
+      expect(trackingHitEvents[0].detail.tempo).toBe(160);
+    });
+  });
 });

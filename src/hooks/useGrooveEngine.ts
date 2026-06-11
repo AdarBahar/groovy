@@ -114,39 +114,48 @@ export function useGrooveEngine() {
     };
   }, []);
   
+  // Stable ref to isPlaying so callbacks can read current value without being in deps
+  const isPlayingRef = useRef(isPlaying);
+  isPlayingRef.current = isPlaying;
+
   // Play function
-  const play = async (groove: GrooveData, loop: boolean = true) => {
+  const play = useCallback(async (groove: GrooveData, loop: boolean = true) => {
     if (engineRef.current) {
       await engineRef.current.play(groove, loop);
       setCurrentGroove(groove);
     }
-  };
-  
+  }, []);
+
   // Stop function
-  const stop = () => {
+  const stop = useCallback(() => {
     if (engineRef.current) {
       engineRef.current.stop();
     }
-  };
-  
-  // Toggle play/pause
-  const togglePlayback = async (groove: GrooveData) => {
-    if (isPlaying) {
-      stop();
+  }, []);
+
+  // Toggle play/pause — reads isPlaying from ref to avoid dep instability
+  const togglePlayback = useCallback(async (groove: GrooveData) => {
+    if (isPlayingRef.current) {
+      if (engineRef.current) {
+        engineRef.current.stop();
+      }
     } else {
-      await play(groove);
+      if (engineRef.current) {
+        await engineRef.current.play(groove);
+        setCurrentGroove(groove);
+      }
     }
-  };
-  
+  }, []);
+
   // Update groove (during playback or not)
-  const updateGroove = (groove: GrooveData) => {
+  const updateGroove = useCallback((groove: GrooveData) => {
     if (engineRef.current) {
       engineRef.current.updateGroove(groove);
-      
+
       // If playing, mark as having pending changes
-      if (isPlaying) {
+      if (isPlayingRef.current) {
         setHasPendingChanges(true);
-        
+
         // Clear pending indicator after a short delay
         setTimeout(() => {
           setHasPendingChanges(false);
@@ -155,26 +164,26 @@ export function useGrooveEngine() {
         setCurrentGroove(groove);
       }
     }
-  };
-  
+  }, []);
+
   // Set sync mode
-  const setSyncMode = (mode: SyncMode) => {
+  const setSyncMode = useCallback((mode: SyncMode) => {
     if (engineRef.current) {
       engineRef.current.setSyncMode(mode);
     }
-  };
-  
+  }, []);
+
   // Get sync mode
-  const getSyncMode = (): SyncMode => {
+  const getSyncMode = useCallback((): SyncMode => {
     return engineRef.current?.getSyncMode() || 'middle';
-  };
-  
+  }, []);
+
   // Play preview
-  const playPreview = async (voice: DrumVoice) => {
+  const playPreview = useCallback(async (voice: DrumVoice) => {
     if (engineRef.current) {
       await engineRef.current.playPreview(voice);
     }
-  };
+  }, []);
 
   // ===== Metronome Methods =====
 
