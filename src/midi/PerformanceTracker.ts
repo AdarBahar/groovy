@@ -10,7 +10,8 @@
  * Spec: https://github.com/AdarBahar/portfolio-tracker/issues/264
  */
 
-import { DrumVoice, GrooveData } from '../types';
+import { DrumVoice, GrooveData, getFlattenedNotes } from '../types';
+import { GrooveUtils } from '../core/GrooveUtils';
 
 export interface PerformanceStats {
   totalHits: number;
@@ -51,9 +52,15 @@ class PerformanceTracker {
   private swing: number = 0; // 0-100 internal storage, maps to 0-0.33 ratio
   private beatOffsets: number[] = []; // ms offsets within one beat (accounts for swing)
 
-  // Performed BPM estimation (EWMA smoothing)
+  // Total steps across all measures (for wrapping getCurrentStep)
+  private totalSteps: number = 0;
+
+  // Performed BPM estimation (EWMA inter-onset method — #122)
+  // globalStepIndex is retained for legacy use; BPM estimation now uses inter-onset step intervals.
   private globalStepIndex: number = 0;
   private bpmEstimate: number | null = null;
+  private lastAbsStep: number | null = null;   // absolute quantized step of last accepted hit
+  private lastTimestamp: number | null = null; // timestamp of last accepted hit
   private readonly EWMA_ALPHA = 0.05; // smoothing factor
 
   private stats: PerformanceStats = {
@@ -89,13 +96,15 @@ class PerformanceTracker {
     this.timeSignature = groove.timeSignature;
     this.startTime = startTime;
 
-    // Create pattern object from groove (needed for checkNoteAccuracy)
-    // Uses first measure's notes as the pattern
+    // Build flattened pattern across ALL measures (fixes single-measure grading bug #121)
     this.loadedPattern = {
       division: groove.division,
       timeSignature: groove.timeSignature,
-      voices: groove.measures[0]?.notes,
+      voices: getFlattenedNotes(groove),
     };
+
+    // Compute total steps: sum of each measure's step count (respects per-measure time sig overrides)
+    this.totalSteps = this.computeTotalSteps(groove);
 
     // Build swing-aware quantization grid
     this.buildOffsetGrid();
@@ -103,6 +112,8 @@ class PerformanceTracker {
     // Reset performance state
     this.globalStepIndex = 0;
     this.bpmEstimate = null;
+    this.lastAbsStep = null;
+    this.lastTimestamp = null;
     this.resetStats();
 
     this.enabled = true;
@@ -137,13 +148,67 @@ class PerformanceTracker {
   }
 
   /**
+   * Compute total step count across all measures, respecting per-measure time signature overrides.
+   * Each measure contributes GrooveUtils.calcNotesPerMeasure(division, beats, noteValue) steps.
+   * @private
+   */
+  private computeTotalSteps(groove: GrooveData): number {
+    const div = groove.division as import('../types').Division;
+    let total = 0;
+    for (const measure of groove.measures) {
+      const ts = measure.timeSignature ?? groove.timeSignature;
+      total += GrooveUtils.calcNotesPerMeasure(div, ts.beats, ts.noteValue);
+    }
+    return total;
+  }
+
+  /**
+   * Update groove pattern mid-session (for live editing during playback).
+   * Rebuilds the flattened pattern, total step count, and offset grid.
+   * Does NOT reset startTime or stats — preserves accumulated performance data.
+   * @param groove - Updated GrooveData
+   */
+  updateGroove(groove: GrooveData): void {
+    if (!this.enabled) return;
+
+    // Validate like enable()
+    if (!groove.tempo || groove.tempo <= 0) {
+      console.warn('PerformanceTracker.updateGroove: Invalid tempo.');
+      return;
+    }
+    if (!groove.division || !groove.timeSignature?.beats || !groove.timeSignature?.noteValue) {
+      console.warn('PerformanceTracker.updateGroove: Groove missing required timing metadata.');
+      return;
+    }
+
+    this.tempo = groove.tempo;
+    this.division = groove.division;
+    this.swing = groove.swing;
+    this.timeSignature = groove.timeSignature;
+
+    // Rebuild flattened pattern and total step count
+    this.loadedPattern = {
+      division: groove.division,
+      timeSignature: groove.timeSignature,
+      voices: getFlattenedNotes(groove),
+    };
+    this.totalSteps = this.computeTotalSteps(groove);
+
+    // Rebuild offset grid with possibly new tempo/swing/division
+    this.buildOffsetGrid();
+    // startTime, globalStepIndex, bpmEstimate, and stats are intentionally preserved
+  }
+
+  /**
    * Build swing-aware beat offset grid for quantization
    * Spec Section 3-4: Swing affects offbeat positions in even-step divisions
    * @private
    */
   private buildOffsetGrid(): void {
     const beatDurMs = (60 / this.tempo) * 1000;
-    const stepsPerBeat = this.division / this.timeSignature.noteValue;
+    // Beat = quarter note (engine source of truth: note duration = (60/tempo)/(division/4))
+    // Do NOT use division/noteValue here — that would disagree with the engine in non-4/4 (#123).
+    const stepsPerBeat = this.division / 4;
 
     // Triplet divisions: 12, 24, 48 (don't support swing)
     const isTriplet = [12, 24, 48].includes(this.division);
@@ -285,12 +350,14 @@ class PerformanceTracker {
 
     const elapsedMs = timestamp - this.startTime;
     const beatDurationMs = (60 / this.tempo) * 1000;
-    const stepsPerBeat = this.division / this.timeSignature.noteValue;
+    // Beat = quarter note (engine source of truth: note duration = (60/tempo)/(division/4))
+    const stepsPerBeat = this.division / 4;
     const stepDurationMs = beatDurationMs / stepsPerBeat;
 
     const stepNumber = Math.round(elapsedMs / stepDurationMs);
-    const measureLength = (this.division / this.timeSignature.noteValue) * this.timeSignature.beats;
-    return stepNumber % measureLength;
+    // Wrap by total steps across ALL measures (not just one measure's length)
+    const wrapLength = this.totalSteps > 0 ? this.totalSteps : stepsPerBeat * this.timeSignature.beats;
+    return stepNumber % wrapLength;
   }
 
   /**
@@ -375,39 +442,83 @@ class PerformanceTracker {
   }
 
   /**
-   * Update EWMA-smoothed performed BPM estimate
-   * Spec Section 7: Track tempo drift relative to grid
+   * Update EWMA-smoothed performed BPM estimate using inter-onset step intervals.
+   * Spec Section 7: Track tempo drift relative to grid.
+   *
+   * Method: for each accepted hit compute its absolute quantized step index
+   *   absStep = round((timestamp - startTime) / stepDurMs)
+   * then use the step delta between consecutive accepted hits to estimate BPM:
+   *   bpmSample = (stepDelta * 60) / ((division/4) * timeDeltaSecs)
+   * This is correct even when the drummer plays quarters in a 16ths groove (#122)
+   * because stepDelta reflects the actual steps skipped, not a raw hit count.
+   *
+   * Flam/simultaneous hits (stepDelta=0): skip EWMA update entirely,
+   * keeping last* unchanged so the next genuine onset measures from the real previous hit.
+   *
+   * Deviation check: getPerformedBpm() returns null when |estimate - tempo|/tempo > 0.2,
+   * but the internal estimate is NOT zeroed — preventing oscillation between null and a value.
    * @private
    */
   private updatePerformedBpmEstimate(timestamp: number): void {
-    if (this.startTime == null || this.globalStepIndex === 0) return;
+    if (this.startTime == null) return;
 
-    const stepsPerBeat = this.division / this.timeSignature.noteValue;
-    const elapsedSecs = (timestamp - this.startTime) / 1000;
-    const secondsPerStep = elapsedSecs / this.globalStepIndex;
-    const stepsPerMinute = 60 / secondsPerStep;
-    const targetBpm = stepsPerMinute / stepsPerBeat;
+    // Beat = quarter note (engine source of truth) — consistent with buildOffsetGrid (#123)
+    const stepsPerBeat = this.division / 4;
+    const beatDurMs = (60 / this.tempo) * 1000;
+    const stepDurMs = beatDurMs / stepsPerBeat;
+
+    // Absolute quantized step index for this hit
+    const absStep = Math.round((timestamp - this.startTime) / stepDurMs);
+
+    if (this.lastAbsStep === null || this.lastTimestamp === null) {
+      // Seed: record position but no BPM sample yet
+      this.lastAbsStep = absStep;
+      this.lastTimestamp = timestamp;
+      return;
+    }
+
+    const stepDelta = absStep - this.lastAbsStep;
+
+    if (stepDelta < 1) {
+      // Simultaneous / flam hit: ignore this onset for BPM estimation.
+      // Keep last* unchanged so the next genuine onset measures from the real previous hit.
+      return;
+    }
+
+    const timeDeltaSecs = (timestamp - this.lastTimestamp) / 1000;
+    if (timeDeltaSecs <= 0) {
+      // Guard against zero/negative time delta
+      this.lastAbsStep = absStep;
+      this.lastTimestamp = timestamp;
+      return;
+    }
+
+    // bpmSample = (stepDelta / stepsPerBeat) beats / timeDeltaSecs seconds * 60
+    const bpmSample = (stepDelta * 60) / (stepsPerBeat * timeDeltaSecs);
 
     if (this.bpmEstimate === null) {
-      this.bpmEstimate = targetBpm;
+      this.bpmEstimate = bpmSample;
     } else {
-      // EWMA smoothing: newEst = oldEst + alpha * (target - oldEst)
-      this.bpmEstimate += this.EWMA_ALPHA * (targetBpm - this.bpmEstimate);
+      // EWMA smoothing: newEst = oldEst + alpha * (sample - oldEst)
+      this.bpmEstimate += this.EWMA_ALPHA * (bpmSample - this.bpmEstimate);
     }
 
-    // Freeze estimate if large deviation (>20% from set tempo)
-    const deviation = Math.abs(this.bpmEstimate - this.tempo) / this.tempo;
-    if (deviation > 0.2) {
-      this.bpmEstimate = null;
-    }
+    // Advance last hit pointers
+    this.lastAbsStep = absStep;
+    this.lastTimestamp = timestamp;
   }
 
   /**
-   * Get EWMA-smoothed performed BPM (actual tempo from hits)
-   * Returns null if drift is too large or insufficient data
+   * Get EWMA-smoothed performed BPM (actual tempo from drummer's hits).
+   * Returns null if deviation from set tempo exceeds 20% or insufficient data.
+   * The internal estimate is NOT nulled on deviation — only the return value is null.
+   * This prevents oscillation between valid and null readings (#122).
    */
   getPerformedBpm(): number | null {
-    return this.bpmEstimate !== null ? Math.round(this.bpmEstimate * 10) / 10 : null;
+    if (this.bpmEstimate === null) return null;
+    const deviation = Math.abs(this.bpmEstimate - this.tempo) / this.tempo;
+    if (deviation > 0.2) return null;
+    return Math.round(this.bpmEstimate * 10) / 10;
   }
 
   /**

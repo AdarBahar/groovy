@@ -34,6 +34,71 @@ describe('GrooveEngine', () => {
     engine = new GrooveEngine(synthStub);
   });
 
+  describe('updateGroove does not mutate caller object (#119)', () => {
+    it('leaves caller division unchanged when incompatible with time signature', () => {
+      // 6/8 time with division 12 (triplet) — incompatible; engine should auto-correct
+      const incompatibleGroove = {
+        ...DEFAULT_GROOVE,
+        timeSignature: { beats: 6, noteValue: 8 as const },
+        division: 12 as const, // triplet not compatible with 6/8
+        swing: 0,
+      };
+      const originalDivision = incompatibleGroove.division;
+
+      engine.updateGroove(incompatibleGroove);
+
+      // Caller's division must not have been touched
+      expect(incompatibleGroove.division).toBe(originalDivision);
+    });
+
+    it('leaves caller swing unchanged when division does not support swing', () => {
+      // division 4 (quarter notes) doesn't support swing
+      const noSwingGroove = {
+        ...DEFAULT_GROOVE,
+        division: 4 as const,
+        swing: 50,
+      };
+      const originalSwing = noSwingGroove.swing;
+
+      engine.updateGroove(noSwingGroove);
+
+      // Caller's swing value must not have been changed
+      expect(noSwingGroove.swing).toBe(originalSwing);
+    });
+
+    it('engine stored groove reflects the auto-corrected division', async () => {
+      // Capture emitted groove via grooveChange event
+      let emittedGroove: any = null;
+      engine.on('grooveChange', (g) => { emittedGroove = g; });
+
+      const incompatibleGroove = {
+        ...DEFAULT_GROOVE,
+        timeSignature: { beats: 6, noteValue: 8 as const },
+        division: 12 as const,
+        swing: 0,
+      };
+
+      engine.updateGroove(incompatibleGroove);
+
+      // Engine should have emitted a corrected groove (different division from caller)
+      expect(emittedGroove).not.toBeNull();
+      expect(emittedGroove.division).not.toBe(incompatibleGroove.division);
+    });
+
+    it('valid groove is stored without unexpected mutations', () => {
+      // A groove with no corrections needed should still work properly
+      const validGroove = { ...DEFAULT_GROOVE };
+      let emittedGroove: any = null;
+      engine.on('grooveChange', (g) => { emittedGroove = g; });
+
+      engine.updateGroove(validGroove);
+
+      expect(emittedGroove).not.toBeNull();
+      expect(emittedGroove.division).toBe(validGroove.division);
+      expect(emittedGroove.swing).toBe(validGroove.swing);
+    });
+  });
+
   describe('getPlayStartPerformanceTime (#117)', () => {
     it('returns null before play() is called', () => {
       expect(engine.getPlayStartPerformanceTime()).toBeNull();

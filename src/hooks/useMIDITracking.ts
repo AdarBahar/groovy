@@ -64,6 +64,14 @@ export function useMIDITracking(
     }
   }, [groove.tempo, isPlaying, trackingEnabled]);
 
+  // Sync groove pattern changes mid-session (for live editing during playback — #121)
+  // Uses updateGroove so stats/startTime are preserved (no reset).
+  useEffect(() => {
+    if (isPlaying && trackingEnabled) {
+      performanceTracker.updateGroove(groove);
+    }
+  }, [groove, isPlaying, trackingEnabled]);
+
   // Listen for MIDI hits and analyze them
   useEffect(() => {
     if (!trackingEnabled || !isPlaying || !playStartTimeRef.current) return;

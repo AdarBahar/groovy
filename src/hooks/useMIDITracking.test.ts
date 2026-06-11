@@ -19,6 +19,7 @@ vi.mock('../midi/PerformanceTracker', () => ({
     enable: vi.fn(),
     disable: vi.fn(),
     setTempo: vi.fn(),
+    updateGroove: vi.fn(),
     analyzeHit: vi.fn(),
     getPerformedBpm: vi.fn(() => null),
   },
@@ -142,6 +143,45 @@ describe('useMIDITracking', () => {
       const anchor = (performanceTracker.enable as ReturnType<typeof vi.fn>).mock.calls[0][1] as number;
       expect(anchor).toBeGreaterThanOrEqual(before - 5);
       expect(anchor).toBeLessThanOrEqual(after + 5);
+    });
+  });
+
+  describe('updateGroove mid-session (#121)', () => {
+    it('calls performanceTracker.updateGroove when groove changes while playing+tracking', () => {
+      const { rerender } = renderHook(
+        ({ groove }) =>
+          useMIDITracking(true, true, groove, 0),
+        { initialProps: { groove: DEFAULT_GROOVE } }
+      );
+
+      vi.clearAllMocks();
+
+      // Change groove while playing (simulate note added)
+      const updatedGroove = { ...DEFAULT_GROOVE, tempo: 130 };
+      rerender({ groove: updatedGroove });
+
+      // updateGroove should have been called with the new groove
+      expect(performanceTracker.updateGroove).toHaveBeenCalledWith(updatedGroove);
+    });
+
+    it('does NOT call enable again when groove changes mid-session', () => {
+      const { rerender } = renderHook(
+        ({ groove }) =>
+          useMIDITracking(true, true, groove, 0),
+        { initialProps: { groove: DEFAULT_GROOVE } }
+      );
+
+      // Enable was called once on mount
+      expect(performanceTracker.enable).toHaveBeenCalledTimes(1);
+      vi.clearAllMocks();
+
+      // Change groove while playing
+      const updatedGroove = { ...DEFAULT_GROOVE, swing: 30 };
+      rerender({ groove: updatedGroove });
+
+      // Should NOT call enable again (would reset stats/startTime)
+      expect(performanceTracker.enable).not.toHaveBeenCalled();
+      expect(performanceTracker.updateGroove).toHaveBeenCalledTimes(1);
     });
   });
 
