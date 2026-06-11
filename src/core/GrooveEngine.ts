@@ -39,11 +39,11 @@ function calculateSwingOffset(
  */
 export class GrooveEngine {
   private synth: DrumSynth;
-  private scheduledNotes: number[] = [];
   private isPlaying = false;
   private startTime = 0;
   private currentPosition = 0;
   private timerID: number | null = null;
+  private endStopTimerID: number | null = null;
   private syncMode: SyncMode = 'middle';
   private currentGroove: GrooveData | null = null;
   private pendingGroove: GrooveData | null = null;
@@ -319,6 +319,12 @@ export class GrooveEngine {
     this.pendingGroove = null;
     this.loopEnabled = loop;
 
+    // Clear any stale end-stop timer from a previous non-loop session
+    if (this.endStopTimerID !== null) {
+      clearTimeout(this.endStopTimerID);
+      this.endStopTimerID = null;
+    }
+
     // Reset metronome rotation state
     this.loopCount = 0;
     this.currentRotationOffset = 0;
@@ -527,7 +533,14 @@ export class GrooveEngine {
       // Check if we've completed a full loop through all measures
       if (absolutePosition === totalPositions - 1) {
         if (!this.loopEnabled) {
-          this.stop();
+          // Defer stop until the groove's full duration so the last scheduled note
+          // has time to play through before playbackStateChange(false) fires (P6).
+          const grooveEndTime = this.startTime + totalPositions * noteDuration;
+          const delayMs = Math.max(0, (grooveEndTime - currentTime) * 1000);
+          if (this.endStopTimerID !== null) {
+            clearTimeout(this.endStopTimerID);
+          }
+          this.endStopTimerID = window.setTimeout(() => this.stop(), delayMs);
           return;
         }
 
@@ -644,12 +657,14 @@ export class GrooveEngine {
       this.timerID = null;
     }
 
+    // Clear any pending deferred end-stop timer (non-loop mode)
+    if (this.endStopTimerID !== null) {
+      clearTimeout(this.endStopTimerID);
+      this.endStopTimerID = null;
+    }
+
     // Stop visual update loop
     this.stopVisualLoop();
-
-    // Clear scheduled notes
-    this.scheduledNotes.forEach((id) => clearTimeout(id));
-    this.scheduledNotes = [];
 
     this.emit('playbackStateChange', false);
     this.emit('positionChange', -1);

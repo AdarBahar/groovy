@@ -146,8 +146,8 @@ describe('PerformanceTracker', () => {
       performanceTracker.analyzeHit('snare-normal', performance.now());
 
       const stats = performanceTracker.getStats();
-      expect(stats.timingErrors.length).toBe(2);
-      expect(stats.timingErrors.every((e) => typeof e === 'number')).toBe(true);
+      expect(stats.timingScores.length).toBe(2);
+      expect(stats.timingScores.every((e) => typeof e === 'number')).toBe(true);
     });
 
     it('resets statistics', () => {
@@ -160,7 +160,7 @@ describe('PerformanceTracker', () => {
       expect(stats.totalHits).toBe(0);
       expect(stats.accurateHits).toBe(0);
       expect(stats.averageAccuracy).toBe(0);
-      expect(stats.timingErrors.length).toBe(0);
+      expect(stats.timingScores.length).toBe(0);
     });
   });
 

@@ -8,6 +8,7 @@
  */
 
 import { MIDIDeviceInfo } from './types';
+import { logger } from '../utils/logger';
 
 const FAKE_MIDI_DEVICE_ID = '__groovy_keyboard_midi_localhost__';
 const FAKE_MIDI_DEVICE_NAME = '🎹 Keyboard (Testing - Localhost Only)';
@@ -29,10 +30,10 @@ class MIDIAccessManager {
     this.isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 
     if (!navigator.requestMIDIAccess) {
-      console.error('Web MIDI API not supported in this browser');
+      logger.error('Web MIDI API not supported in this browser');
       // Even if Web MIDI API is not supported, we can still use the keyboard simulator on localhost
       if (this.isLocalhost) {
-        console.log('🎹 Using keyboard MIDI simulator (Web MIDI API not available)');
+        logger.log('🎹 Using keyboard MIDI simulator (Web MIDI API not available)');
         return true;
       }
       return false;
@@ -41,17 +42,17 @@ class MIDIAccessManager {
     try {
       this.midiAccess = await navigator.requestMIDIAccess({ sysex: false });
       this.midiAccess.onstatechange = (e: Event) => this.handleStateChange(e as unknown as MIDIConnectionEvent);
-      console.log('MIDI Access initialized successfully');
+      logger.log('MIDI Access initialized successfully');
 
       if (this.isLocalhost) {
-        console.log('🎹 Fake MIDI device available for localhost testing');
+        logger.log('🎹 Fake MIDI device available for localhost testing');
       }
 
       return true;
     } catch (error) {
-      console.error('Failed to initialize MIDI access:', error);
+      logger.error('Failed to initialize MIDI access:', error);
       if (this.isLocalhost) {
-        console.log('🎹 Falling back to keyboard MIDI simulator');
+        logger.log('🎹 Falling back to keyboard MIDI simulator');
         return true;
       }
       return false;
@@ -110,20 +111,20 @@ class MIDIAccessManager {
     // Validate fake keyboard device request
     if (deviceId === FAKE_MIDI_DEVICE_ID) {
       if (!this.isLocalhost) {
-        console.error('Fake MIDI device only available on localhost');
+        logger.error('Fake MIDI device only available on localhost');
         return false;
       }
       // Validation passed, OK to proceed
     } else {
       // Validate real device exists
       if (!this.midiAccess) {
-        console.error('MIDI access not initialized');
+        logger.error('MIDI access not initialized');
         return false;
       }
 
       const input = this.midiAccess.inputs.get(deviceId);
       if (!input) {
-        console.error('MIDI input device not found:', deviceId);
+        logger.error('MIDI input device not found:', deviceId);
         return false;
       }
     }
@@ -131,7 +132,7 @@ class MIDIAccessManager {
     // NOW that we've validated the new device, disconnect previous input
     if (this.currentInput) {
       this.currentInput.onmidimessage = null;
-      console.log('Disconnected from previous MIDI input');
+      logger.log('Disconnected from previous MIDI input');
     }
 
     // Handle fake keyboard device on localhost
@@ -146,8 +147,8 @@ class MIDIAccessManager {
         messageHandler(fakeEvent);
       };
 
-      console.log(`✅ Connected to fake MIDI device: ${FAKE_MIDI_DEVICE_NAME}`);
-      console.log('🎹 Use keyboard: K=Kick, S=Snare, Space=Hi-hat');
+      logger.log(`✅ Connected to fake MIDI device: ${FAKE_MIDI_DEVICE_NAME}`);
+      logger.log('Use keyboard: K=Kick, S=Snare, H=Hi-hat (Space=play/pause)');
       return true;
     }
 
@@ -157,7 +158,7 @@ class MIDIAccessManager {
     this.messageHandler = messageHandler;
     this.currentInput.onmidimessage = (event) => this.handleMIDIMessage(event);
 
-    console.log('Connected to MIDI input:', input.name);
+    logger.log('Connected to MIDI input:', input.name);
     return true;
   }
 
@@ -178,7 +179,7 @@ class MIDIAccessManager {
   private handleStateChange(event: MIDIConnectionEvent): void {
     if (!event.port) return;
 
-    console.log('MIDI device state changed:', event.port.name, event.port.state);
+    logger.log('MIDI device state changed:', event.port.name, event.port.state);
 
     // Notify listener of device list change
     if (this.onDeviceListChange) {
@@ -187,7 +188,7 @@ class MIDIAccessManager {
 
     // If current device disconnected, clear it
     if (this.currentInput && event.port.id === this.currentInput.id && event.port.state === 'disconnected') {
-      console.warn('Current MIDI input device disconnected');
+      logger.warn('Current MIDI input device disconnected');
       this.currentInput = null;
     }
   }
@@ -199,7 +200,7 @@ class MIDIAccessManager {
     if (this.currentInput) {
       this.currentInput.onmidimessage = null;
       this.currentInput = null;
-      console.log('Disconnected from MIDI input');
+      logger.log('Disconnected from MIDI input');
     }
     // Clear fake handler so sendFakeMIDIMessage is a no-op and
     // getCurrentDevice() returns null after a fake-device disconnect (#120).

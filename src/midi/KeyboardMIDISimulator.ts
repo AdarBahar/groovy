@@ -7,8 +7,10 @@
  * Key Mappings:
  * - K: Kick (MIDI note 36, velocity 100)
  * - S: Snare (MIDI note 38, velocity 90)
- * - Space: Hi-hat (MIDI note 46, velocity 80)
+ * - H: Hi-hat (MIDI note 46, velocity 80) — Space is reserved for play/pause
  */
+
+import { logger } from '../utils/logger';
 
 export interface KeyboardMIDIConfig {
   enabled: boolean;
@@ -20,7 +22,7 @@ export const DEFAULT_KEYBOARD_MIDI_CONFIG: KeyboardMIDIConfig = {
   keyMap: {
     k: { note: 36, velocity: 100, label: 'Kick' },
     s: { note: 38, velocity: 90, label: 'Snare' },
-    ' ': { note: 46, velocity: 80, label: 'Hi-hat' },
+    h: { note: 46, velocity: 80, label: 'Hi-hat' },
   },
 };
 
@@ -52,7 +54,7 @@ export class KeyboardMIDISimulator {
     this.callback = callback;
     this.boundKeyHandler = (event: KeyboardEvent) => this.handleKeyDown(event);
     window.addEventListener('keydown', this.boundKeyHandler);
-    console.log('🎹 Keyboard MIDI Simulator started');
+    logger.log('Keyboard MIDI Simulator started');
   }
 
   /**
@@ -62,7 +64,7 @@ export class KeyboardMIDISimulator {
     if (this.boundKeyHandler) {
       window.removeEventListener('keydown', this.boundKeyHandler);
       this.boundKeyHandler = null;
-      console.log('🎹 Keyboard MIDI Simulator stopped');
+      logger.log('Keyboard MIDI Simulator stopped');
     }
   }
 
@@ -120,7 +122,7 @@ export class KeyboardMIDISimulator {
       this.callback(mapping.note, mapping.velocity, timestamp);
 
       // Visual feedback
-      console.log(`🥁 ${mapping.label} (note ${mapping.note}, velocity ${mapping.velocity})`);
+      logger.log(`${mapping.label} (note ${mapping.note}, velocity ${mapping.velocity})`);
     }
   }
 

@@ -294,7 +294,11 @@ function decodeStickingPattern(
   numMeasures: number,
   notesPerMeasure: number
 ): (StickingValue[] | undefined)[] {
-  const measurePatterns = param.split(MEASURE_SEP).filter(p => p.length > 0);
+  // Trim exactly one leading/trailing MEASURE_SEP so that empty middle measures
+  // (empty string segments) keep their positional index and don't get shifted (C8).
+  const trimmed = param.startsWith(MEASURE_SEP) ? param.slice(1) : param;
+  const trimmed2 = trimmed.endsWith(MEASURE_SEP) ? trimmed.slice(0, -1) : trimmed;
+  const measurePatterns = trimmed2.split(MEASURE_SEP); // no .filter — preserve empty slots
   const result: (StickingValue[] | undefined)[] = [];
 
   for (let m = 0; m < numMeasures; m++) {
@@ -425,8 +429,11 @@ export function decodeURLToGroove(urlOrParams: string | URLSearchParams): Groove
     // Validate pattern format before processing
     const pattern = safeParse(patternSchema, rawPattern, undefined);
     if (pattern) {
-      // Split pattern by measure separator (|)
-      const measurePatterns = pattern.split(MEASURE_SEP).filter(p => p.length > 0);
+      // Trim exactly one leading/trailing MEASURE_SEP then split without filtering empties,
+      // so that a future empty-middle-measure segment keeps its positional index (C8).
+      const trimmed = pattern.startsWith(MEASURE_SEP) ? pattern.slice(1) : pattern;
+      const trimmed2 = trimmed.endsWith(MEASURE_SEP) ? trimmed.slice(0, -1) : trimmed;
+      const measurePatterns = trimmed2.split(MEASURE_SEP); // no .filter — preserve empty slots
 
       for (let m = 0; m < Math.min(measurePatterns.length, numMeasures); m++) {
         const decoded = decodeVoicePattern(

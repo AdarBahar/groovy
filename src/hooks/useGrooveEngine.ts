@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { GrooveEngine, SyncMode } from '../core';
 import { GrooveData, DrumVoice, MetronomeFrequency, MetronomeOffsetClick, MetronomeConfig, DEFAULT_METRONOME_CONFIG } from '../types';
+import { logger } from '../utils/logger';
 
 const METRONOME_STORAGE_KEY = 'groovy-metronome-config';
 const MASTER_VOLUME_STORAGE_KEY = 'groovy-master-volume';
@@ -19,7 +20,7 @@ function loadMasterVolume(): number {
       }
     }
   } catch (e) {
-    console.warn('Failed to load master volume:', e);
+    logger.warn('Failed to load master volume:', e);
   }
   return DEFAULT_MASTER_VOLUME;
 }
@@ -31,7 +32,7 @@ function saveMasterVolume(volume: number): void {
   try {
     localStorage.setItem(MASTER_VOLUME_STORAGE_KEY, volume.toString());
   } catch (e) {
-    console.warn('Failed to save master volume:', e);
+    logger.warn('Failed to save master volume:', e);
   }
 }
 
@@ -45,7 +46,7 @@ function loadMetronomeConfig(): MetronomeConfig {
       return { ...DEFAULT_METRONOME_CONFIG, ...JSON.parse(saved) };
     }
   } catch (e) {
-    console.warn('Failed to load metronome config:', e);
+    logger.warn('Failed to load metronome config:', e);
   }
   return DEFAULT_METRONOME_CONFIG;
 }
@@ -57,7 +58,7 @@ function saveMetronomeConfig(config: MetronomeConfig): void {
   try {
     localStorage.setItem(METRONOME_STORAGE_KEY, JSON.stringify(config));
   } catch (e) {
-    console.warn('Failed to save metronome config:', e);
+    logger.warn('Failed to save metronome config:', e);
   }
 }
 
@@ -114,39 +115,48 @@ export function useGrooveEngine() {
     };
   }, []);
   
+  // Stable ref to isPlaying so callbacks can read current value without being in deps
+  const isPlayingRef = useRef(isPlaying);
+  isPlayingRef.current = isPlaying;
+
   // Play function
-  const play = async (groove: GrooveData, loop: boolean = true) => {
+  const play = useCallback(async (groove: GrooveData, loop: boolean = true) => {
     if (engineRef.current) {
       await engineRef.current.play(groove, loop);
       setCurrentGroove(groove);
     }
-  };
-  
+  }, []);
+
   // Stop function
-  const stop = () => {
+  const stop = useCallback(() => {
     if (engineRef.current) {
       engineRef.current.stop();
     }
-  };
-  
-  // Toggle play/pause
-  const togglePlayback = async (groove: GrooveData) => {
-    if (isPlaying) {
-      stop();
+  }, []);
+
+  // Toggle play/pause — reads isPlaying from ref to avoid dep instability
+  const togglePlayback = useCallback(async (groove: GrooveData) => {
+    if (isPlayingRef.current) {
+      if (engineRef.current) {
+        engineRef.current.stop();
+      }
     } else {
-      await play(groove);
+      if (engineRef.current) {
+        await engineRef.current.play(groove);
+        setCurrentGroove(groove);
+      }
     }
-  };
-  
+  }, []);
+
   // Update groove (during playback or not)
-  const updateGroove = (groove: GrooveData) => {
+  const updateGroove = useCallback((groove: GrooveData) => {
     if (engineRef.current) {
       engineRef.current.updateGroove(groove);
-      
+
       // If playing, mark as having pending changes
-      if (isPlaying) {
+      if (isPlayingRef.current) {
         setHasPendingChanges(true);
-        
+
         // Clear pending indicator after a short delay
         setTimeout(() => {
           setHasPendingChanges(false);
@@ -155,84 +165,30 @@ export function useGrooveEngine() {
         setCurrentGroove(groove);
       }
     }
-  };
-  
+  }, []);
+
   // Set sync mode
-  const setSyncMode = (mode: SyncMode) => {
+  const setSyncMode = useCallback((mode: SyncMode) => {
     if (engineRef.current) {
       engineRef.current.setSyncMode(mode);
     }
-  };
-  
+  }, []);
+
   // Get sync mode
-  const getSyncMode = (): SyncMode => {
+  const getSyncMode = useCallback((): SyncMode => {
     return engineRef.current?.getSyncMode() || 'middle';
-  };
-  
+  }, []);
+
   // Play preview
-  const playPreview = async (voice: DrumVoice) => {
+  const playPreview = useCallback(async (voice: DrumVoice) => {
     if (engineRef.current) {
       await engineRef.current.playPreview(voice);
     }
-  };
+  }, []);
 
   // ===== Metronome Methods =====
 
-  const setMetronomeFrequency = useCallback((frequency: MetronomeFrequency) => {
-    if (engineRef.current) {
-      engineRef.current.setMetronomeFrequency(frequency);
-      setMetronomeConfigState(prev => {
-        const newConfig = { ...prev, frequency };
-        saveMetronomeConfig(newConfig);
-        return newConfig;
-      });
-    }
-  }, []);
-
-  const setMetronomeSolo = useCallback((solo: boolean) => {
-    if (engineRef.current) {
-      engineRef.current.setMetronomeSolo(solo);
-      setMetronomeConfigState(prev => {
-        const newConfig = { ...prev, solo };
-        saveMetronomeConfig(newConfig);
-        return newConfig;
-      });
-    }
-  }, []);
-
-  const setMetronomeCountIn = useCallback((countIn: boolean) => {
-    if (engineRef.current) {
-      engineRef.current.setMetronomeCountIn(countIn);
-      setMetronomeConfigState(prev => {
-        const newConfig = { ...prev, countIn };
-        saveMetronomeConfig(newConfig);
-        return newConfig;
-      });
-    }
-  }, []);
-
-  const setMetronomeOffsetClick = useCallback((offsetClick: MetronomeOffsetClick) => {
-    if (engineRef.current) {
-      engineRef.current.setMetronomeOffsetClick(offsetClick);
-      setMetronomeConfigState(prev => {
-        const newConfig = { ...prev, offsetClick };
-        saveMetronomeConfig(newConfig);
-        return newConfig;
-      });
-    }
-  }, []);
-
-  const setMetronomeVolume = useCallback((volume: number) => {
-    if (engineRef.current) {
-      engineRef.current.setMetronomeVolume(volume);
-      setMetronomeConfigState(prev => {
-        const newConfig = { ...prev, volume: Math.max(0, Math.min(100, volume)) };
-        saveMetronomeConfig(newConfig);
-        return newConfig;
-      });
-    }
-  }, []);
-
+  // Central setter — all per-field wrappers delegate here (C2).
   const setMetronomeConfig = useCallback((config: Partial<MetronomeConfig>) => {
     if (engineRef.current) {
       engineRef.current.setMetronomeConfig(config);
@@ -243,6 +199,27 @@ export function useGrooveEngine() {
       });
     }
   }, []);
+
+  // Thin wrappers over setMetronomeConfig — volume clamp applied before delegating.
+  const setMetronomeFrequency = useCallback((frequency: MetronomeFrequency) => {
+    setMetronomeConfig({ frequency });
+  }, [setMetronomeConfig]);
+
+  const setMetronomeSolo = useCallback((solo: boolean) => {
+    setMetronomeConfig({ solo });
+  }, [setMetronomeConfig]);
+
+  const setMetronomeCountIn = useCallback((countIn: boolean) => {
+    setMetronomeConfig({ countIn });
+  }, [setMetronomeConfig]);
+
+  const setMetronomeOffsetClick = useCallback((offsetClick: MetronomeOffsetClick) => {
+    setMetronomeConfig({ offsetClick });
+  }, [setMetronomeConfig]);
+
+  const setMetronomeVolume = useCallback((volume: number) => {
+    setMetronomeConfig({ volume: Math.max(0, Math.min(100, volume)) });
+  }, [setMetronomeConfig]);
 
   // ===== Master Volume Methods =====
 

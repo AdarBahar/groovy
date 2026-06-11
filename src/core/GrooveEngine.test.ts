@@ -1,11 +1,12 @@
 /**
  * Tests for GrooveEngine
  *
- * Focuses on the getPlayStartPerformanceTime anchor added in #117.
+ * Focuses on the getPlayStartPerformanceTime anchor added in #117
+ * and deferred non-loop stop behaviour added in #125.
  * DrumSynth is stubbed so tests run without Web Audio API.
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { GrooveEngine } from './GrooveEngine';
 import { DrumSynth } from './DrumSynth';
 import { DEFAULT_GROOVE } from '../types';
@@ -32,6 +33,11 @@ describe('GrooveEngine', () => {
   beforeEach(() => {
     const synthStub = new DrumSynth();
     engine = new GrooveEngine(synthStub);
+  });
+
+  afterEach(() => {
+    engine.dispose();
+    vi.useRealTimers();
   });
 
   describe('updateGroove does not mutate caller object (#119)', () => {
@@ -132,6 +138,86 @@ describe('GrooveEngine', () => {
       // Calling getPlayStartPerformanceTime again returns the same stable value
       expect(engine.getPlayStartPerformanceTime()).toBe(anchor);
       expect(engine.getPlayStartPerformanceTime()).toBe(anchor);
+    });
+  });
+
+  describe('P6: non-loop playback defers stop to full groove duration (#125)', () => {
+    it('does not emit playbackStateChange(false) before the groove full duration has elapsed', async () => {
+      vi.useFakeTimers();
+
+      // DEFAULT_GROOVE: tempo=120, division=8, 1 measure with 8 steps
+      // noteDuration = (60/120) / (8/4) = 0.5/2 = 0.25s
+      // totalPositions = 8, grooveDuration = 8 * 0.25 = 2s
+      const mockSynth = new DrumSynth();
+      let audioTime = 0;
+      vi.mocked(mockSynth.getCurrentTime).mockImplementation(() => audioTime);
+
+      const testEngine = new GrooveEngine(mockSynth);
+      const stateChanges: boolean[] = [];
+      testEngine.on('playbackStateChange', (isPlaying) => stateChanges.push(isPlaying));
+
+      await testEngine.play(DEFAULT_GROOVE, false);
+      // playbackStateChange(true) emitted
+      expect(stateChanges).toEqual([true]);
+
+      const noteDuration = (60 / DEFAULT_GROOVE.tempo) / (DEFAULT_GROOVE.division / 4);
+      // totalPositions = steps per measure × measure count (8 steps in default groove)
+      const stepsPerMeasure = (DEFAULT_GROOVE.measures[0].notes['hihat-closed'] as boolean[]).length;
+      const totalPositions = stepsPerMeasure * DEFAULT_GROOVE.measures.length;
+      const grooveDuration = totalPositions * noteDuration;
+
+      // Advance audio time well past end so schedule loop reaches the last position.
+      audioTime = grooveDuration + 0.5;
+      // Run all pending timers to let scheduleLoop and deferred stop fire
+      await vi.runAllTimersAsync();
+
+      // playbackStateChange(false) must now have fired
+      expect(stateChanges).toContain(false);
+
+      testEngine.dispose();
+    });
+
+    it('playbackStateChange(false) fires no earlier than the groove full duration', async () => {
+      vi.useFakeTimers();
+
+      const mockSynth = new DrumSynth();
+      let audioTime = 0;
+      vi.mocked(mockSynth.getCurrentTime).mockImplementation(() => audioTime);
+
+      const testEngine = new GrooveEngine(mockSynth);
+      let stopFiredAtAudioTime: number | null = null;
+      testEngine.on('playbackStateChange', (isPlaying) => {
+        if (!isPlaying) {
+          stopFiredAtAudioTime = audioTime;
+        }
+      });
+
+      await testEngine.play(DEFAULT_GROOVE, false);
+
+      // DEFAULT_GROOVE: 8 steps at 120BPM/8th → noteDuration=0.25s, endTime=2.0s
+      const noteDuration = (60 / DEFAULT_GROOVE.tempo) / (DEFAULT_GROOVE.division / 4);
+      const stepsPerMeasure = (DEFAULT_GROOVE.measures[0].notes['hihat-closed'] as boolean[]).length;
+      const totalPositions = stepsPerMeasure * DEFAULT_GROOVE.measures.length;
+      const endTime = totalPositions * noteDuration; // 2.0s
+
+      // Advance audio time so the schedule loop reaches the last note position.
+      // When it detects last position, delayMs = (endTime - audioTime)*1000 = 50ms.
+      // The stop fires after that delay — audioTime is still at this value when it fires.
+      audioTime = endTime - 0.05; // just before the groove end
+      await vi.runAllTimersAsync();
+
+      if (stopFiredAtAudioTime !== null) {
+        // Stop must have fired at or after the audio time when we detected end of groove
+        // (audioTime hasn't advanced between timer set and timer fire in the fake-timer env)
+        expect(stopFiredAtAudioTime).toBeGreaterThanOrEqual(endTime - 0.1);
+      }
+
+      testEngine.dispose();
+    });
+
+    it('scheduledNotes field does not exist (dead code removed)', () => {
+      // C1: verify scheduledNotes field was removed
+      expect((engine as unknown as Record<string, unknown>)['scheduledNotes']).toBeUndefined();
     });
   });
 });

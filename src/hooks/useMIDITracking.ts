@@ -32,6 +32,15 @@ export function useMIDITracking(
     trackingEnabled: false,
   });
 
+  // Refs for values needed in the MIDI hit handler — updated on every render so
+  // the single-subscription handler always reads current values (avoids re-subscribing).
+  const currentPositionRef = useRef(currentPosition);
+  const grooveTempoRef = useRef(groove.tempo);
+  const grooveRef = useRef(groove);
+  currentPositionRef.current = currentPosition;
+  grooveTempoRef.current = groove.tempo;
+  grooveRef.current = groove;
+
   // Enable/disable tracker based on playback state
   useEffect(() => {
     const lastState = lastStateRef.current;
@@ -72,7 +81,10 @@ export function useMIDITracking(
     }
   }, [groove, isPlaying, trackingEnabled]);
 
-  // Listen for MIDI hits and analyze them
+  // Listen for MIDI hits and analyze them.
+  // Deps are [trackingEnabled, isPlaying] ONLY — position/tempo are read from refs so the
+  // handler subscribes once per (trackingEnabled && isPlaying) session, eliminating listener
+  // churn on every position/tempo change (P2).
   useEffect(() => {
     if (!trackingEnabled || !isPlaying || !playStartTimeRef.current) return;
 
@@ -83,11 +95,15 @@ export function useMIDITracking(
       const analysis = performanceTracker.analyzeHit(voice, timestamp);
 
       if (analysis) {
+        // Read current values from refs — not closured over stale state
+        const currentTempo = grooveTempoRef.current;
+        const currentPos = currentPositionRef.current;
+
         // Debug: Log timing calculation
-        logger.log(`⏱️ Timing: error=${analysis.timingErrorMs.toFixed(1)}ms, accuracy=${analysis.timingAccuracy}%, overall=${analysis.overall}%, tempo=${groove.tempo}BPM`);
+        logger.log(`⏱️ Timing: error=${analysis.timingErrorMs.toFixed(1)}ms, accuracy=${analysis.timingAccuracy}%, overall=${analysis.overall}%, tempo=${currentTempo}BPM`);
 
         // Debug: Clearer format for timing analysis (0=slow, 50=on-time, 100=fast)
-        const quarterBeatMs = (60 / groove.tempo) * 1000 / 4;
+        const quarterBeatMs = (60 / currentTempo) * 1000 / 4;
         const accuracy = Math.max(-100, Math.min(100, (analysis.timingErrorMs / quarterBeatMs) * 100));
         const rangeScore = ((accuracy + 100) / 200) * 100;
         logger.log(`timing-debug: error=${analysis.timingErrorMs.toFixed(1)}ms, score=${rangeScore.toFixed(0)} (0=slow, 50=on-time, 100=fast)`);
@@ -99,10 +115,10 @@ export function useMIDITracking(
         window.dispatchEvent(new CustomEvent('midi-tracking-hit', {
           detail: {
             voice,
-            position: currentPosition,
+            position: currentPos,
             analysis,  // { timingAccuracy, noteAccuracy, overall, feedback, timingErrorMs }
             timingError: analysis.timingErrorMs, // Signed error in ms (negative=slow, positive=fast)
-            tempo: groove.tempo, // Pass actual tempo for accurate scaling
+            tempo: currentTempo, // Pass actual tempo for accurate scaling
             performedBpm, // Actual BPM from drummer's hits (null if not yet estimated)
           }
         }));
@@ -111,7 +127,7 @@ export function useMIDITracking(
 
     window.addEventListener('midi-note-hit', handleMIDIHit as EventListener);
     return () => window.removeEventListener('midi-note-hit', handleMIDIHit as EventListener);
-  }, [trackingEnabled, isPlaying, currentPosition, groove.tempo]);
+  }, [trackingEnabled, isPlaying]);
 
   return null; // Purely side-effects hook
 }

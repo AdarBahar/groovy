@@ -73,6 +73,8 @@ export default defineConfig({
           'midi-writer': ['midi-writer-js'],
           'qrcode': ['qrcode'],
           'lamejs': ['@breezystack/lamejs'],
+          // ABC notation rendering (sync API — manualChunks preferred over dynamic import)
+          'abcjs': ['abcjs'],
           // UI libraries
           'lucide': ['lucide-react'],
           // Security/validation libraries

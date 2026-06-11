@@ -66,6 +66,13 @@ export function ShareModal({ groove, isOpen, onClose }: ShareModalProps) {
     setShortenError(null);
   }, [shareableURL]);
 
+  // Shared clipboard helper — writes text and updates the copied indicator (C3).
+  const copyToClipboard = async (text: string, kind: 'url' | 'embed' | 'shortUrl'): Promise<void> => {
+    await navigator.clipboard.writeText(text);
+    setCopied(kind);
+    setTimeout(() => setCopied(null), 2000);
+  };
+
   // Handle URL shortening
   const handleShortenURL = async () => {
     setIsShortening(true);
@@ -85,10 +92,8 @@ export function ShareModal({ groove, isOpen, onClose }: ShareModalProps) {
   // Copy short URL to clipboard
   const handleCopyShortURL = async () => {
     if (!shortURL) return;
-    await navigator.clipboard.writeText(shortURL);
-    setCopied('shortUrl');
+    await copyToClipboard(shortURL, 'shortUrl');
     trackShareMethod('link', { urlMode });
-    setTimeout(() => setCopied(null), 2000);
   };
 
   // Generate embed code with embed=true parameter for minimal view
@@ -98,17 +103,13 @@ export function ShareModal({ groove, isOpen, onClose }: ShareModalProps) {
   }, [groove, grooveTitle]);
 
   const handleCopyURL = async () => {
-    await navigator.clipboard.writeText(shareableURL);
-    setCopied('url');
+    await copyToClipboard(shareableURL, 'url');
     trackShareMethod('link', { urlMode });
-    setTimeout(() => setCopied(null), 2000);
   };
 
   const handleCopyEmbed = async () => {
-    await navigator.clipboard.writeText(embedCode);
-    setCopied('embed');
+    await copyToClipboard(embedCode, 'embed');
     trackShareMethod('embed', { urlMode });
-    setTimeout(() => setCopied(null), 2000);
   };
 
   const handleSocialShare = (platform: 'twitter' | 'facebook' | 'reddit') => {
