@@ -103,6 +103,10 @@ class MIDIAccessManager {
     // Issue #92: Validate new device BEFORE disconnecting current connection
     // This prevents losing working connection if new device doesn't exist
 
+    // Clear any stale fake handler at bind-start so a fake→real (or fake→fake) switch
+    // never leaves the old fake handler alive (#120).
+    this.fakeMIDIMessageHandler = null;
+
     // Validate fake keyboard device request
     if (deviceId === FAKE_MIDI_DEVICE_ID) {
       if (!this.isLocalhost) {
@@ -197,6 +201,9 @@ class MIDIAccessManager {
       this.currentInput = null;
       console.log('Disconnected from MIDI input');
     }
+    // Clear fake handler so sendFakeMIDIMessage is a no-op and
+    // getCurrentDevice() returns null after a fake-device disconnect (#120).
+    this.fakeMIDIMessageHandler = null;
   }
 
   /**
