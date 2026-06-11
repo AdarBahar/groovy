@@ -79,6 +79,7 @@ export {
   isFormatSupported,
   getFormatInfo,
   ALL_EXPORT_FORMATS,
+  escapeXml,
 } from './ExportUtils';
 export type { ExportFormat, JSONExportOptions, ImageExportOptions, AudioExportOptions, ExportMetadata } from './ExportUtils';
 

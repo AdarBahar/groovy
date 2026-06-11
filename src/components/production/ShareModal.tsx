@@ -22,7 +22,7 @@ import {
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { GrooveData } from '../../types';
-import { getShareableURL, getShareableURLWithValidation, URLValidationResult } from '../../core';
+import { getShareableURL, getShareableURLWithValidation, URLValidationResult, escapeXml } from '../../core';
 import { trackShareMethod, trackShareModeToggle } from '../../utils/analytics';
 import { shortenURL, isShortenerConfigured, getShortenerErrorMessage } from '../../services/urlShortener';
 
@@ -94,7 +94,7 @@ export function ShareModal({ groove, isOpen, onClose }: ShareModalProps) {
   // Generate embed code with embed=true parameter for minimal view
   const embedCode = useMemo(() => {
     const embedURL = getShareableURL(groove, undefined, 'embed');
-    return `<iframe src="${embedURL}" width="600" height="400" frameborder="0" title="${grooveTitle}"></iframe>`;
+    return `<iframe src="${embedURL}" width="600" height="400" frameborder="0" title="${escapeXml(grooveTitle)}"></iframe>`;
   }, [groove, grooveTitle]);
 
   const handleCopyURL = async () => {
