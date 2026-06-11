@@ -247,35 +247,41 @@ export class GrooveEngine {
    * Validates division compatibility and auto-corrects if needed
    */
   updateGroove(groove: GrooveData): void {
+    // Build a corrected copy — never mutate the caller's object.
+    let corrected: GrooveData = groove;
+
     // Validate division compatibility with time signature
     if (!GrooveUtils.isDivisionCompatible(
-      groove.division,
-      groove.timeSignature.beats,
-      groove.timeSignature.noteValue
+      corrected.division,
+      corrected.timeSignature.beats,
+      corrected.timeSignature.noteValue
     )) {
       logger.warn(
-        `Division ${groove.division} is incompatible with ${groove.timeSignature.beats}/${groove.timeSignature.noteValue} time. ` +
+        `Division ${corrected.division} is incompatible with ${corrected.timeSignature.beats}/${corrected.timeSignature.noteValue} time. ` +
         `Auto-correcting to compatible division.`
       );
-      groove.division = GrooveUtils.getDefaultDivision(
-        groove.timeSignature.beats,
-        groove.timeSignature.noteValue
-      );
+      corrected = {
+        ...corrected,
+        division: GrooveUtils.getDefaultDivision(
+          corrected.timeSignature.beats,
+          corrected.timeSignature.noteValue
+        ),
+      };
     }
 
-    // Auto-disable swing for triplets and quarter notes
-    if (!GrooveUtils.doesDivisionSupportSwing(groove.division)) {
-      if (groove.swing > 0) {
-        logger.info(`Swing disabled for division ${groove.division} (triplets/quarter notes don't support swing)`);
-        groove.swing = 0;
+    // Auto-disable swing for triplets and quarter notes (check against possibly-corrected division)
+    if (!GrooveUtils.doesDivisionSupportSwing(corrected.division)) {
+      if (corrected.swing > 0) {
+        logger.info(`Swing disabled for division ${corrected.division} (triplets/quarter notes don't support swing)`);
+        corrected = { ...corrected, swing: 0 };
       }
     }
 
     if (this.isPlaying) {
-      this.pendingGroove = groove;
+      this.pendingGroove = corrected;
     } else {
-      this.currentGroove = groove;
-      this.emit('grooveChange', groove);
+      this.currentGroove = corrected;
+      this.emit('grooveChange', corrected);
     }
   }
   
