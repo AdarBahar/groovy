@@ -6,12 +6,22 @@
  *
  * Configuration:
  * - VITE_URL_SHORTENER_API: Base URL of the shortener API
- * - VITE_URL_SHORTENER_KEY: API key for authentication
+ * - VITE_URL_SHORTENER_PUBLISHABLE_KEY: Publishable (bundle-safe) pk_live_ API key.
+ *   Origin-scoped and rate-limited server-side; safe to embed in the static bundle.
  */
+
+import { logger } from '../utils/logger';
 
 /** API configuration from environment */
 const SHORTENER_API_URL = import.meta.env.VITE_URL_SHORTENER_API || 'https://go.bahar.co.il';
-const SHORTENER_API_KEY = import.meta.env.VITE_URL_SHORTENER_KEY || '';
+const SHORTENER_API_KEY = import.meta.env.VITE_URL_SHORTENER_PUBLISHABLE_KEY || '';
+
+/**
+ * In-memory cache of longUrl → shortUrl (successes only).
+ * The server does not dedupe, so repeated share clicks in one session
+ * would otherwise burn the daily creation quota.
+ */
+const shortUrlCache = new Map<string, string>();
 
 /** Response from the shorten endpoint */
 interface ShortenResponse {
@@ -30,17 +40,30 @@ interface ShortenResponse {
 }
 
 /** Error types for better error handling */
-export type ShortenerErrorType = 'unauthorized' | 'rate_limited' | 'network' | 'unknown';
+export type ShortenerErrorType =
+  | 'unauthorized'
+  | 'forbidden'
+  | 'rate_limited'
+  | 'network'
+  | 'unknown';
 
 export class ShortenerError extends Error {
   type: ShortenerErrorType;
   statusCode?: number;
+  /** Seconds to wait before retrying, parsed from the Retry-After header on 429 */
+  retryAfter?: number;
 
-  constructor(message: string, type: ShortenerErrorType, statusCode?: number) {
+  constructor(
+    message: string,
+    type: ShortenerErrorType,
+    statusCode?: number,
+    retryAfter?: number
+  ) {
     super(message);
     this.name = 'ShortenerError';
     this.type = type;
     this.statusCode = statusCode;
+    this.retryAfter = retryAfter;
   }
 }
 
@@ -52,7 +75,22 @@ export function isShortenerConfigured(): boolean {
 }
 
 /**
+ * Parse the Retry-After header value into seconds, or undefined if absent/invalid
+ */
+function parseRetryAfter(response: Response): number | undefined {
+  const headerValue = response.headers.get('Retry-After');
+  if (headerValue === null) {
+    return undefined;
+  }
+  const seconds = Number(headerValue);
+  return Number.isNaN(seconds) ? undefined : seconds;
+}
+
+/**
  * Shorten a URL using the external shortener API
+ *
+ * Successful results are memoized per longUrl for the session, so repeated
+ * calls with the same URL do not issue additional requests.
  *
  * @param longUrl - The URL to shorten
  * @returns The shortened URL
@@ -67,12 +105,16 @@ export async function shortenURL(longUrl: string): Promise<string> {
     );
   }
 
+  const cached = shortUrlCache.get(longUrl);
+  if (cached !== undefined) {
+    return cached;
+  }
+
   try {
     const response = await fetch(`${SHORTENER_API_URL}/api/shorten`, {
       method: 'POST',
       headers: {
         'Accept': 'application/json',
-        'Authorization': `Bearer ${SHORTENER_API_KEY}`,
         'X-API-Key': SHORTENER_API_KEY,
         'Content-Type': 'application/json',
       },
@@ -81,6 +123,7 @@ export async function shortenURL(longUrl: string): Promise<string> {
 
     const data: ShortenResponse = await response.json();
 
+    // Any 2xx (response.ok) with a success body is a success; 201 is the normal code
     if (!response.ok || !data.success) {
       // Handle specific error codes
       if (response.status === 401) {
@@ -91,11 +134,25 @@ export async function shortenURL(longUrl: string): Promise<string> {
         );
       }
 
+      if (response.status === 403) {
+        // Allowlist/config problem or tampering — log loudly, never retry silently
+        logger.error(
+          'URL shortener rejected the request (403): origin/target allowlist or publishable key configuration problem.',
+          data.error?.message
+        );
+        throw new ShortenerError(
+          data.error?.message || 'Request not allowed',
+          'forbidden',
+          403
+        );
+      }
+
       if (response.status === 429) {
         throw new ShortenerError(
           'Rate limit reached. Try again later.',
           'rate_limited',
-          429
+          429,
+          parseRetryAfter(response)
         );
       }
 
@@ -106,15 +163,25 @@ export async function shortenURL(longUrl: string): Promise<string> {
       );
     }
 
-    return data.data!.shortUrl;
+    const shortUrl = data.data?.shortUrl;
+    if (!shortUrl) {
+      throw new ShortenerError(
+        'Malformed shortener response',
+        'unknown',
+        response.status
+      );
+    }
+
+    shortUrlCache.set(longUrl, shortUrl);
+    return shortUrl;
   } catch (error) {
     // Re-throw ShortenerError as-is
     if (error instanceof ShortenerError) {
       throw error;
     }
 
-    // Handle network errors
-    if (error instanceof TypeError && error.message.includes('fetch')) {
+    // Network/CORS failures surface as TypeError (message varies by browser)
+    if (error instanceof TypeError) {
       throw new ShortenerError(
         'Network error. Please check your connection.',
         'network'
@@ -136,6 +203,8 @@ export function getShortenerErrorMessage(error: unknown): string {
   if (error instanceof ShortenerError) {
     switch (error.type) {
       case 'unauthorized':
+        return 'URL shortening unavailable';
+      case 'forbidden':
         return 'URL shortening unavailable';
       case 'rate_limited':
         return 'Rate limit reached. Try again later.';
