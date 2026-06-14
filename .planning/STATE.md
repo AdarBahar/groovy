@@ -82,6 +82,7 @@ None currently. Ready to begin Phase 1 planning.
 | 260611-fcv | Fix code-review issues #119-#124 with tests | 2026-06-11 | 3af43e8 | [260611-fcv-fix-code-review-issues-119-124-with-test](./quick/260611-fcv-fix-code-review-issues-119-124-with-test/) |
 | 260611-g5v | Performance & cleanup improvements from code review (#125) | 2026-06-11 | 0688a42 | [260611-g5v-performance-and-cleanup-improvements-fro](./quick/260611-g5v-performance-and-cleanup-improvements-fro/) |
 | 260612-et2 | Migrate URL shortener client to publishable API key (#113) | 2026-06-12 | 8a6ce78 | [260612-et2-migrate-url-shortener-client-to-publisha](./quick/260612-et2-migrate-url-shortener-client-to-publisha/) |
+| 260614-fb9 | Make the URL shortener the default on the QR tab in ShareModal | 2026-06-14 | 9b6f1b1 | [260614-fb9-make-the-url-shortener-the-default-on-th](./quick/260614-fb9-make-the-url-shortener-the-default-on-th/) |
 
 ## Next Steps
 
@@ -103,4 +104,4 @@ None currently. Ready to begin Phase 1 planning.
 - Decisions captured: 4 (Handler Lifecycle, Listener Dependencies, Cleanup Strategy, Memory Verification)
 - Next: Plan Phase 1
 
-Last activity: 2026-06-12 - Completed quick task 260612-et2: Migrate URL shortener client to publishable API key (#113)
+Last activity: 2026-06-14 - Completed quick task 260614-fb9: Make the URL shortener the default on the QR tab in ShareModal
