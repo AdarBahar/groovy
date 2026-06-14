@@ -78,6 +78,13 @@ describe('ShareModal', () => {
       />
     );
 
+    // Link tab defaults to 'editor' mode now, so toggle to Embed mode first so the
+    // URL contains embed=true — making the test's intent explicit.
+    const embedToggleButton = screen.getAllByText('Embed').find(
+      (el) => el.tagName === 'BUTTON'
+    )!;
+    fireEvent.click(embedToggleButton);
+
     const shareURLInput = screen.getByDisplayValue((value) => value.includes('embed=true'));
     const copyButton = shareURLInput.closest('div')?.querySelector('button');
 
@@ -106,9 +113,12 @@ describe('ShareModal', () => {
       // Activate QR tab
       clickQRTab();
 
-      // shortenURL must be called exactly once with the long URL
+      // shortenURL must be called exactly once with a non-empty editor-mode URL
+      // (QR tab defaults to 'editor', so the URL will NOT contain embed=true)
       await waitFor(() => expect(shortenURL).toHaveBeenCalledTimes(1));
-      expect(vi.mocked(shortenURL).mock.calls[0][0]).toContain('embed=true');
+      const shortenedArg = vi.mocked(shortenURL).mock.calls[0][0];
+      expect(shortenedArg.length).toBeGreaterThan(0);
+      expect(shortenedArg).not.toContain('embed=true');
 
       // Wait for spinner to disappear (loading done)
       await waitFor(() => {
@@ -159,6 +169,58 @@ describe('ShareModal', () => {
 
       // Component did not crash — the QR tab area is still visible
       expect(screen.getByText('Scan this QR code to open the groove on any device.')).toBeTruthy();
+    });
+  });
+
+  describe('per-tab urlMode default', () => {
+    /** Click the Embed tab (hidden SPAN label inside the tab button) */
+    const clickEmbedTab = () => {
+      const embedTabSpan = screen.getAllByText('Embed').find(
+        (el) => el.tagName === 'SPAN'
+      )!;
+      fireEvent.click(embedTabSpan);
+    };
+
+    /** Click the Link tab (hidden SPAN label inside the tab button) */
+    const clickLinkTab = () => {
+      const linkTabSpan = screen.getAllByText('Link').find(
+        (el) => el.tagName === 'SPAN'
+      )!;
+      fireEvent.click(linkTabSpan);
+    };
+
+    it('defaults to Editor on the initial Link tab', () => {
+      render(<ShareModal groove={DEFAULT_GROOVE} isOpen onClose={vi.fn()} />);
+      expect(screen.getByText('Editor view (allows editing)')).toBeTruthy();
+    });
+
+    it('defaults to Embed when the Embed tab is active', () => {
+      render(<ShareModal groove={DEFAULT_GROOVE} isOpen onClose={vi.fn()} />);
+      clickEmbedTab();
+      expect(screen.getByText('Embed view (optimized for viewing)')).toBeTruthy();
+    });
+
+    it('resets to Editor when switching from Embed tab back to Link tab', () => {
+      render(<ShareModal groove={DEFAULT_GROOVE} isOpen onClose={vi.fn()} />);
+      // Go to Embed tab → mode becomes embed
+      clickEmbedTab();
+      expect(screen.getByText('Embed view (optimized for viewing)')).toBeTruthy();
+      // Go back to Link tab → mode resets to editor
+      clickLinkTab();
+      expect(screen.getByText('Editor view (allows editing)')).toBeTruthy();
+    });
+
+    it('manual toggle still overrides within a tab', () => {
+      render(<ShareModal groove={DEFAULT_GROOVE} isOpen onClose={vi.fn()} />);
+      // Link tab starts in editor mode
+      expect(screen.getByText('Editor view (allows editing)')).toBeTruthy();
+      // Click the "Embed" toggle BUTTON (not the tab span)
+      const embedToggleButton = screen.getAllByText('Embed').find(
+        (el) => el.tagName === 'BUTTON'
+      )!;
+      fireEvent.click(embedToggleButton);
+      // Manual override within the tab: mode is now embed
+      expect(screen.getByText('Embed view (optimized for viewing)')).toBeTruthy();
     });
   });
 });

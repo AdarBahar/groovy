@@ -42,10 +42,14 @@ const TABS: { id: ShareTab; label: string; icon: React.ReactNode }[] = [
   { id: 'email', label: 'Email', icon: <Mail className="w-4 h-4" /> },
 ];
 
+function defaultUrlModeForTab(tab: ShareTab): 'embed' | 'editor' {
+  return tab === 'embed' ? 'embed' : 'editor';
+}
+
 export function ShareModal({ groove, isOpen, onClose }: ShareModalProps) {
   const [activeTab, setActiveTab] = useState<ShareTab>('link');
   const [copied, setCopied] = useState<'url' | 'embed' | 'shortUrl' | null>(null);
-  const [urlMode, setUrlMode] = useState<'embed' | 'editor'>('embed');
+  const [urlMode, setUrlMode] = useState<'embed' | 'editor'>(defaultUrlModeForTab('link'));
 
   // URL shortener state (Link tab)
   const [isShortening, setIsShortening] = useState(false);
@@ -70,6 +74,11 @@ export function ShareModal({ groove, isOpen, onClose }: ShareModalProps) {
     setShortenError(null);
     setQrShortURL(null);
   }, [shareableURL]);
+
+  // Reset urlMode to the tab-appropriate default on every tab switch
+  useEffect(() => {
+    setUrlMode(defaultUrlModeForTab(activeTab));
+  }, [activeTab]);
 
   // Auto-shorten when QR tab becomes active (QR-SHORTEN-01)
   useEffect(() => {
