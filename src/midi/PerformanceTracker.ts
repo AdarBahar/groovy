@@ -485,6 +485,15 @@ class PerformanceTracker {
       return;
     }
 
+    if (stepDelta < stepsPerBeat) {
+      // Sub-beat interval: too short to measure BPM accurately.
+      // A 15ms timing error on a 125ms window (16th at 120 BPM) inflates the sample by ~13%.
+      // The same error on a 500ms beat window is only ~3%. Advance the pointer and wait.
+      this.lastAbsStep = absStep;
+      this.lastTimestamp = timestamp;
+      return;
+    }
+
     const timeDeltaSecs = (timestamp - this.lastTimestamp) / 1000;
     if (timeDeltaSecs <= 0) {
       // Guard against zero/negative time delta
