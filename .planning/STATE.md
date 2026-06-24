@@ -84,6 +84,7 @@ None currently. Ready to begin Phase 1 planning.
 | 260612-et2 | Migrate URL shortener client to publishable API key (#113) | 2026-06-12 | 8a6ce78 | [260612-et2-migrate-url-shortener-client-to-publisha](./quick/260612-et2-migrate-url-shortener-client-to-publisha/) |
 | 260614-fb9 | Make the URL shortener the default on the QR tab in ShareModal | 2026-06-14 | 9b6f1b1 | [260614-fb9-make-the-url-shortener-the-default-on-th](./quick/260614-fb9-make-the-url-shortener-the-default-on-th/) |
 | 260614-h0t | Per-tab default for the "Share as:" urlMode toggle in ShareModal | 2026-06-14 | acd89e5 | [260614-h0t-in-sharemodal-tsx-make-the-share-as-urlm](./quick/260614-h0t-in-sharemodal-tsx-make-the-share-as-urlm/) |
+| 260624-dy6 | Refactor ProductionPage.tsx: extract useModalState, useMeasureOperations, usePlaybackState, useStickingState hooks | 2026-06-24 | a3e5c85 | [260624-dy6-refactor-productionpage-tsx-extract-usem](./quick/260624-dy6-refactor-productionpage-tsx-extract-usem/) |
 
 ## Next Steps
 
