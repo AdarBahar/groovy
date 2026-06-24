@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { GrooveData, DEFAULT_GROOVE, DrumVoice, Division, ALL_DRUM_VOICES, TimeSignature, StickingValue, createEmptySticking, MeasureConfig, MAX_MEASURES } from '../types';
+import { GrooveData, DEFAULT_GROOVE, DrumVoice, Division, ALL_DRUM_VOICES, TimeSignature } from '../types';
 import { GrooveUtils, decodeGroove, SavedGroove } from '../core';
 import { useGrooveEngine } from '../hooks/useGrooveEngine';
 import { useHistory } from '../hooks/useHistory';
@@ -13,6 +13,10 @@ import { useMIDIInput } from '../hooks/useMIDIInput';
 import { useMIDIFeedback } from '../hooks/useMIDIFeedback';
 import { useMIDITracking } from '../hooks/useMIDITracking';
 import { useMIDITrackingFeedback } from '../hooks/useMIDITrackingFeedback';
+import { useModalState } from '../hooks/useModalState';
+import { useStickingState } from '../hooks/useStickingState';
+import { useMeasureCopyPaste } from '../hooks/useMeasureCopyPaste';
+import { usePlaybackState } from '../hooks/usePlaybackState';
 import * as analytics from '../utils/analytics';
 import { frequencyToMetronomeOption, metronomeOptionToFrequency } from '../utils/metronomeConstants';
 import '../styles/midi.css';
@@ -39,92 +43,12 @@ import { ShareModal } from '../components/production/ShareModal';
 import { TimeSignatureSelectorModal } from '../components/production/TimeSignatureSelectorModal';
 import './ProductionPage.css';
 
+// Re-exported for backward compatibility (tests import from this path)
+export { findSimilarMeasures, applyStickingToSimilar } from '../core/stickingUtils';
+
 const TITLE_MAX_LENGTH = 50;
 const AUTHOR_MAX_LENGTH = 50;
 const COMMENT_MAX_LENGTH = 300;
-
-/**
- * Compare two notes records for exact equality across all drum voices.
- * Two measures are considered identical if every voice has matching boolean arrays.
- * Articulation differences (hihat-open vs hihat-closed) count as different because
- * they are separate DrumVoice values (D-05).
- */
-function areNotesIdentical(
-  notes1: Record<DrumVoice, boolean[]>,
-  notes2: Record<DrumVoice, boolean[]>
-): boolean {
-  return ALL_DRUM_VOICES.every(voice => {
-    const arr1 = notes1[voice];
-    const arr2 = notes2[voice];
-    if (!arr1 || !arr2) return arr1 === arr2;
-    if (arr1.length !== arr2.length) return false;
-    return arr1.every((v, i) => v === arr2[i]);
-  });
-}
-
-/**
- * Find measures with the same note pattern as the target measure.
- * Similarity criteria (per D-05):
- * - Same time signature (beats x noteValue)
- * - Same subdivision count (notesPerMeasure)
- * - Identical note patterns across all voices (including articulation)
- *
- * Returns indices of similar measures, excluding the target measure itself.
- */
-export function findSimilarMeasures(groove: GrooveData, targetMeasureIndex: number): number[] {
-  const target = groove.measures[targetMeasureIndex];
-  if (!target) return [];
-
-  const targetTs = target.timeSignature || groove.timeSignature;
-  const targetNotesPerMeasure = GrooveUtils.calcNotesPerMeasure(
-    groove.division,
-    targetTs.beats,
-    targetTs.noteValue
-  );
-
-  const similar: number[] = [];
-  for (let i = 0; i < groove.measures.length; i++) {
-    if (i === targetMeasureIndex) continue;
-    const candidate = groove.measures[i];
-    const candidateTs = candidate.timeSignature || groove.timeSignature;
-
-    // Check time signature match (beats and noteValue must both match)
-    if (
-      candidateTs.beats !== targetTs.beats ||
-      candidateTs.noteValue !== targetTs.noteValue
-    ) {
-      continue;
-    }
-
-    // Check subdivision count match
-    const candidateNotesPerMeasure = GrooveUtils.calcNotesPerMeasure(
-      groove.division,
-      candidateTs.beats,
-      candidateTs.noteValue
-    );
-    if (candidateNotesPerMeasure !== targetNotesPerMeasure) continue;
-
-    // Check note pattern identity across all voices
-    if (areNotesIdentical(target.notes, candidate.notes)) {
-      similar.push(i);
-    }
-  }
-
-  return similar;
-}
-
-/**
- * Apply the sticking from a source measure to all similar measures.
- * Returns the set of measure indices that were updated (for feedback messages).
- * Returns empty array if source has no sticking or no similar measures found.
- * The sticking array is deep-copied to each target measure (T-02-09).
- */
-export function applyStickingToSimilar(groove: GrooveData, sourceMeasureIndex: number): number[] {
-  const sourceSticking = groove.measures[sourceMeasureIndex]?.sticking;
-  if (!sourceSticking || !sourceSticking.some(v => v !== null)) return [];
-
-  return findSimilarMeasures(groove, sourceMeasureIndex);
-}
 
 function sanitizeMetadataValue(value: string, maxLength: number): string {
   return value
@@ -138,26 +62,22 @@ function sanitizeMetadataValue(value: string, maxLength: number): string {
 export default function ProductionPage() {
   const [advancedEditMode] = useState(false);
   const [isNotesOnly, setIsNotesOnly] = useState(false);
-  const [isStickingSetupActive, setIsStickingSetupActive] = useState(false);
-  const [isDownloadModalOpen, setIsDownloadModalOpen] = useState(false);
-  const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
-  const [isMyGroovesModalOpen, setIsMyGroovesModalOpen] = useState(false);
-  const [isSaveGrooveModalOpen, setIsSaveGrooveModalOpen] = useState(false);
-  const [isGrooveLibraryModalOpen, setIsGrooveLibraryModalOpen] = useState(false);
-  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
-  const [isTimeSignatureModalOpen, setIsTimeSignatureModalOpen] = useState(false);
-  const [elapsedTime, setElapsedTime] = useState('0:00');
-  const [isCountingIn, setIsCountingIn] = useState(false);
-  const [countdownNumber, setCountdownNumber] = useState<number | null>(null);
-  const [countingInButton, setCountingInButton] = useState<'play' | 'playPlus' | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [midiTrackingEnabled, setMidiTrackingEnabled] = useState(false);
   const [isMetadataEditing, setIsMetadataEditing] = useState(false);
   const [syncOffset] = useState<number>(loadSyncOffset);
-  const playStartTimeRef = useRef<number | null>(null);
-  const countInTimeoutRef = useRef<number | null>(null);
   const metadataFieldsRef = useRef<MetadataFieldsRef>(null);
-  const copiedMeasureRef = useRef<MeasureConfig | null>(null);
+
+  // Modal open/close state
+  const {
+    isDownloadModalOpen, setIsDownloadModalOpen,
+    isPrintModalOpen, setIsPrintModalOpen,
+    isMyGroovesModalOpen, setIsMyGroovesModalOpen,
+    isSaveGrooveModalOpen, setIsSaveGrooveModalOpen,
+    isGrooveLibraryModalOpen, setIsGrooveLibraryModalOpen,
+    isShareModalOpen, setIsShareModalOpen,
+    isTimeSignatureModalOpen, setIsTimeSignatureModalOpen,
+  } = useModalState();
 
   // Responsive detection
   const { isMobile } = useResponsive();
@@ -306,125 +226,16 @@ export default function ProductionPage() {
     setEngineSyncMode('start');
   }, [setEngineSyncMode]);
 
-  // Track elapsed time during playback
-  useEffect(() => {
-    if (isPlaying) {
-      // Start tracking time
-      playStartTimeRef.current = Date.now();
-
-      const updateElapsedTime = () => {
-        if (playStartTimeRef.current) {
-          const elapsed = Date.now() - playStartTimeRef.current;
-          const seconds = Math.floor(elapsed / 1000);
-          const minutes = Math.floor(seconds / 60);
-          const remainingSeconds = seconds % 60;
-          setElapsedTime(`${minutes}:${remainingSeconds.toString().padStart(2, '0')}`);
-        }
-      };
-
-      // Update every 100ms for smooth display
-      const intervalId = setInterval(updateElapsedTime, 100);
-      updateElapsedTime(); // Initial update
-
-      return () => {
-        clearInterval(intervalId);
-      };
-    } else {
-      // Reset when stopped
-      playStartTimeRef.current = null;
-      setElapsedTime('0:00');
-    }
-  }, [isPlaying]);
-
-  // Keyboard shortcuts
-
-  // Cancel count-in helper
-  const cancelCountIn = useCallback(() => {
-    if (countInTimeoutRef.current) {
-      clearTimeout(countInTimeoutRef.current);
-      countInTimeoutRef.current = null;
-    }
-    setIsCountingIn(false);
-    setCountdownNumber(null);
-    setCountingInButton(null);
-  }, []);
-
-  // Play count-in clicks (4 beats with metronome sounds)
-  const playCountIn = useCallback(async (button: 'play' | 'playPlus'): Promise<boolean> => {
-    return new Promise((resolve) => {
-      const beatDuration = 60000 / groove.tempo; // ms per beat
-      let currentBeat = 4; // Start at 4, count down to 1
-
-      setIsCountingIn(true);
-      setCountingInButton(button);
-      setCountdownNumber(currentBeat);
-
-      const playBeat = () => {
-        if (currentBeat > 0) {
-          // Play metronome click - same sound for all 4 beats
-          playPreview('hihat-metronome-normal');
-          setCountdownNumber(currentBeat);
-          currentBeat--;
-          countInTimeoutRef.current = window.setTimeout(playBeat, beatDuration);
-        } else {
-          setIsCountingIn(false);
-          setCountdownNumber(null);
-          setCountingInButton(null);
-          resolve(true); // Count-in completed successfully
-        }
-      };
-
-      playBeat();
-    });
-  }, [groove.tempo, playPreview]);
-
-  const handlePlay = useCallback(async () => {
-    if (autoSpeedUp.isActive) autoSpeedUp.stop();
-
-    // If counting in, cancel it
-    if (isCountingIn) {
-      cancelCountIn();
-      return;
-    }
-
-    if (isPlaying) {
-      // Stop playback
-      const duration = playStartTimeRef.current ? (Date.now() - playStartTimeRef.current) / 1000 : 0;
-      analytics.trackStop('normal', duration);
-      stop();
-    } else {
-      // Start playback (with count-in if enabled in metronome options)
-      if (metronomeConfig.countIn) {
-        const completed = await playCountIn('play');
-        if (!completed) return; // Count-in was cancelled
-      }
-      analytics.trackPlay('normal', groove.tempo, `${groove.timeSignature.beats}/${groove.timeSignature.noteValue}`);
-      await play(groove);
-    }
-  }, [autoSpeedUp, isCountingIn, cancelCountIn, isPlaying, playStartTimeRef, stop, metronomeConfig.countIn, playCountIn, analytics, groove, play]);
-
-  const handlePlayWithSpeedUp = async () => {
-    // If counting in, cancel it
-    if (isCountingIn) {
-      cancelCountIn();
-      return;
-    }
-
-    if (isPlaying) {
-      const duration = playStartTimeRef.current ? (Date.now() - playStartTimeRef.current) / 1000 : 0;
-      analytics.trackStop('speed-up', duration);
-      autoSpeedUp.stop();
-      stop();
-    } else {
-      if (metronomeConfig.countIn) {
-        const completed = await playCountIn('playPlus');
-        if (!completed) return; // Count-in was cancelled
-      }
-      analytics.trackPlay('speed-up', groove.tempo, `${groove.timeSignature.beats}/${groove.timeSignature.noteValue}`);
-      await play(groove);
-      autoSpeedUp.start();
-    }
-  };
+  // Playback state: elapsed time, count-in, play/stop handlers
+  const { elapsedTime, countdownNumber, countingInButton, handlePlay, handlePlayWithSpeedUp } = usePlaybackState({
+    groove,
+    play,
+    stop,
+    isPlaying,
+    metronomeConfig,
+    autoSpeedUp,
+    playPreview,
+  });
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -580,94 +391,11 @@ export default function ProductionPage() {
     analytics.trackMetronomeChange(option);
   };
 
-  const handleStickingSetupToggle = useCallback(() => {
-    setIsStickingSetupActive(prev => !prev);
-  }, []);
+  // Sticking setup state and handlers
+  const { isStickingSetupActive, handleStickingSetupToggle, handleStickingChange, handleApplyToSimilar } = useStickingState(groove, setGroove);
 
-  const handleStickingChange = useCallback((measureIndex: number, subdivIndex: number, value: StickingValue) => {
-    const measure = groove.measures[measureIndex];
-    if (!measure) return;
-
-    // Determine subdivision count for this measure
-    const ts = measure.timeSignature || groove.timeSignature;
-    const subdivCount = GrooveUtils.calcNotesPerMeasure(groove.division, ts.beats, ts.noteValue);
-
-    // Validate bounds (T-02-03)
-    if (subdivIndex < 0 || subdivIndex >= subdivCount) return;
-
-    // Build the updated sticking array, validating length invariant (T-02-03)
-    const existingSticking: StickingValue[] = (measure.sticking && measure.sticking.length === subdivCount)
-      ? [...measure.sticking]
-      : createEmptySticking(subdivCount);
-
-    existingSticking[subdivIndex] = value;
-
-    const updatedGroove: GrooveData = {
-      ...groove,
-      measures: groove.measures.map((m, i) =>
-        i === measureIndex ? { ...m, sticking: existingSticking } : m
-      ),
-    };
-    setGroove(updatedGroove);
-  }, [groove, setGroove]);
-
-  const cloneMeasure = useCallback((measure: MeasureConfig): MeasureConfig => ({
-    ...measure,
-    notes: Object.fromEntries(
-      Object.entries(measure.notes).map(([voice, notes]) => [voice, [...notes]])
-    ) as MeasureConfig['notes'],
-    sticking: measure.sticking ? [...measure.sticking] : undefined,
-  }), []);
-
-  const handleMeasureCopy = useCallback((measureIndex: number) => {
-    const measure = groove.measures[measureIndex];
-    if (!measure) return;
-    copiedMeasureRef.current = cloneMeasure(measure);
-  }, [cloneMeasure, groove.measures]);
-
-  const handleMeasurePaste = useCallback((afterIndex: number): boolean => {
-    if (!copiedMeasureRef.current || groove.measures.length >= MAX_MEASURES) {
-      return false;
-    }
-
-    const measureToPaste = cloneMeasure(copiedMeasureRef.current);
-    const insertIndex = Math.min(afterIndex + 1, groove.measures.length);
-    setGroove({
-      ...groove,
-      measures: [
-        ...groove.measures.slice(0, insertIndex),
-        measureToPaste,
-        ...groove.measures.slice(insertIndex),
-      ],
-    });
-    return true;
-  }, [cloneMeasure, groove, setGroove]);
-
-  /**
-   * Apply sticking from the given measure to all measures with identical note patterns.
-   * Returns a message describing the result (for display in the measure header feedback).
-   * Uses deep copy for each target to prevent shared references (T-02-09).
-   */
-  const handleApplyToSimilar = useCallback((measureIndex: number): string => {
-    const similarIndices = applyStickingToSimilar(groove, measureIndex);
-    if (similarIndices.length === 0) {
-      return 'No similar measures found.';
-    }
-
-    const sourceSticking = groove.measures[measureIndex].sticking!;
-    const updatedGroove: GrooveData = {
-      ...groove,
-      measures: groove.measures.map((m, i) =>
-        similarIndices.includes(i)
-          ? { ...m, sticking: [...sourceSticking] } // T-02-09: deep copy
-          : m
-      ),
-    };
-    setGroove(updatedGroove);
-
-    const count = similarIndices.length;
-    return `Applied to ${count} similar ${count === 1 ? 'measure' : 'measures'}.`;
-  }, [groove, setGroove]);
+  // Measure copy/paste clipboard
+  const { handleMeasureCopy, handleMeasurePaste } = useMeasureCopyPaste(groove, setGroove);
 
   return (
     <div className="min-h-dvh flex flex-col bg-slate-100 dark:bg-slate-900 text-slate-900 dark:text-white">
