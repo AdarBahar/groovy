@@ -257,7 +257,7 @@ class PerformanceTracker {
 
     if (absError < 100) {
       this.globalStepIndex++;
-      this.bpmEstimator.update(timestamp, this.startTime!, this.tempo, this.division);
+      this.bpmEstimator.update(timestamp, this.tempo, this.division);
     }
 
     this.stats.totalHits++;
