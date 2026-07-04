@@ -95,11 +95,21 @@ export class BPMEstimator {
    * Get smoothed BPM estimate. Returns null if deviation from set tempo
    * exceeds 20% or insufficient data collected yet.
    * The internal estimate is NOT nulled on deviation — prevents oscillation (#122).
+   *
+   * Display-level snap + integer rounding: the EWMA rate-average is upward-biased
+   * under human timing jitter (Jensen's inequality — worse for dense 8th/16th
+   * playing), leaving a sub-±1 BPM residual even when a drummer is exactly on
+   * tempo. That residual is noise, not signal, so estimates within ±1 BPM of the
+   * set tempo snap to the set tempo exactly, and everything else is rounded to
+   * the nearest integer. The estimation math above is intentionally unchanged —
+   * a period-averaging alternative was tested and rejected for over-correcting
+   * dense playing.
    */
   getPerformedBpm(tempo: number): number | null {
     if (this.bpmEstimate === null) return null;
     const deviation = Math.abs(this.bpmEstimate - tempo) / tempo;
     if (deviation > 0.2) return null;
-    return Math.round(this.bpmEstimate * 10) / 10;
+    if (Math.abs(this.bpmEstimate - tempo) <= 1) return tempo;
+    return Math.round(this.bpmEstimate);
   }
 }
