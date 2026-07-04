@@ -6,6 +6,7 @@
 
 import { describe, it, expect, beforeEach } from 'vitest';
 import { performanceTracker } from './PerformanceTracker';
+import { BPMEstimator } from './BPMEstimator';
 import type { GrooveData } from '../types';
 
 describe('PerformanceTracker', () => {
@@ -774,5 +775,38 @@ describe('PerformanceTracker', () => {
       expect(result!.timingAccuracy).toBeGreaterThanOrEqual(0);
       expect(result!.timingAccuracy).toBeLessThanOrEqual(100);
     });
+  });
+});
+
+describe('getPerformedBpm display snap + integer rounding', () => {
+  it('snaps estimates within ±1 BPM of set tempo to the set tempo exactly', () => {
+    const estimator = new BPMEstimator();
+    // division=4 -> stepsPerBeat=1, stepDurMs=500 at tempo 120.
+    estimator.update(0, 120, 4); // seeds lastTimestamp
+    estimator.update(496.688, 120, 4); // bpmSample ≈ 120.8, stepDelta = 1
+
+    expect(estimator.getPerformedBpm(120)).toBe(120);
+  });
+
+  it('rounds estimates outside ±1 BPM to the nearest integer (no decimal)', () => {
+    const estimator = new BPMEstimator();
+    estimator.update(0, 120, 4);
+    estimator.update(486.224, 120, 4); // bpmSample ≈ 123.4
+
+    expect(estimator.getPerformedBpm(120)).toBe(123);
+  });
+
+  it('returns null when no estimate has been seeded', () => {
+    const estimator = new BPMEstimator();
+
+    expect(estimator.getPerformedBpm(120)).toBeNull();
+  });
+
+  it('returns null when estimate deviates more than 20% from set tempo (unchanged gate)', () => {
+    const estimator = new BPMEstimator();
+    estimator.update(0, 120, 4);
+    estimator.update(300, 120, 4); // bpmSample ≈ 200, deviation > 20%
+
+    expect(estimator.getPerformedBpm(120)).toBeNull();
   });
 });
