@@ -87,6 +87,7 @@ None currently. Ready to begin Phase 1 planning.
 | 260624-dy6 | Refactor ProductionPage.tsx: extract useModalState, useMeasureOperations, usePlaybackState, useStickingState hooks | 2026-06-24 | a3e5c85 | [260624-dy6-refactor-productionpage-tsx-extract-usem](./quick/260624-dy6-refactor-productionpage-tsx-extract-usem/) |
 | 260703-m1a | Fix upward bias in BPMEstimator (interval rounding + sub-beat samples) | 2026-07-03 | 52e75c9 | [260703-m1a-fix-upward-bias-in-bpmestimator-interval](./quick/260703-m1a-fix-upward-bias-in-bpmestimator-interval/) |
 | 260704-t3f | Round performed BPM display to integer and snap to set tempo within ±1 BPM | 2026-07-04 | d75104f | [260704-t3f-round-performed-bpm-display-to-integer-a](./quick/260704-t3f-round-performed-bpm-display-to-integer-a/) |
+| 260705-fast | Local-only build+zip script (gitignored) — npm build, drop stats.html, zip dist | 2026-07-05 | — | fast (inline, no directory) |
 
 ## Next Steps
 
