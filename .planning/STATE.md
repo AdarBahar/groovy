@@ -88,6 +88,7 @@ None currently. Ready to begin Phase 1 planning.
 | 260703-m1a | Fix upward bias in BPMEstimator (interval rounding + sub-beat samples) | 2026-07-03 | 52e75c9 | [260703-m1a-fix-upward-bias-in-bpmestimator-interval](./quick/260703-m1a-fix-upward-bias-in-bpmestimator-interval/) |
 | 260704-t3f | Round performed BPM display to integer and snap to set tempo within ±1 BPM | 2026-07-04 | d75104f | [260704-t3f-round-performed-bpm-display-to-integer-a](./quick/260704-t3f-round-performed-bpm-display-to-integer-a/) |
 | 261102-h1c | Fix P1 security items: upgrade jspdf/dompurify/zod/react-router-dom past advisories, add enforcing CSP to .htaccess | 2026-11-02 | 52b5b19 | [261102-h1c-fix-p1-security-items-upgrade-jspdf-and-](./quick/261102-h1c-fix-p1-security-items-upgrade-jspdf-and-/) |
+| 260705-fast | Local-only build+zip script (gitignored) — npm build, drop stats.html, zip dist | 2026-07-05 | — | fast (inline, no directory) |
 
 ## Next Steps
 
