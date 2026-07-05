@@ -29,6 +29,8 @@ export const TD17_MAPPINGS: Record<number, DrumVoice> = {
   42: 'hihat-closed',
   46: 'hihat-open',
   44: 'hihat-foot',
+  22: 'hihat-closed', // Closed hi-hat edge trigger (Roland)
+  26: 'hihat-open', // Open hi-hat edge trigger (Roland)
 
   // Toms
   48: 'tom-10',
