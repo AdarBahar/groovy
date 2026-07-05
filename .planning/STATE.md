@@ -89,6 +89,7 @@ None currently. Ready to begin Phase 1 planning.
 | 260704-t3f | Round performed BPM display to integer and snap to set tempo within ±1 BPM | 2026-07-04 | d75104f | [260704-t3f-round-performed-bpm-display-to-integer-a](./quick/260704-t3f-round-performed-bpm-display-to-integer-a/) |
 | 260705-fast | Local-only build+zip script (gitignored) — npm build, drop stats.html, zip dist | 2026-07-05 | — | fast (inline, no directory) |
 | 260705-dxu | POC: per-beat console comparison of groove pattern vs MIDI hits (expected/played/timing) | 2026-07-05 | 44f487d | [260705-dxu-poc-per-beat-console-comparison-of-groov](./quick/260705-dxu-poc-per-beat-console-comparison-of-groov/) |
+| 260705-fast | TD-17 hi-hat edge triggers (22/26), disable 950ms latency default + migration, BeatComparator late-hit warning | 2026-07-05 | b69539c | fast (inline, no directory) |
 
 ## Next Steps
 
