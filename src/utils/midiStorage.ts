@@ -10,8 +10,10 @@ import { logger } from './logger';
 
 const MIDI_CONFIG_KEY = 'groovy-midi-config';
 
-// Known old latency defaults - if saved value matches these, use new default instead
-const OLD_LATENCY_DEFAULTS = [0, 220, 270, 370, 580, 880];
+// Known old latency defaults - if saved value matches these, use new default instead.
+// 950 was the last blanket default; it was never calibrated, so migrate it (and older
+// defaults) to the current disabled default. 0 is the current default and legitimate.
+const OLD_LATENCY_DEFAULTS = [220, 270, 370, 580, 880, 950];
 
 /**
  * Load MIDI config from localStorage
@@ -41,7 +43,9 @@ export function loadMIDIConfig(): MIDIConfig {
         ? {
             ...DEFAULT_MIDI_CONFIG.latencyCompensation,
             ...parsed_config.latencyCompensation,
-            ...(shouldUseNewLatencyDefault ? { offsetMs: DEFAULT_MIDI_CONFIG.latencyCompensation?.offsetMs || 950 } : {}),
+            // Migrating away from a stale blanket default: the value was never
+            // calibrated, so take the whole new default (disabled, 0ms).
+            ...(shouldUseNewLatencyDefault ? DEFAULT_MIDI_CONFIG.latencyCompensation : {}),
           }
         : DEFAULT_MIDI_CONFIG.latencyCompensation;
 
