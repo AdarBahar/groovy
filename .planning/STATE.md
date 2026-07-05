@@ -90,6 +90,7 @@ None currently. Ready to begin Phase 1 planning.
 | 261102-h1c | Fix P1 security items: upgrade jspdf/dompurify/zod/react-router-dom past advisories, add enforcing CSP to .htaccess | 2026-11-02 | 52b5b19 | [261102-h1c-fix-p1-security-items-upgrade-jspdf-and-](./quick/261102-h1c-fix-p1-security-items-upgrade-jspdf-and-/) |
 | 260705-fast | Local-only build+zip script (gitignored) — npm build, drop stats.html, zip dist | 2026-07-05 | — | fast (inline, no directory) |
 | 260705-dxu | POC: per-beat console comparison of groove pattern vs MIDI hits (expected/played/timing) | 2026-07-05 | 44f487d | [260705-dxu-poc-per-beat-console-comparison-of-groov](./quick/260705-dxu-poc-per-beat-console-comparison-of-groov/) |
+| 260705-fast | TD-17 hi-hat edge triggers (22/26), disable 950ms latency default + migration, BeatComparator late-hit warning | 2026-07-05 | b69539c | fast (inline, no directory) |
 
 ## Next Steps
 
