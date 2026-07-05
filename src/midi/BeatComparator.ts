@@ -104,6 +104,18 @@ class BeatComparator {
     const step = Math.round(elapsedMs / stepDurMs);
     const beat = Math.floor(step / stepsPerBeat);
 
+    // A hit mapping to an already-flushed beat would sit in an orphan bucket forever
+    // and never be logged. This happens when hit timestamps are shifted into the past
+    // (e.g. latency compensation larger than the flush grace window) — warn instead
+    // of silently dropping so misconfiguration is visible.
+    if (beat < this.nextBeatToFlush) {
+      logger.warn(
+        `[BeatCompare] hit (${voice}) maps to beat ${beat + 1}, already flushed ` +
+        `(next=${this.nextBeatToFlush + 1}) — check latency compensation config`
+      );
+      return;
+    }
+
     let bucket = this.buckets.get(beat);
     if (!bucket) {
       bucket = { voices: [], errSum: 0, errCount: 0 };

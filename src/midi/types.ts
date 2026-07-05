@@ -100,8 +100,11 @@ export const DEFAULT_MIDI_CONFIG: MIDIConfig = {
   velocityThresholds: {}, // Empty = use global defaults
   doubleTriggerWindows: {}, // Empty = use global defaults
   latencyCompensation: {
-    enabled: true,
-    offsetMs: 950, // Compensates for system audio latency (~950ms total)
+    // Disabled by default: a blanket offset is only correct for the machine it was
+    // measured on and silently corrupts all timing feedback elsewhere. Calibrated
+    // per-device offsets still load from latencyStorage on device connect.
+    enabled: false,
+    offsetMs: 0,
   },
 };
 
