@@ -27,4 +27,4 @@ tsconfig.tsbuildinfo
 
 # Local-only build helper and its output (not part of the repo)
 /local-build-zip.sh
-/groovy-dist-*.zip
+# (dist zips land in dist/, which is already ignored)
