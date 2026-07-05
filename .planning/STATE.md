@@ -88,6 +88,7 @@ None currently. Ready to begin Phase 1 planning.
 | 260703-m1a | Fix upward bias in BPMEstimator (interval rounding + sub-beat samples) | 2026-07-03 | 52e75c9 | [260703-m1a-fix-upward-bias-in-bpmestimator-interval](./quick/260703-m1a-fix-upward-bias-in-bpmestimator-interval/) |
 | 260704-t3f | Round performed BPM display to integer and snap to set tempo within ±1 BPM | 2026-07-04 | d75104f | [260704-t3f-round-performed-bpm-display-to-integer-a](./quick/260704-t3f-round-performed-bpm-display-to-integer-a/) |
 | 260705-fast | Local-only build+zip script (gitignored) — npm build, drop stats.html, zip dist | 2026-07-05 | — | fast (inline, no directory) |
+| 260705-dxu | POC: per-beat console comparison of groove pattern vs MIDI hits (expected/played/timing) | 2026-07-05 | 44f487d | [260705-dxu-poc-per-beat-console-comparison-of-groov](./quick/260705-dxu-poc-per-beat-console-comparison-of-groov/) |
 
 ## Next Steps
 
@@ -109,4 +110,4 @@ None currently. Ready to begin Phase 1 planning.
 - Decisions captured: 4 (Handler Lifecycle, Listener Dependencies, Cleanup Strategy, Memory Verification)
 - Next: Plan Phase 1
 
-Last activity: 2026-07-04 - Completed quick task 260704-t3f: Round performed BPM display to integer and snap to set tempo within ±1 BPM
+Last activity: 2026-07-05 - Completed quick task 260705-dxu: POC per-beat console comparison of groove pattern vs MIDI hits
