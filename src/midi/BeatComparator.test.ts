@@ -76,7 +76,7 @@ describe('BeatComparator', () => {
 
     vi.advanceTimersByTime(600);
 
-    const lines = logSpy.mock.calls.map((call) => call[0]);
+    const lines = logSpy.mock.calls.map((call: unknown[]) => call[0]);
     expect(lines).toContain(
       '[BeatCompare] beat 1 | player: Closed Hi-Hat & Kick | midi: Closed Hi-Hat & Kick | time: on time'
     );
@@ -89,7 +89,7 @@ describe('BeatComparator', () => {
     // Flush all 4 beats: maxFlushable >= 3 requires elapsed >= 90 + 4*500 = 2090.
     vi.advanceTimersByTime(2100);
 
-    const lines = logSpy.mock.calls.map((call) => call[0]);
+    const lines = logSpy.mock.calls.map((call: unknown[]) => call[0]);
     expect(lines).toContain(
       '[BeatCompare] beat 1 | player: Closed Hi-Hat & Kick | midi: — | time: —'
     );
@@ -104,7 +104,7 @@ describe('BeatComparator', () => {
 
     vi.advanceTimersByTime(1100);
 
-    const lines = logSpy.mock.calls.map((call) => call[0]);
+    const lines = logSpy.mock.calls.map((call: unknown[]) => call[0]);
     expect(lines).toContain(
       '[BeatCompare] beat 2 | player: Closed Hi-Hat | midi: Open Hi-Hat | time: on time'
     );
@@ -118,7 +118,7 @@ describe('BeatComparator', () => {
 
     vi.advanceTimersByTime(1100);
 
-    const lines = logSpy.mock.calls.map((call) => call[0]);
+    const lines = logSpy.mock.calls.map((call: unknown[]) => call[0]);
     expect(lines).toContain(
       '[BeatCompare] beat 1 | player: Closed Hi-Hat & Kick | midi: Closed Hi-Hat | time: late'
     );
@@ -135,7 +135,7 @@ describe('BeatComparator', () => {
 
     vi.advanceTimersByTime(1100);
 
-    const lines = logSpy.mock.calls.map((call) => call[0]);
+    const lines = logSpy.mock.calls.map((call: unknown[]) => call[0]);
     expect(lines).toContain(
       '[BeatCompare] beat 1 | player: Closed Hi-Hat & Kick | midi: — | time: —'
     );
