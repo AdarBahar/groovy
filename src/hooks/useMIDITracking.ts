@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { performanceTracker } from '../midi/PerformanceTracker';
+import { beatComparator } from '../midi/BeatComparator';
 import { GrooveData } from '../types';
 import { logger } from '../utils/logger';
 
@@ -56,10 +57,12 @@ export function useMIDITracking(
       playStartTimeRef.current = engineAnchor ?? performance.now();
       // Pass full GrooveData (includes division, swing, timeSignature)
       performanceTracker.enable(groove, playStartTimeRef.current);
+      beatComparator.enable(groove, playStartTimeRef.current);
     }
     // Only disable if transitioning from enabled to disabled
     else if (!shouldEnable && wasEnabled) {
       performanceTracker.disable();
+      beatComparator.disable();
       playStartTimeRef.current = null;
     }
 
@@ -70,6 +73,7 @@ export function useMIDITracking(
   useEffect(() => {
     if (isPlaying && trackingEnabled) {
       performanceTracker.setTempo(groove.tempo);
+      beatComparator.setTempo(groove.tempo);
     }
   }, [groove.tempo, isPlaying, trackingEnabled]);
 
@@ -78,6 +82,7 @@ export function useMIDITracking(
   useEffect(() => {
     if (isPlaying && trackingEnabled) {
       performanceTracker.updateGroove(groove);
+      beatComparator.updateGroove(groove);
     }
   }, [groove, isPlaying, trackingEnabled]);
 
@@ -98,6 +103,10 @@ export function useMIDITracking(
         // Read current values from refs — not closured over stale state
         const currentTempo = grooveTempoRef.current;
         const currentPos = currentPositionRef.current;
+
+        // POC: feed the per-beat console comparator (records ALL analyzed hits,
+        // including wrong/extra voices, so mistakes surface in the "midi:" column).
+        beatComparator.recordHit(voice, timestamp, analysis.timingErrorMs);
 
         // Debug: Log timing calculation
         logger.log(`⏱️ Timing: error=${analysis.timingErrorMs.toFixed(1)}ms, accuracy=${analysis.timingAccuracy}%, overall=${analysis.overall}%, tempo=${currentTempo}BPM`);
