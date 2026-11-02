@@ -6,8 +6,12 @@
  * apply the offset to future sessions. Validates data using Zod schema.
  */
 
+import { z } from 'zod';
 import { LatencyCompensationConfig, LatencyCompensationConfigSchema } from '../midi/types';
 import { logger } from './logger';
+
+/** The store is a plain object keyed by device id; entries are validated one by one */
+const LatencyStoreSchema = z.record(z.string(), z.unknown());
 
 const LATENCY_CONFIG_KEY = 'groovy-midi-latency-config';
 /** Previous snake_case key — kept only for one-time migration on first load (C7) */
@@ -32,6 +36,42 @@ function migrateLatencyConfigKey(): void {
 }
 
 /**
+ * Read and validate the whole latency store.
+ * A corrupt container (invalid JSON, array, primitive) reads as empty so the next
+ * save can overwrite it; invalid entries are dropped while valid ones are kept.
+ * Throws only if localStorage itself is unavailable (callers catch that).
+ */
+function readLatencyStore(): Record<string, LatencyCompensationConfig> {
+  const stored = localStorage.getItem(LATENCY_CONFIG_KEY);
+  if (!stored) return {};
+
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(stored);
+  } catch (error) {
+    logger.warn('Latency config store is not valid JSON; treating it as empty:', error);
+    return {};
+  }
+
+  const container = LatencyStoreSchema.safeParse(parsed);
+  if (!container.success) {
+    logger.warn('Latency config store has an unexpected shape; treating it as empty');
+    return {};
+  }
+
+  const configs: Record<string, LatencyCompensationConfig> = {};
+  for (const [deviceId, entry] of Object.entries(container.data)) {
+    const result = LatencyCompensationConfigSchema.safeParse(entry);
+    if (result.success) {
+      configs[deviceId] = result.data;
+    } else {
+      logger.warn(`Dropping invalid latency config for device ${deviceId}:`, result.error);
+    }
+  }
+  return configs;
+}
+
+/**
  * Load latency configuration for a specific MIDI device
  * @param deviceId - MIDI device ID
  * @returns Latency config or null if not calibrated
@@ -39,22 +79,7 @@ function migrateLatencyConfigKey(): void {
 export function loadLatencyConfig(deviceId: string): LatencyCompensationConfig | null {
   migrateLatencyConfigKey();
   try {
-    const stored = localStorage.getItem(LATENCY_CONFIG_KEY);
-    if (!stored) return null;
-
-    const parsed = JSON.parse(stored);
-    const config = parsed[deviceId];
-
-    if (!config) return null;
-
-    // Validate against schema
-    const validationResult = LatencyCompensationConfigSchema.safeParse(config);
-    if (!validationResult.success) {
-      logger.warn(`Failed to validate latency config for device ${deviceId}:`, validationResult.error);
-      return null;
-    }
-
-    return validationResult.data;
+    return readLatencyStore()[deviceId] ?? null;
   } catch (error) {
     logger.error('Failed to load latency config:', error);
     return null;
@@ -68,8 +93,7 @@ export function loadLatencyConfig(deviceId: string): LatencyCompensationConfig |
  */
 export function saveLatencyConfig(deviceId: string, config: LatencyCompensationConfig): void {
   try {
-    const stored = localStorage.getItem(LATENCY_CONFIG_KEY);
-    const configs: Record<string, LatencyCompensationConfig> = stored ? JSON.parse(stored) : {};
+    const configs = readLatencyStore();
 
     configs[deviceId] = {
       ...config,
@@ -90,10 +114,8 @@ export function saveLatencyConfig(deviceId: string, config: LatencyCompensationC
  */
 export function deleteLatencyConfig(deviceId: string): void {
   try {
-    const stored = localStorage.getItem(LATENCY_CONFIG_KEY);
-    if (!stored) return;
-
-    const configs: Record<string, LatencyCompensationConfig> = JSON.parse(stored);
+    const configs = readLatencyStore();
+    if (!(deviceId in configs)) return;
     delete configs[deviceId];
 
     localStorage.setItem(LATENCY_CONFIG_KEY, JSON.stringify(configs));
@@ -109,8 +131,7 @@ export function deleteLatencyConfig(deviceId: string): void {
 export function getAllLatencyConfigs(): Record<string, LatencyCompensationConfig> {
   migrateLatencyConfigKey();
   try {
-    const stored = localStorage.getItem(LATENCY_CONFIG_KEY);
-    return stored ? JSON.parse(stored) : {};
+    return readLatencyStore();
   } catch (error) {
     logger.error('Failed to load all latency configs:', error);
     return {};
