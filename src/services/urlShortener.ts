@@ -87,12 +87,19 @@ function parseRetryAfter(response: Response): number | undefined {
 }
 
 /**
- * Read the response body as JSON if it is JSON.
- * Gateways and proxies answer 429/5xx with HTML or an empty body; those must
- * not mask the status-based error mapping, so a non-JSON body yields null.
+ * Read the response body as JSON if it is JSON. Never throws.
+ * Gateways and proxies answer 429/5xx with HTML, an empty body, or a body whose
+ * stream fails mid-read; none of those may mask the status-based error mapping,
+ * so every such case yields null and the caller maps the status on its own.
  */
 async function parseResponseBody(response: Response): Promise<ShortenResponse | null> {
-  const text = await response.text();
+  let text: string;
+  try {
+    text = await response.text();
+  } catch (error) {
+    logger.warn('Could not read URL shortener response body:', error);
+    return null;
+  }
   if (!text) {
     return null;
   }
