@@ -67,10 +67,13 @@ completed: 2026-11-02
 3. **Task 3: noopener on social share windows** - `4c27f65` (fix)
 
 ## Verification
-- `npx vitest run`: 24 files, 273 tests pass (9 new).
+- `npx vitest run`: 24 files, 276 tests pass (12 new).
 - `npx tsc --noEmit`: clean. `npx eslint` on touched files: clean.
 - `NODE_ENV=production npx vite build`: succeeds.
 - Negative check: with each source file reverted to `main`, its new tests fail (4 / 4 / 1).
+
+## Review Follow-up (PR #145, P2)
+- Status mapping still depended on reading the body: a 429 whose body stream failed threw inside `parseResponseBody()` before the status was mapped. Fixed in `da21374` by making `parseResponseBody()` never throw (a failed read is "no body"), so the status-first mapping always runs. Four tests cover failing streams, including a real `Response` over an erroring `ReadableStream`; all fail without the fix.
 
 ## Deviations from Plan
 - None in scope; two review items were corrected as stale (see key-decisions).
