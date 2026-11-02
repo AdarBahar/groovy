@@ -173,7 +173,8 @@ export function ShareModal({ groove, isOpen, onClose }: ShareModalProps) {
         break;
     }
 
-    window.open(url, '_blank', 'width=600,height=400');
+    // noopener: the share site must not receive window.opener (reverse tabnabbing)
+    window.open(url, '_blank', 'width=600,height=400,noopener,noreferrer');
     trackShareMethod(platform, { urlMode });
   };
 

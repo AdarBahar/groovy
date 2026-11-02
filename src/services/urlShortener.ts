@@ -87,6 +87,30 @@ function parseRetryAfter(response: Response): number | undefined {
 }
 
 /**
+ * Read the response body as JSON if it is JSON. Never throws.
+ * Gateways and proxies answer 429/5xx with HTML, an empty body, or a body whose
+ * stream fails mid-read; none of those may mask the status-based error mapping,
+ * so every such case yields null and the caller maps the status on its own.
+ */
+async function parseResponseBody(response: Response): Promise<ShortenResponse | null> {
+  let text: string;
+  try {
+    text = await response.text();
+  } catch (error) {
+    logger.warn('Could not read URL shortener response body:', error);
+    return null;
+  }
+  if (!text) {
+    return null;
+  }
+  try {
+    return JSON.parse(text) as ShortenResponse;
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Shorten a URL using the external shortener API
  *
  * Successful results are memoized per longUrl for the session, so repeated
@@ -110,8 +134,9 @@ export async function shortenURL(longUrl: string): Promise<string> {
     return cached;
   }
 
+  let response: Response;
   try {
-    const response = await fetch(`${SHORTENER_API_URL}/api/shorten`, {
+    response = await fetch(`${SHORTENER_API_URL}/api/shorten`, {
       method: 'POST',
       headers: {
         'Accept': 'application/json',
@@ -120,11 +145,21 @@ export async function shortenURL(longUrl: string): Promise<string> {
       },
       body: JSON.stringify({ url: longUrl }),
     });
+  } catch {
+    // Only a rejected fetch() is a network/CORS failure (browsers reject with a
+    // TypeError whose message varies). Anything thrown later is not.
+    throw new ShortenerError(
+      'Network error. Please check your connection.',
+      'network'
+    );
+  }
 
-    const data: ShortenResponse = await response.json();
+  try {
+    // Status checks come first; the body is optional context for them.
+    const data = await parseResponseBody(response);
 
     // Any 2xx (response.ok) with a success body is a success; 201 is the normal code
-    if (!response.ok || !data.success) {
+    if (!response.ok || !data?.success) {
       // Handle specific error codes
       if (response.status === 401) {
         throw new ShortenerError(
@@ -138,10 +173,10 @@ export async function shortenURL(longUrl: string): Promise<string> {
         // Allowlist/config problem or tampering — log loudly, never retry silently
         logger.error(
           'URL shortener rejected the request (403): origin/target allowlist or publishable key configuration problem.',
-          data.error?.message
+          data?.error?.message
         );
         throw new ShortenerError(
-          data.error?.message || 'Request not allowed',
+          data?.error?.message || 'Request not allowed',
           'forbidden',
           403
         );
@@ -156,14 +191,17 @@ export async function shortenURL(longUrl: string): Promise<string> {
         );
       }
 
+      // A 2xx without a parseable success body is a malformed response, not a
+      // server-side failure.
       throw new ShortenerError(
-        data.error?.message || 'Failed to shorten URL',
+        data?.error?.message ||
+          (response.ok ? 'Malformed shortener response' : `Failed to shorten URL (HTTP ${response.status})`),
         'unknown',
         response.status
       );
     }
 
-    const shortUrl = data.data?.shortUrl;
+    const shortUrl = data?.data?.shortUrl;
     if (!shortUrl) {
       throw new ShortenerError(
         'Malformed shortener response',
@@ -180,15 +218,7 @@ export async function shortenURL(longUrl: string): Promise<string> {
       throw error;
     }
 
-    // Network/CORS failures surface as TypeError (message varies by browser)
-    if (error instanceof TypeError) {
-      throw new ShortenerError(
-        'Network error. Please check your connection.',
-        'network'
-      );
-    }
-
-    // Unknown error
+    // Unknown error (a bug or an unexpected body/stream failure): keep its message
     throw new ShortenerError(
       error instanceof Error ? error.message : 'Failed to shorten URL',
       'unknown'

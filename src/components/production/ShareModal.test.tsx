@@ -224,3 +224,23 @@ describe('ShareModal', () => {
     });
   });
 });
+
+describe('ShareModal social share window', () => {
+  it('opens social share links with noopener,noreferrer', () => {
+    const openSpy = vi.spyOn(window, 'open').mockReturnValue(null);
+
+    render(<ShareModal groove={DEFAULT_GROOVE} isOpen onClose={vi.fn()} />);
+    const socialTab = screen.getAllByText('Social').find((el) => el.tagName === 'SPAN')!;
+    fireEvent.click(socialTab);
+    fireEvent.click(screen.getByText('X / Twitter'));
+
+    expect(openSpy).toHaveBeenCalledTimes(1);
+    const [url, target, features] = openSpy.mock.calls[0];
+    expect(String(url)).toContain('twitter.com/intent/tweet');
+    expect(target).toBe('_blank');
+    expect(features).toContain('noopener');
+    expect(features).toContain('noreferrer');
+
+    openSpy.mockRestore();
+  });
+});
