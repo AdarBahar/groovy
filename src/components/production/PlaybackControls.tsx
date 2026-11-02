@@ -44,12 +44,9 @@ export function PlaybackControls({
   midiConnected,
   onTrackingToggle,
 }: PlaybackControlsProps) {
-  // Use the enhanced MIDI timing accuracy hook
-  const {
-    timingAccuracy: _timingAccuracy,
-    averageScore: _averageScore,
-    showingAverage: _showingAverage,
-  } = useMIDITimingAccuracy(isPlaying, trackingEnabled);
+  // Keep the MIDI timing accuracy hook mounted for its side effects; this
+  // component does not render its values.
+  useMIDITimingAccuracy(isPlaying, trackingEnabled);
 
   // Track performed BPM from MIDI hits
   const { performedBpm } = useMIDIPerformedBpm(isPlaying, trackingEnabled);
@@ -66,6 +63,23 @@ export function PlaybackControls({
     return 'Full Triplet';
   };
 
+  // Accessible names for the icon-only transport buttons. They mirror the icon
+  // logic below so screen readers (and tests) see the current state.
+  const countingInLabel =
+    countdownNumber !== null && countdownNumber !== undefined ? `Counting in: ${countdownNumber}` : null;
+  const playLabel =
+    countingInButton === 'play' && countingInLabel
+      ? countingInLabel
+      : isPlaying && !isAutoSpeedUpActive
+        ? 'Pause'
+        : 'Play';
+  const playWithSpeedUpLabel =
+    countingInButton === 'playPlus' && countingInLabel
+      ? countingInLabel
+      : isPlaying && isAutoSpeedUpActive
+        ? 'Pause auto speed-up'
+        : 'Play with auto speed-up';
+
   return (
     <div className="flex flex-col lg:flex-row lg:items-center gap-4 lg:gap-8">
       {/* Time and Play button - centered on mobile, left on desktop */}
@@ -80,6 +94,8 @@ export function PlaybackControls({
             <div className="flex items-center gap-2 sm:gap-3">
             <Button
             onClick={onPlay}
+            aria-label={playLabel}
+            title={playLabel}
             size="lg"
             className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-gradient-to-br from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 shadow-lg shadow-purple-500/20 touch-target"
             >
@@ -94,6 +110,8 @@ export function PlaybackControls({
               <div className="relative">
             <Button
               onClick={onPlayWithSpeedUp}
+              aria-label={playWithSpeedUpLabel}
+              title={playWithSpeedUpLabel}
               size="lg"
               className={`w-12 h-12 sm:w-14 sm:h-14 rounded-full shadow-lg touch-target ${
                 isAutoSpeedUpActive
