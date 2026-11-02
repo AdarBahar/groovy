@@ -66,10 +66,13 @@ completed: 2026-11-02
 2. **Task 2: Accessible names on transport buttons** - `6b2e3ea` (fix)
 
 ## Verification
-- `npx vitest run`: 24 files, 260 tests pass (8 new).
+- `npx vitest run`: 24 files, 264 tests pass (12 new).
 - `npx tsc --noEmit`: clean.
 - `npx eslint` on touched files: 0 errors (1 pre-existing exhaustive-deps warning).
 - `NODE_ENV=production npx vite build`: succeeds.
+
+## Review Follow-up (PR #144, P2)
+- Pending initialization survived teardown: `dispose()` only released the access object already assigned, and overlapping `initialize()` calls could overwrite an access object that kept its handler. Fixed in `344913d` with a generation token in `MIDIAccessManager` (stale `requestMIDIAccess()` results are discarded) and a `cancelled` flag in the hook's init effect. Three manager tests and one hook test reproduce both races with deferred promises and fail without the fix.
 
 ## Deviations from Plan
 - Also labelled the embed page's expander button and edit link (same category, same file, hover-only text).
