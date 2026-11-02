@@ -13,6 +13,7 @@ vi.mock('../midi/MIDIAccess', () => {
       onDeviceListChange: { get: () => onDeviceListChange, set: (fn: any) => { onDeviceListChange = fn; } },
       bindInput: vi.fn().mockReturnValue(false),
       disconnect: vi.fn(),
+      dispose: vi.fn(),
       getCurrentDevice: vi.fn().mockReturnValue(null),
       sendFakeMIDIMessage: vi.fn(),
     },

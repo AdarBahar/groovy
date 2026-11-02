@@ -109,7 +109,9 @@ export function useMIDIInput(synth?: DrumSynth): UseMIDIInputReturn {
     initMIDI();
 
     return () => {
-      midiAccess.disconnect();
+      // Full teardown (not just disconnect) so no statechange/midimessage
+      // handler survives an unmount or a StrictMode/HMR remount.
+      midiAccess.dispose();
     };
   }, []);
 
