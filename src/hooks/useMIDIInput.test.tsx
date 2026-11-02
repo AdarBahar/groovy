@@ -2,6 +2,8 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useMIDIInput } from './useMIDIInput';
 import { midiHandler } from '../midi/MIDIHandler';
+import { midiAccess } from '../midi/MIDIAccess';
+import type { DrumSynth } from '../core/DrumSynth';
 
 // Mock all MIDI singletons
 vi.mock('../midi/MIDIAccess', () => {
@@ -249,5 +251,40 @@ describe('useMIDIInput - Listener Attachment', () => {
 
     // After unmount, cleanup should have called setNoteOnHandler with a no-op
     expect(setNoteOnHandlerSpy).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe('useMIDIInput - pending initialization after unmount', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    vi.mocked(midiAccess.getInputDevices).mockReturnValue([]);
+  });
+
+  it('does not bind a device or touch state when initialize() resolves after unmount', async () => {
+    let resolveInit!: (value: boolean) => void;
+    vi.mocked(midiAccess.initialize).mockReturnValueOnce(
+      new Promise<boolean>((resolve) => {
+        resolveInit = resolve;
+      })
+    );
+    // A device list that would trigger the localhost auto-connect path if the
+    // stale continuation were allowed to run (jsdom's hostname is localhost).
+    vi.mocked(midiAccess.getInputDevices).mockReturnValue([
+      { id: 'fake-midi-device', name: 'Fake', manufacturer: '', state: 'connected' },
+    ]);
+    const drumSynthStub = { resume: vi.fn(), playDrum: vi.fn() } as unknown as DrumSynth;
+
+    const { unmount } = renderHook(() => useMIDIInput(drumSynthStub));
+    unmount();
+    expect(midiAccess.dispose).toHaveBeenCalledTimes(1);
+
+    await act(async () => {
+      resolveInit(true);
+    });
+
+    expect(midiAccess.bindInput).not.toHaveBeenCalled();
   });
 });

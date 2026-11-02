@@ -84,8 +84,15 @@ export function useMIDIInput(synth?: DrumSynth): UseMIDIInputReturn {
 
   // Initialize MIDI on mount
   useEffect(() => {
+    let cancelled = false;
+
     const initMIDI = async () => {
       const success = await midiAccess.initialize();
+
+      // Unmounted (or StrictMode re-ran the effect) while access was pending.
+      // The manager has already discarded this initialization; do not touch
+      // state or bind a device from a stale continuation.
+      if (cancelled) return;
 
       if (success) {
         const initialDevices = midiAccess.getInputDevices();
@@ -109,6 +116,7 @@ export function useMIDIInput(synth?: DrumSynth): UseMIDIInputReturn {
     initMIDI();
 
     return () => {
+      cancelled = true;
       // Full teardown (not just disconnect) so no statechange/midimessage
       // handler survives an unmount or a StrictMode/HMR remount.
       midiAccess.dispose();
