@@ -1,7 +1,7 @@
 /** Tests for latencyStorage — migration from snake_case to kebab-case key (C7) */
 
 import { describe, it, expect, beforeEach } from 'vitest';
-import { loadLatencyConfig, saveLatencyConfig, getAllLatencyConfigs, clearAllLatencyConfigs } from './latencyStorage';
+import { loadLatencyConfig, saveLatencyConfig, deleteLatencyConfig, getAllLatencyConfigs, clearAllLatencyConfigs } from './latencyStorage';
 
 const DEVICE_ID = 'test-device-001';
 const NEW_KEY = 'groovy-midi-latency-config';
@@ -102,5 +102,41 @@ describe('C7: latency config key migration (snake_case → kebab-case)', () => {
     saveLatencyConfig(DEVICE_ID, SAMPLE_CONFIG);
     clearAllLatencyConfigs();
     expect(localStorage.getItem(NEW_KEY)).toBeNull();
+  });
+});
+
+describe('latency store validation (corrupt or partially invalid storage)', () => {
+  it.each([
+    ['invalid JSON', 'not json'],
+    ['an array', '[]'],
+    ['a primitive', '42'],
+  ])('a store that is %s reads as empty and can be overwritten by the next save', (_label, raw) => {
+    localStorage.setItem(NEW_KEY, raw);
+
+    expect(getAllLatencyConfigs()).toEqual({});
+    expect(loadLatencyConfig(DEVICE_ID)).toBeNull();
+
+    saveLatencyConfig(DEVICE_ID, SAMPLE_CONFIG);
+
+    expect(loadLatencyConfig(DEVICE_ID)?.offsetMs).toBe(50);
+    expect(Object.keys(getAllLatencyConfigs())).toEqual([DEVICE_ID]);
+  });
+
+  it('keeps valid entries and drops invalid ones', () => {
+    localStorage.setItem(
+      NEW_KEY,
+      JSON.stringify({
+        [DEVICE_ID]: SAMPLE_CONFIG,
+        'bad-device': { enabled: 'yes', offsetMs: -5 },
+      })
+    );
+
+    expect(Object.keys(getAllLatencyConfigs())).toEqual([DEVICE_ID]);
+    expect(loadLatencyConfig('bad-device')).toBeNull();
+    expect(loadLatencyConfig(DEVICE_ID)?.offsetMs).toBe(50);
+
+    deleteLatencyConfig(DEVICE_ID);
+    expect(getAllLatencyConfigs()).toEqual({});
+    expect(JSON.parse(localStorage.getItem(NEW_KEY)!)).toEqual({});
   });
 });
