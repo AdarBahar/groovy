@@ -99,3 +99,83 @@ describe('MIDIAccess fake keyboard handler lifecycle (#120)', () => {
     });
   });
 });
+
+describe('MIDIAccess teardown (no listener accumulation)', () => {
+  function makeMockAccess(id: string) {
+    const input = {
+      id,
+      name: `Kit ${id}`,
+      manufacturer: 'Test',
+      state: 'connected' as string,
+      onmidimessage: null as ((e: MIDIMessageEvent) => void) | null,
+    };
+    const access = {
+      inputs: new Map([[id, input]]),
+      onstatechange: null as ((e: Event) => void) | null,
+    };
+    return { input, access };
+  }
+
+  function stubRequestMIDIAccess(access: unknown): void {
+    Object.defineProperty(navigator, 'requestMIDIAccess', {
+      value: vi.fn().mockResolvedValue(access),
+      writable: true,
+      configurable: true,
+    });
+  }
+
+  afterEach(() => {
+    midiAccess.dispose();
+  });
+
+  it('re-initialize clears the statechange handler on the previous MIDIAccess object', async () => {
+    const first = makeMockAccess('a');
+    stubRequestMIDIAccess(first.access);
+    await midiAccess.initialize();
+    expect(first.access.onstatechange).toBeTypeOf('function');
+
+    const second = makeMockAccess('b');
+    stubRequestMIDIAccess(second.access);
+    await midiAccess.initialize();
+
+    expect(first.access.onstatechange).toBeNull();
+    expect(second.access.onstatechange).toBeTypeOf('function');
+  });
+
+  it('dispose() clears every handler and forgets the access object', async () => {
+    const { input, access } = makeMockAccess('a');
+    stubRequestMIDIAccess(access);
+    await midiAccess.initialize();
+    midiAccess.onDeviceListChange = vi.fn();
+    expect(midiAccess.bindInput('a', vi.fn())).toBe(true);
+    expect(input.onmidimessage).toBeTypeOf('function');
+
+    midiAccess.dispose();
+
+    expect(input.onmidimessage).toBeNull();
+    expect(access.onstatechange).toBeNull();
+    expect(midiAccess.getCurrentDevice()).toBeNull();
+    expect(midiAccess.onDeviceListChange).toBeNull();
+    const realDevices = midiAccess.getInputDevices().filter((d) => d.id !== FAKE_MIDI_DEVICE_ID_EXPORT);
+    expect(realDevices).toHaveLength(0);
+  });
+
+  it('a disconnect event for the bound port clears its message handler', async () => {
+    const { input, access } = makeMockAccess('a');
+    stubRequestMIDIAccess(access);
+    await midiAccess.initialize();
+    midiAccess.bindInput('a', vi.fn());
+    expect(input.onmidimessage).toBeTypeOf('function');
+
+    input.state = 'disconnected';
+    access.onstatechange!({ port: input } as unknown as Event);
+
+    expect(input.onmidimessage).toBeNull();
+    expect(midiAccess.getCurrentDevice()).toBeNull();
+  });
+
+  it('dispose() is safe when never initialized or called twice', () => {
+    midiAccess.dispose();
+    expect(() => midiAccess.dispose()).not.toThrow();
+  });
+});

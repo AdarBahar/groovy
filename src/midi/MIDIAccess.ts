@@ -29,6 +29,12 @@ class MIDIAccessManager {
     // Detect localhost for fake MIDI device
     this.isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 
+    // Re-initialization starts from a clean slate: drop any bound input and
+    // release the previous MIDIAccess object (and its statechange handler) so
+    // handlers never accumulate across StrictMode double-mounts, HMR or re-init.
+    this.disconnect();
+    this.releaseAccess();
+
     if (!navigator.requestMIDIAccess) {
       logger.error('Web MIDI API not supported in this browser');
       // Even if Web MIDI API is not supported, we can still use the keyboard simulator on localhost
@@ -189,6 +195,9 @@ class MIDIAccessManager {
     // If current device disconnected, clear it
     if (this.currentInput && event.port.id === this.currentInput.id && event.port.state === 'disconnected') {
       logger.warn('Current MIDI input device disconnected');
+      // Clear the port handler before dropping the reference so a reconnecting
+      // port cannot fire a stale closure.
+      this.currentInput.onmidimessage = null;
       this.currentInput = null;
     }
   }
@@ -208,6 +217,29 @@ class MIDIAccessManager {
   }
 
   /**
+   * Release the underlying MIDIAccess object and its statechange handler.
+   * @private
+   */
+  private releaseAccess(): void {
+    if (this.midiAccess) {
+      this.midiAccess.onstatechange = null;
+      this.midiAccess = null;
+    }
+  }
+
+  /**
+   * Full teardown: disconnect the bound input, release the MIDIAccess object
+   * and drop every callback. Safe to call when never initialized or already
+   * disposed. Call initialize() again to reuse the manager.
+   */
+  dispose(): void {
+    this.disconnect();
+    this.releaseAccess();
+    this.messageHandler = null;
+    this.onDeviceListChange = null;
+  }
+
+  /**
    * Get currently connected device info
    * @returns Device info or null
    */
@@ -216,7 +248,7 @@ class MIDIAccessManager {
       return {
         id: this.currentInput.id,
         name: this.currentInput.name || 'Unknown Device',
-        manufacturer: (this.currentInput as any).manufacturer || '',
+        manufacturer: this.currentInput.manufacturer || '',
         state: this.currentInput.state as 'connected' | 'disconnected',
       };
     }
