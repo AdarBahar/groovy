@@ -105,7 +105,8 @@ The app is configured to deploy to `/groovy/` subdirectory by default.
 # 1. Build for production
 npm run build:prod
 
-# 2. Upload dist/ contents to server
+# 2. Deploy with the inmotion-deploy service "groovy"
+#    (python3 inmotionDeploy.py groovy --dry-run, then without --dry-run)
 # See DEPLOYMENT.md for detailed instructions
 ```
 
