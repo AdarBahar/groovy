@@ -99,3 +99,171 @@ describe('MIDIAccess fake keyboard handler lifecycle (#120)', () => {
     });
   });
 });
+
+describe('MIDIAccess teardown (no listener accumulation)', () => {
+  function makeMockAccess(id: string) {
+    const input = {
+      id,
+      name: `Kit ${id}`,
+      manufacturer: 'Test',
+      state: 'connected' as string,
+      onmidimessage: null as ((e: MIDIMessageEvent) => void) | null,
+    };
+    const access = {
+      inputs: new Map([[id, input]]),
+      onstatechange: null as ((e: Event) => void) | null,
+    };
+    return { input, access };
+  }
+
+  function stubRequestMIDIAccess(access: unknown): void {
+    Object.defineProperty(navigator, 'requestMIDIAccess', {
+      value: vi.fn().mockResolvedValue(access),
+      writable: true,
+      configurable: true,
+    });
+  }
+
+  afterEach(() => {
+    midiAccess.dispose();
+  });
+
+  it('re-initialize clears the statechange handler on the previous MIDIAccess object', async () => {
+    const first = makeMockAccess('a');
+    stubRequestMIDIAccess(first.access);
+    await midiAccess.initialize();
+    expect(first.access.onstatechange).toBeTypeOf('function');
+
+    const second = makeMockAccess('b');
+    stubRequestMIDIAccess(second.access);
+    await midiAccess.initialize();
+
+    expect(first.access.onstatechange).toBeNull();
+    expect(second.access.onstatechange).toBeTypeOf('function');
+  });
+
+  it('dispose() clears every handler and forgets the access object', async () => {
+    const { input, access } = makeMockAccess('a');
+    stubRequestMIDIAccess(access);
+    await midiAccess.initialize();
+    midiAccess.onDeviceListChange = vi.fn();
+    expect(midiAccess.bindInput('a', vi.fn())).toBe(true);
+    expect(input.onmidimessage).toBeTypeOf('function');
+
+    midiAccess.dispose();
+
+    expect(input.onmidimessage).toBeNull();
+    expect(access.onstatechange).toBeNull();
+    expect(midiAccess.getCurrentDevice()).toBeNull();
+    expect(midiAccess.onDeviceListChange).toBeNull();
+    const realDevices = midiAccess.getInputDevices().filter((d) => d.id !== FAKE_MIDI_DEVICE_ID_EXPORT);
+    expect(realDevices).toHaveLength(0);
+  });
+
+  it('a disconnect event for the bound port clears its message handler', async () => {
+    const { input, access } = makeMockAccess('a');
+    stubRequestMIDIAccess(access);
+    await midiAccess.initialize();
+    midiAccess.bindInput('a', vi.fn());
+    expect(input.onmidimessage).toBeTypeOf('function');
+
+    input.state = 'disconnected';
+    access.onstatechange!({ port: input } as unknown as Event);
+
+    expect(input.onmidimessage).toBeNull();
+    expect(midiAccess.getCurrentDevice()).toBeNull();
+  });
+
+  it('dispose() is safe when never initialized or called twice', () => {
+    midiAccess.dispose();
+    expect(() => midiAccess.dispose()).not.toThrow();
+  });
+});
+
+describe('MIDIAccess pending initialization is invalidated by dispose()/re-init', () => {
+  function makeMockAccess(id: string) {
+    const input = { id, name: `Kit ${id}`, manufacturer: 'Test', state: 'connected' as string, onmidimessage: null };
+    return {
+      input,
+      access: { inputs: new Map([[id, input]]), onstatechange: null as ((e: Event) => void) | null },
+    };
+  }
+
+  function deferred<T>() {
+    let resolve!: (value: T) => void;
+    const promise = new Promise<T>((r) => {
+      resolve = r;
+    });
+    return { promise, resolve };
+  }
+
+  /** Each call to requestMIDIAccess returns the next promise in the queue */
+  function stubRequestMIDIAccessQueue(promises: Promise<unknown>[]): void {
+    const queue = [...promises];
+    Object.defineProperty(navigator, 'requestMIDIAccess', {
+      value: vi.fn().mockImplementation(() => queue.shift()),
+      writable: true,
+      configurable: true,
+    });
+  }
+
+  function realDeviceIds(): string[] {
+    return midiAccess.getInputDevices().map((d) => d.id).filter((id) => id !== FAKE_MIDI_DEVICE_ID_EXPORT);
+  }
+
+  afterEach(() => {
+    midiAccess.dispose();
+  });
+
+  it('an initialize() that resolves after dispose() attaches nothing', async () => {
+    const { access } = makeMockAccess('a');
+    const d = deferred<unknown>();
+    stubRequestMIDIAccessQueue([d.promise]);
+
+    const pending = midiAccess.initialize();
+    midiAccess.dispose();
+    d.resolve(access);
+
+    expect(await pending).toBe(false);
+    expect(access.onstatechange).toBeNull();
+    expect(realDeviceIds()).toEqual([]);
+  });
+
+  it('overlapping initializations resolved in order: only the newest keeps a handler', async () => {
+    const a = makeMockAccess('a');
+    const b = makeMockAccess('b');
+    const da = deferred<unknown>();
+    const db = deferred<unknown>();
+    stubRequestMIDIAccessQueue([da.promise, db.promise]);
+
+    const first = midiAccess.initialize();
+    const second = midiAccess.initialize();
+    da.resolve(a.access);
+    expect(await first).toBe(false);
+    db.resolve(b.access);
+    expect(await second).toBe(true);
+
+    expect(a.access.onstatechange).toBeNull();
+    expect(b.access.onstatechange).toBeTypeOf('function');
+    expect(realDeviceIds()).toEqual(['b']);
+  });
+
+  it('overlapping initializations resolved out of order: the stale one cannot overwrite the newest', async () => {
+    const a = makeMockAccess('a');
+    const b = makeMockAccess('b');
+    const da = deferred<unknown>();
+    const db = deferred<unknown>();
+    stubRequestMIDIAccessQueue([da.promise, db.promise]);
+
+    const first = midiAccess.initialize();
+    const second = midiAccess.initialize();
+    db.resolve(b.access);
+    expect(await second).toBe(true);
+    da.resolve(a.access);
+    expect(await first).toBe(false);
+
+    expect(a.access.onstatechange).toBeNull();
+    expect(b.access.onstatechange).toBeTypeOf('function');
+    expect(realDeviceIds()).toEqual(['b']);
+  });
+});
