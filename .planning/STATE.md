@@ -91,6 +91,7 @@ None currently. Ready to begin Phase 1 planning.
 | 260705-fast | Local-only build+zip script (gitignored) — npm build, drop stats.html, zip dist | 2026-07-05 | — | fast (inline, no directory) |
 | 260705-dxu | POC: per-beat console comparison of groove pattern vs MIDI hits (expected/played/timing) | 2026-07-05 | 44f487d | [260705-dxu-poc-per-beat-console-comparison-of-groov](./quick/260705-dxu-poc-per-beat-console-comparison-of-groov/) |
 | 260705-fast | TD-17 hi-hat edge triggers (22/26), disable 950ms latency default + migration, BeatComparator late-hit warning | 2026-07-05 | b69539c | fast (inline, no directory) |
+| 261102-htl | Fix P1 UI/UX + reliability: MIDIAccess dispose()/idempotent init, accessible names on transport buttons | 2026-11-02 | 6b2e3ea | [261102-htl-fix-p1-ui-ux-and-reliability-items-give-](./quick/261102-htl-fix-p1-ui-ux-and-reliability-items-give-/) |
 
 ## Next Steps
 
