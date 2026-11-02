@@ -41,6 +41,24 @@ function jsonResponse(
       get: (name: string): string | null => headers[name] ?? null,
     },
     json: async (): Promise<unknown> => body,
+    text: async (): Promise<string> => JSON.stringify(body),
+  } as unknown as Response;
+}
+
+/** Build a Response-like object with a raw (non-JSON) body, as gateways/proxies send */
+function textResponse(
+  status: number,
+  text: string,
+  headers: Record<string, string> = {}
+): Response {
+  return {
+    ok: status >= 200 && status < 300,
+    status,
+    headers: {
+      get: (name: string): string | null => headers[name] ?? null,
+    },
+    json: async (): Promise<unknown> => JSON.parse(text),
+    text: async (): Promise<string> => text,
   } as unknown as Response;
 }
 
@@ -268,5 +286,51 @@ describe('getShortenerErrorMessage', () => {
       'Network error. Please try again.'
     );
     expect(mod.getShortenerErrorMessage('not an error')).toBe('Failed to shorten URL');
+  });
+});
+
+describe('shortenURL status-first error mapping with non-JSON bodies', () => {
+  it('keeps rate_limited and Retry-After on a 429 whose body is HTML', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      textResponse(429, '<html><body>Too Many Requests</body></html>', { 'Retry-After': '30' })
+    );
+    const mod = await loadModule(fetchMock);
+
+    const error = await captureError(mod, LONG_URL);
+    expect(error).toBeInstanceOf(mod.ShortenerError);
+    expect((error as InstanceType<typeof mod.ShortenerError>).type).toBe('rate_limited');
+    expect((error as InstanceType<typeof mod.ShortenerError>).retryAfter).toBe(30);
+  });
+
+  it('maps a 502 with an HTML body to unknown with the status, not a parse error', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(textResponse(502, '<html>Bad Gateway</html>'));
+    const mod = await loadModule(fetchMock);
+
+    const error = (await captureError(mod, LONG_URL)) as InstanceType<typeof mod.ShortenerError>;
+    expect(error.type).toBe('unknown');
+    expect(error.statusCode).toBe(502);
+    expect(error.message).not.toMatch(/JSON/i);
+  });
+
+  it('does not report a TypeError thrown after fetch resolved as a network error', async () => {
+    const response = textResponse(201, '');
+    response.text = async (): Promise<string> => {
+      throw new TypeError('boom');
+    };
+    const fetchMock = vi.fn().mockResolvedValue(response);
+    const mod = await loadModule(fetchMock);
+
+    const error = (await captureError(mod, LONG_URL)) as InstanceType<typeof mod.ShortenerError>;
+    expect(error.type).toBe('unknown');
+    expect(error.message).toBe('boom');
+  });
+
+  it('treats a 2xx with an empty body as a malformed response', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(textResponse(201, ''));
+    const mod = await loadModule(fetchMock);
+
+    const error = (await captureError(mod, LONG_URL)) as InstanceType<typeof mod.ShortenerError>;
+    expect(error.type).toBe('unknown');
+    expect(error.message).toBe('Malformed shortener response');
   });
 });
