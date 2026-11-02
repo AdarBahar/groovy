@@ -20,6 +20,13 @@ class MIDIAccessManager {
   private fakeMIDIMessageHandler: ((data: Uint8Array, timestamp: number) => void) | null = null;
   public onDeviceListChange: ((devices: MIDIDeviceInfo[]) => void) | null = null;
   private isLocalhost: boolean = false;
+  /**
+   * Bumped by every initialize() and dispose(). An initialize() whose
+   * requestMIDIAccess() resolves after a newer initialize() or a dispose()
+   * sees a different generation and discards its result instead of attaching
+   * a handler to an object nobody owns.
+   */
+  private initGeneration: number = 0;
 
   /**
    * Initialize Web MIDI API access
@@ -34,6 +41,7 @@ class MIDIAccessManager {
     // handlers never accumulate across StrictMode double-mounts, HMR or re-init.
     this.disconnect();
     this.releaseAccess();
+    const generation = ++this.initGeneration;
 
     if (!navigator.requestMIDIAccess) {
       logger.error('Web MIDI API not supported in this browser');
@@ -46,7 +54,14 @@ class MIDIAccessManager {
     }
 
     try {
-      this.midiAccess = await navigator.requestMIDIAccess({ sysex: false });
+      const access = await navigator.requestMIDIAccess({ sysex: false });
+      if (generation !== this.initGeneration) {
+        // Superseded by a newer initialize() or torn down by dispose() while
+        // the permission/access request was pending: leave this object untouched.
+        logger.log('MIDI access resolved after re-init/dispose; discarding stale initialization');
+        return false;
+      }
+      this.midiAccess = access;
       this.midiAccess.onstatechange = (e: Event) => this.handleStateChange(e as unknown as MIDIConnectionEvent);
       logger.log('MIDI Access initialized successfully');
 
@@ -56,6 +71,9 @@ class MIDIAccessManager {
 
       return true;
     } catch (error) {
+      if (generation !== this.initGeneration) {
+        return false;
+      }
       logger.error('Failed to initialize MIDI access:', error);
       if (this.isLocalhost) {
         logger.log('🎹 Falling back to keyboard MIDI simulator');
@@ -233,6 +251,8 @@ class MIDIAccessManager {
    * disposed. Call initialize() again to reuse the manager.
    */
   dispose(): void {
+    // Invalidate any initialize() still awaiting requestMIDIAccess().
+    this.initGeneration++;
     this.disconnect();
     this.releaseAccess();
     this.messageHandler = null;
