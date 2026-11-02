@@ -4,7 +4,7 @@
 
 Production runs on the InMotion cPanel host. The folder on the server is `/home/baharc5/public_html/groovy/`.
 
-Deploy with the `inmotion-deploy` tool. The tool is in the repo `AdarBahar/inmotion-deploy`. Its clone is on the Mac at `~/Code/deployment/inmotion`. The service name is `groovy`.
+Deploy with the `inmotion-deploy` tool. The tool is in the repo `AdarBahar/inmotion-deploy`. Its clone is on the Mac at `~/Code/deployment/inmotion`. The service name is `groovy`. The tool deploys the latest `main` from GitHub. It builds the site itself, in a temporary folder. Your working folder, your branch, and your uncommitted work are not used.
 
 **Note:** To deploy to a different subdirectory, see `CHANGE_BASE_PATH.md`
 
@@ -24,6 +24,8 @@ This will:
 - Output to `dist/` directory
 - Copy `public/.htaccess` into `dist/`
 
+This local build is for your tests only. The deploy tool does not use it: it builds `origin/main` again in a temporary folder.
+
 ### 2. Verify Build Locally
 ```bash
 npm run preview:prod
@@ -39,21 +41,24 @@ Read the section [Deploy with inmotion-deploy](#deploy-with-inmotion-deploy) and
 
 ## Deploy with inmotion-deploy
 
-The tool copies the content of `dist/` to the server folder. Run each step in order.
+The tool takes `origin/main` from GitHub, builds it, and copies the content of `dist/` to the server folder. Run each step in order.
 
-1. Build the site: `npm run build:prod` (in `~/Code/groovy`).
+1. Merge your change to `main` on GitHub. The tool deploys only what GitHub has. Do not build by hand.
 2. Change to the tool folder: `cd ~/Code/deployment/inmotion`.
 3. Show the changes. Change nothing: `python3 inmotionDeploy.py groovy --dry-run`.
 4. Deploy: `python3 inmotionDeploy.py groovy`. Answer `y` when the tool asks.
 5. Test the page: https://www.bahar.co.il/groovy/ and the playback controls.
 
 What the tool does:
+- It fetches `origin` and exports the latest `main` into a temporary folder. It runs `npm ci` and `npm run build:prod` there, and it deletes the folder after the run. The three `VITE_URL_SHORTENER_*` values come from `.env.local` (the tool reads only the names in its config).
 - It backs up the whole server folder to the Mac before it changes a file.
 - It copies `dist/` to the server. It does not copy `stats.html` or `*.zip` files.
 - It deletes the server files that are not in `dist/` (`delete_extra` is `true`). Read the dry-run list before you answer `y`.
 - It tests https://www.bahar.co.il/groovy/. The answer must be `200`.
 
 If the dry-run lists more than 100 changes, the tool stops. Add `--allow-large` only after you read the list.
+
+To test a pushed branch, run `python3 inmotionDeploy.py groovy --dry-run --ref <branch>`. The tool refuses a branch that exists only on your Mac. After a change of the build, a dry run of the same commit must say `unchanged`. If it lists changes, the build in the tool differs from the build in your working folder.
 
 ---
 
@@ -173,7 +178,7 @@ python3 inmotionDeploy.py groovy --rollback             # restore the latest bac
 
 The rollback first saves the current server state as a new backup. To restore an older backup, run `python3 inmotionDeploy.py groovy --list` and give the time stamp.
 
-To roll back the code instead, check out the previous commit, run `npm run build:prod`, and deploy again.
+To roll back the code instead, deploy a previous commit that is on GitHub: `python3 inmotionDeploy.py groovy --ref <commit>`.
 
 ---
 
