@@ -138,6 +138,8 @@ export default function EmbedPage() {
               {!isControlsExpanded && (<span>
                 <button
                   onClick={handlePlay}
+                  aria-label={isPlaying ? 'Pause' : 'Play'}
+                  title={isPlaying ? 'Pause' : 'Play'}
                   className="px-3 py-1 bg-slate-500 embed:text-white   text-sm font-medium hover:opacity-80 transition-opacity">
                   {isPlaying ? ' ⏸ ' : '▶ '}
                 </button>
@@ -148,6 +150,8 @@ export default function EmbedPage() {
           <div className="flex items-center gap-2">   
           <button
             onClick={() => setIsControlsExpanded(!isControlsExpanded)}
+            aria-label="Set tempo and swing"
+            aria-expanded={isControlsExpanded}
             className="flex items-center gap-2 text-sm font-medium text-slate-500 embed group"
           >
             <Ellipsis
@@ -164,6 +168,7 @@ export default function EmbedPage() {
             href={fullURL}
             target="_self"
             rel="noopener noreferrer"
+            aria-label="Edit groove"
             className="inline-flex items-center gap-1 text-xs  flex-shrink-0 light group"
             >
           <span className="hidden group-hover:inline text-xs">Edit Groove</span>
