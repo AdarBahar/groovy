@@ -42,7 +42,14 @@ RewriteRule ^ index.html [L]
 # Security headers
 <IfModule mod_headers.c>
   # Content-Security-Policy scoped to what this app actually loads.
-  # `Header always set` replaces the site-wide policy for the /groovy/ path only.
+  #
+  # Apache keeps two independent response-header tables: the site-wide policy is
+  # set at the root with plain `Header set` (the "onsuccess" table), while ours
+  # uses `Header always set` (the "always" table). A set in one table never
+  # replaces the other, and browsers enforce every CSP header they receive as an
+  # intersection. Unset the site-wide one here so /groovy/ sends exactly one
+  # policy: the one below.
+  Header unset Content-Security-Policy
   #
   # Origins, by directive:
   #   script-src   Vite bundle (self), www.bahar.co.il (universal-analytics.js),
