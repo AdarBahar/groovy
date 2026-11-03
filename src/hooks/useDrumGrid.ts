@@ -199,6 +199,7 @@ export function useDrumGrid({
   ) => {
     if (drag.isDragging) return;
     ctx.handleLeftClick(event, measureIndex, rowIndex, position);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- Only ctx.handleLeftClick is used. The ctx object is new on each render.
   }, [drag.isDragging, ctx.handleLeftClick]);
 
   return {

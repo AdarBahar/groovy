@@ -1,4 +1,4 @@
-import { Undo2, Redo2, Eye } from 'lucide-react';
+import { Undo2, Redo2 } from 'lucide-react';
 import { Button } from './ui/button';
 import { useState } from 'react';
 

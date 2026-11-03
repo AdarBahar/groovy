@@ -89,7 +89,7 @@ export class DrumSynth {
   private setupErrorHandling() {
     // Listen for audio processing errors
     if (this.audioContext instanceof AudioContext && 'addEventListener' in this.audioContext) {
-      (this.audioContext as any).addEventListener?.('processorerror', (event: any) => {
+      this.audioContext.addEventListener?.('processorerror', (event: Event) => {
         logger.error('AudioContext processorerror:', event);
       });
     }

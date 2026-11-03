@@ -65,7 +65,7 @@ describe('useMIDITrackingFeedback', () => {
 
     // First note should have good class
     const notes = svg.querySelectorAll('.abcjs-note');
-    expect((notes[0] as any).classList.contains('midi-tracking-good')).toBe(true);
+    expect(notes[0].classList.contains('midi-tracking-good')).toBe(true);
   });
 
   it('should apply bad hit class to notes when overall score <= 70', () => {
@@ -90,7 +90,7 @@ describe('useMIDITrackingFeedback', () => {
 
     // First note should have bad class
     const notes = svg.querySelectorAll('.abcjs-note');
-    expect((notes[0] as any).classList.contains('midi-tracking-bad')).toBe(true);
+    expect(notes[0].classList.contains('midi-tracking-bad')).toBe(true);
   });
 
   it('should remove class after 500ms timeout', () => {
@@ -114,7 +114,7 @@ describe('useMIDITrackingFeedback', () => {
     });
 
     const notes = svg.querySelectorAll('.abcjs-note');
-    expect((notes[0] as any).classList.contains('midi-tracking-good')).toBe(true);
+    expect(notes[0].classList.contains('midi-tracking-good')).toBe(true);
 
     // Advance time by 500ms
     act(() => {
@@ -122,7 +122,7 @@ describe('useMIDITrackingFeedback', () => {
     });
 
     // Class should be removed
-    expect((notes[0] as any).classList.contains('midi-tracking-good')).toBe(false);
+    expect(notes[0].classList.contains('midi-tracking-good')).toBe(false);
   });
 
   it('should fallback to last note if exact note not found', () => {
@@ -147,7 +147,7 @@ describe('useMIDITrackingFeedback', () => {
 
     // Last note should have the class
     const notes = svg.querySelectorAll('.abcjs-note');
-    expect((notes[notes.length - 1] as any).classList.contains('midi-tracking-good')).toBe(true);
+    expect(notes[notes.length - 1].classList.contains('midi-tracking-good')).toBe(true);
   });
 
   it('should handle missing SVG container gracefully', () => {
@@ -217,13 +217,13 @@ describe('useMIDITrackingFeedback', () => {
     });
 
     const notes = svg.querySelectorAll('.abcjs-note');
-    expect((notes[0] as any).classList.contains('midi-tracking-good')).toBe(true);
+    expect(notes[0].classList.contains('midi-tracking-good')).toBe(true);
 
     // Advance time to clean up
     act(() => {
       vi.advanceTimersByTime(500);
     });
 
-    expect((notes[0] as any).classList.contains('midi-tracking-good')).toBe(false);
+    expect(notes[0].classList.contains('midi-tracking-good')).toBe(false);
   });
 });

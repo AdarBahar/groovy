@@ -44,6 +44,7 @@ import { TimeSignatureSelectorModal } from '../components/production/TimeSignatu
 import './ProductionPage.css';
 
 // Re-exported for backward compatibility (tests import from this path)
+// eslint-disable-next-line react-refresh/only-export-components -- Re-export for backward compatibility with tests.
 export { findSimilarMeasures, applyStickingToSimilar } from '../core/stickingUtils';
 
 const TITLE_MAX_LENGTH = 50;

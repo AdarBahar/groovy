@@ -3,8 +3,8 @@ import { render, act, fireEvent } from '@testing-library/react';
 import VolumeKnob from './VolumeKnob';
 
 describe('VolumeKnob - Document Listener Cleanup', () => {
-  let addEventListenerSpy: any;
-  let removeEventListenerSpy: any;
+  let addEventListenerSpy: ReturnType<typeof vi.spyOn>;
+  let removeEventListenerSpy: ReturnType<typeof vi.spyOn>;
 
   beforeEach(() => {
     vi.clearAllMocks();
