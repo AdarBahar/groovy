@@ -75,6 +75,18 @@ export function isShortenerConfigured(): boolean {
 }
 
 /**
+ * Return the host name of the shortener service, for the privacy notice in the UI.
+ * Return the configured value as it is if it is not a valid URL.
+ */
+export function getShortenerHost(): string {
+  try {
+    return new URL(SHORTENER_API_URL).host;
+  } catch {
+    return SHORTENER_API_URL;
+  }
+}
+
+/**
  * Parse the Retry-After header value into seconds, or undefined if absent/invalid
  */
 function parseRetryAfter(response: Response): number | undefined {

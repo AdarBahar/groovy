@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { X } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { logger } from '../../utils/logger';
+import { isAnalyticsOptedOut, isAnalyticsOptedOutOnPageLoad, setAnalyticsOptOut } from '../../utils/analytics';
 
 interface AboutModalProps {
   isOpen: boolean;
@@ -11,6 +12,20 @@ interface AboutModalProps {
 export function AboutModal({ isOpen, onClose }: AboutModalProps) {
   const { isDark } = useTheme();
   const [debugMode, setDebugMode] = useState(logger.isDebugMode());
+
+  const [shareUsage, setShareUsage] = useState(!isAnalyticsOptedOut());
+  // The analytics script loads (or not) one time, when the page loads.
+  // A change to the opt-out applies fully only after a reload.
+  const [isAnalyticsOptedOutAtLoad] = useState(isAnalyticsOptedOutOnPageLoad);
+
+  const [isShareUsageSaveFailed, setIsShareUsageSaveFailed] = useState(false);
+
+  const handleShareUsageToggle = () => {
+    const next = !shareUsage;
+    const isSaved = setAnalyticsOptOut(!next);
+    setIsShareUsageSaveFailed(!isSaved);
+    setShareUsage(next);
+  };
 
   const handleDebugToggle = () => {
     const newMode = logger.toggleDebugMode();
@@ -117,6 +132,27 @@ export function AboutModal({ isOpen, onClose }: AboutModalProps) {
 
           <div className={`pt-4 border-t ${isDark ? 'border-slate-700' : 'border-slate-200'} text-sm text-slate-400`}>
             <p>Version 1.0.0 • MIT License</p>
+            <div className="mt-2 flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="share-usage-statistics"
+                checked={shareUsage}
+                onChange={handleShareUsageToggle}
+                className="accent-purple-600"
+              />
+              <label htmlFor="share-usage-statistics" className="text-sm cursor-pointer">
+                Share anonymous usage statistics
+              </label>
+            </div>
+            {isShareUsageSaveFailed ? (
+              <p role="alert" className="mt-1 text-xs text-amber-600 dark:text-amber-400">
+                Your browser did not save this choice. It applies only until you reload the page.
+              </p>
+            ) : (
+              shareUsage === isAnalyticsOptedOutAtLoad && (
+                <p className="mt-1 text-xs">Reload the page to apply this change fully.</p>
+              )
+            )}
             <p className="mt-1">
               © 2026 Groovy. Created by{' '}
               <button

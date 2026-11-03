@@ -8,6 +8,7 @@
 import React, { Component, ReactNode } from 'react';
 import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
 import { logger } from '../utils/logger';
+import { trackError } from '../utils/analytics';
 
 interface Props {
   children: ReactNode;
@@ -47,14 +48,9 @@ export class ErrorBoundary extends Component<Props, State> {
       errorInfo,
     });
 
-    // Report to analytics or error tracking service if available
-    if (typeof window !== 'undefined' && window.BaharAnalytics) {
-      window.BaharAnalytics.trackError(
-        'React Error Boundary',
-        error.message,
-        errorInfo.componentStack || 'unknown'
-      );
-    }
+    // Report the error name to analytics. The wrapper checks the host and the opt-out.
+    // Do not send the error message. It can hold user data.
+    trackError('React Error Boundary', error.name || 'Error', errorInfo.componentStack ?? 'unknown');
   }
 
   handleReset = (): void => {

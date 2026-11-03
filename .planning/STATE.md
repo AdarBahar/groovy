@@ -94,6 +94,7 @@ None currently. Ready to begin Phase 1 planning.
 | 261102-htl | Fix P1 UI/UX + reliability: MIDIAccess dispose()/idempotent init, accessible names on transport buttons | 2026-11-02 | 6b2e3ea | [261102-htl-fix-p1-ui-ux-and-reliability-items-give-](./quick/261102-htl-fix-p1-ui-ux-and-reliability-items-give-/) |
 | 261102-kv8 | Fix P2: status-first shortener errors, validated latency store, noopener on share windows | 2026-11-02 | 4c27f65 | [261102-kv8-fix-p2-items-urlshortener-parses-body-on](./quick/261102-kv8-fix-p2-items-urlshortener-parses-body-on/) |
 | 261102-lp7 | Send a single CSP header (unset site-wide policy in public/.htaccess), remove duplicate root .htaccess | 2026-11-02 | 6c1e1de | [261102-lp7-send-a-single-csp-header-unset-the-site-](./quick/261102-lp7-send-a-single-csp-header-unset-the-site-/) |
+| 261103-mxb | Analytics privacy (#148): no groove names/device IDs/referrer, gated error events, exact host check, opt-out toggle, shortener notice | 2026-11-03 | 301638c | [261103-mxb-analytics-privacy-fixes-for-issue-148](./quick/261103-mxb-analytics-privacy-fixes-for-issue-148/) |
 | 261103-n66 | Fix all ESLint problems: ignore .claude and archive, type tests, justified disables for hooks and fast refresh | 2026-11-03 | 3e262f2 | [261103-n66-fix-all-eslint-problems](./quick/261103-n66-fix-all-eslint-problems/) |
 
 ## Next Steps
@@ -116,4 +117,4 @@ None currently. Ready to begin Phase 1 planning.
 - Decisions captured: 4 (Handler Lifecycle, Listener Dependencies, Cleanup Strategy, Memory Verification)
 - Next: Plan Phase 1
 
-Last activity: 2026-11-03 - Completed quick task 261103-n66: Fix all ESLint problems
+Last activity: 2026-11-03 - Completed quick tasks 261103-mxb (analytics privacy, #148) and 261103-n66 (ESLint cleanup)

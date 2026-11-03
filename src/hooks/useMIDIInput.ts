@@ -138,7 +138,7 @@ export function useMIDIInput(synth?: DrumSynth): UseMIDIInputReturn {
 
         // Track device disconnection
         if (disconnectedDevice) {
-          trackMIDIDeviceDisconnected(disconnectedDevice.name, disconnectedDevice.id);
+          trackMIDIDeviceDisconnected(disconnectedDevice.name);
         }
       }
     };
