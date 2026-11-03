@@ -96,6 +96,7 @@ None currently. Ready to begin Phase 1 planning.
 | 261102-lp7 | Send a single CSP header (unset site-wide policy in public/.htaccess), remove duplicate root .htaccess | 2026-11-02 | 6c1e1de | [261102-lp7-send-a-single-csp-header-unset-the-site-](./quick/261102-lp7-send-a-single-csp-header-unset-the-site-/) |
 | 261103-mxb | Analytics privacy (#148): no groove names/device IDs/referrer, gated error events, exact host check, opt-out toggle, shortener notice | 2026-11-03 | 301638c | [261103-mxb-analytics-privacy-fixes-for-issue-148](./quick/261103-mxb-analytics-privacy-fixes-for-issue-148/) |
 | 261103-n66 | Fix all ESLint problems: ignore .claude and archive, type tests, justified disables for hooks and fast refresh | 2026-11-03 | 3e262f2 | [261103-n66-fix-all-eslint-problems](./quick/261103-n66-fix-all-eslint-problems/) |
+| fast | Add ?v=1.1.0 to the analytics script URL (one-year cache on the server) | 2026-11-03 | 99a7a34 | — |
 
 ## Next Steps
 
