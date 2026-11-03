@@ -8,6 +8,12 @@ import { z } from 'zod';
 import { DrumVoice } from '../types';
 
 /**
+ * Why MIDI is or is not usable in this browser.
+ * 'pending' means the check did not finish yet.
+ */
+export type MIDIAvailability = 'pending' | 'available' | 'unsupported' | 'denied' | 'error';
+
+/**
  * MIDI device information
  */
 export interface MIDIDeviceInfo {
