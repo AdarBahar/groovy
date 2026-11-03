@@ -98,6 +98,7 @@ None currently. Ready to begin Phase 1 planning.
 | 261103-n66 | Fix all ESLint problems: ignore .claude and archive, type tests, justified disables for hooks and fast refresh | 2026-11-03 | 3e262f2 | [261103-n66-fix-all-eslint-problems](./quick/261103-n66-fix-all-eslint-problems/) |
 | fast | Add ?v=1.1.0 to the analytics script URL (one-year cache on the server) | 2026-11-03 | 99a7a34 | — |
 | 261103-o2j | AudioContext lifecycle (#24): lazy real context, offline decode, DrumSynth.dispose, owned-synth dispose in GrooveEngine and useMIDIInput | 2026-11-03 | ab6db71 | [261103-o2j-fix-audiocontext-lifecycle-for-issue-24](./quick/261103-o2j-fix-audiocontext-lifecycle-for-issue-24/) |
+| fast | Add WhatsApp to the social share options (#78) | 2026-11-03 | 99613cd | — |
 
 ## Next Steps
 
