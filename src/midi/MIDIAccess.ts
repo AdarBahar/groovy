@@ -7,7 +7,7 @@
  * Converted from /docs/groovy-midi-transfer/midi/midi-access.js
  */
 
-import { MIDIDeviceInfo } from './types';
+import { MIDIAvailability, MIDIDeviceInfo } from './types';
 import { logger } from '../utils/logger';
 
 const FAKE_MIDI_DEVICE_ID = '__groovy_keyboard_midi_localhost__';
@@ -27,6 +27,8 @@ class MIDIAccessManager {
    * a handler to an object nobody owns.
    */
   private initGeneration: number = 0;
+  /** Why MIDI is or is not usable. Set once per current initialize() call. */
+  private availability: MIDIAvailability = 'pending';
 
   /**
    * Initialize Web MIDI API access
@@ -48,8 +50,10 @@ class MIDIAccessManager {
       // Even if Web MIDI API is not supported, we can still use the keyboard simulator on localhost
       if (this.isLocalhost) {
         logger.log('🎹 Using keyboard MIDI simulator (Web MIDI API not available)');
+        this.availability = 'available';
         return true;
       }
+      this.availability = 'unsupported';
       return false;
     }
 
@@ -63,6 +67,7 @@ class MIDIAccessManager {
       }
       this.midiAccess = access;
       this.midiAccess.onstatechange = (e: Event) => this.handleStateChange(e as unknown as MIDIConnectionEvent);
+      this.availability = 'available';
       logger.log('MIDI Access initialized successfully');
 
       if (this.isLocalhost) {
@@ -77,10 +82,29 @@ class MIDIAccessManager {
       logger.error('Failed to initialize MIDI access:', error);
       if (this.isLocalhost) {
         logger.log('🎹 Falling back to keyboard MIDI simulator');
+        this.availability = 'available';
         return true;
       }
+      this.availability = this.classifyInitError(error);
       return false;
     }
+  }
+
+  /**
+   * Get the result of the last current initialize() call.
+   * Stale calls do not change this value.
+   */
+  getAvailability(): MIDIAvailability {
+    return this.availability;
+  }
+
+  /** Map an error from requestMIDIAccess() to an availability value. */
+  private classifyInitError(error: unknown): MIDIAvailability {
+    const name = (error as { name?: unknown } | null)?.name;
+    if (name === 'NotAllowedError' || name === 'SecurityError') {
+      return 'denied';
+    }
+    return 'error';
   }
 
   /**
