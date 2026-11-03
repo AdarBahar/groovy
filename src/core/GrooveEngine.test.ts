@@ -21,6 +21,7 @@ vi.mock('./DrumSynth', () => {
     getGain = vi.fn().mockReturnValue(1);
     setGain = vi.fn();
     loadSamples = vi.fn().mockResolvedValue(undefined);
+    dispose = vi.fn();
   }
   return { DrumSynth: MockDrumSynth };
 });
@@ -219,6 +220,22 @@ describe('GrooveEngine', () => {
     it('scheduledNotes field does not exist (dead code removed)', () => {
       // C1: verify scheduledNotes field was removed
       expect((engine as unknown as Record<string, unknown>)['scheduledNotes']).toBeUndefined();
+    });
+  });
+
+  describe('dispose synth ownership', () => {
+    it('disposes the synth that the engine created', () => {
+      const owning = new GrooveEngine();
+      const synth = owning.getSynth();
+      owning.dispose();
+      expect(synth.dispose).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not dispose an injected synth', () => {
+      const injected = new DrumSynth();
+      const notOwning = new GrooveEngine(injected);
+      notOwning.dispose();
+      expect(injected.dispose).not.toHaveBeenCalled();
     });
   });
 });

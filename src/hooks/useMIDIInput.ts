@@ -36,25 +36,39 @@ interface UseMIDIInputReturn {
 
 /**
  * React hook for MIDI input integration
- * @param synth - DrumSynth instance for audio playback (optional, creates one if not provided)
+ * @param synth - DrumSynth instance for audio playback (optional). If no synth exists, the hook
+ *   creates a fallback synth at the first note and disposes it later.
  * @returns MIDI state and control methods
  */
 export function useMIDIInput(synth?: DrumSynth): UseMIDIInputReturn {
-  // Lazy-init: only create a fallback DrumSynth once, and only when no synth is provided.
-  // Using null as initial value avoids constructing DrumSynth on every render when synth
-  // is undefined (the eager `synth || new DrumSynth()` ran new DrumSynth() each render).
+  // The fallback synth does not exist at first. The note handler creates it on the first note.
+  // This keeps the AudioContext from starting before a user gesture.
   const synthRef = useRef<DrumSynth | null>(synth ?? null);
-  if (synthRef.current === null) {
-    // First render with no synth provided — construct the fallback exactly once
-    synthRef.current = new DrumSynth();
-  }
+  const ownedSynthRef = useRef<DrumSynth | null>(null);
 
   // Adopt a late-provided synth (e.g. parent renders the synth after the hook mounts)
   useEffect(() => {
     if (synth && synthRef.current !== synth) {
+      // Dispose the owned fallback synth because the provided synth replaces it
+      ownedSynthRef.current?.dispose();
+      ownedSynthRef.current = null;
       synthRef.current = synth;
     }
   }, [synth]);
+
+  // Dispose the owned fallback synth on unmount
+  useEffect(() => {
+    return () => {
+      const owned = ownedSynthRef.current;
+      if (owned) {
+        owned.dispose();
+        if (synthRef.current === owned) {
+          synthRef.current = null;
+        }
+        ownedSynthRef.current = null;
+      }
+    };
+  }, []);
 
   const [config, setConfig] = useState<MIDIConfig>(loadMIDIConfig);
   const [devices, setDevices] = useState<MIDIDeviceInfo[]>([]);
@@ -205,12 +219,22 @@ export function useMIDIInput(synth?: DrumSynth): UseMIDIInputReturn {
         }
 
         if (config.throughEnabled) {
-          // Resume AudioContext if suspended (required for user interaction on Web Audio API)
-          // synthRef.current is guaranteed non-null by the lazy init guard above
-          synthRef.current!.resume();
+          let activeSynth = synthRef.current;
+          if (activeSynth === null) {
+            // Create the fallback synth once, at the first note
+            activeSynth = new DrumSynth();
+            synthRef.current = activeSynth;
+            ownedSynthRef.current = activeSynth;
+            logger.log('Created fallback DrumSynth for MIDI through');
+          }
+
+          // Resume creates the AudioContext at once (required for user interaction on Web Audio API)
+          activeSynth.resume().catch((error: unknown) => {
+            logger.error('Failed to resume AudioContext:', error);
+          });
 
           // Play sound immediately (time=0)
-          synthRef.current!.playDrum(voice, 0, velocity);
+          activeSynth.playDrum(voice, 0, velocity);
         }
 
         // Emit event for UI feedback (always emit, independent of audio playback)
