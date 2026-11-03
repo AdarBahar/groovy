@@ -244,4 +244,25 @@ describe('ShareModal social share window', () => {
 
     openSpy.mockRestore();
   });
+
+  it('opens a WhatsApp link with the groove link in the message text', () => {
+    const openSpy = vi.spyOn(window, 'open').mockReturnValue(null);
+
+    render(<ShareModal groove={DEFAULT_GROOVE} isOpen onClose={vi.fn()} />);
+    const socialTab = screen.getAllByText('Social').find((el) => el.tagName === 'SPAN')!;
+    fireEvent.click(socialTab);
+    fireEvent.click(screen.getByText('WhatsApp'));
+
+    expect(openSpy).toHaveBeenCalledTimes(1);
+    const [url, target, features] = openSpy.mock.calls[0];
+    const parsed = new URL(String(url));
+    expect(parsed.origin + parsed.pathname).toBe('https://wa.me/');
+    const message = parsed.searchParams.get('text') ?? '';
+    expect(message).toContain('Check out this drum groove');
+    expect(message).toMatch(/https?:\/\/\S+$/);
+    expect(target).toBe('_blank');
+    expect(features).toContain('noopener');
+
+    openSpy.mockRestore();
+  });
 });
