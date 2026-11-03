@@ -1,6 +1,6 @@
 export function KeyboardShortcuts() {
   const shortcuts = [
-    { key: 'Space', description: 'Play/Pause' },
+    { key: 'Space', description: 'Play/Stop' },
     { key: 'E', description: 'Edit Mode' },
     { key: '⌘/Ctrl', description: '+drag Paint' },
     { key: '⇧/Alt', description: '+drag Erase' },

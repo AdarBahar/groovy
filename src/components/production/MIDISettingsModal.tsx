@@ -15,7 +15,7 @@ import {
   DialogFooter,
 } from '../ui/dialog';
 import { Button } from '../ui/button';
-import { MIDIConfig, MIDIDeviceInfo } from '../../midi/types';
+import { MIDIAvailability, MIDIConfig, MIDIDeviceInfo } from '../../midi/types';
 import { getAllDrumKitNames } from '../../midi/config/drumKits';
 import { trackMIDISettingsOpen, trackMIDIDeviceSelected, trackMIDIDrumKitSelected, trackMIDIDeviceConnected } from '../../utils/analytics';
 
@@ -27,7 +27,19 @@ interface MIDISettingsModalProps {
   devices: MIDIDeviceInfo[];
   currentDevice: MIDIDeviceInfo | null;
   onConnectDevice: (deviceId: string) => void;
+  availability: MIDIAvailability;
 }
+
+const NO_DEVICES_MESSAGE = 'No MIDI devices detected. Connect your device and try again.';
+
+/** Fixed messages for each state in which MIDI cannot be used. */
+const AVAILABILITY_MESSAGES: Record<Exclude<MIDIAvailability, 'available'>, string> = {
+  pending: 'Checking MIDI…',
+  unsupported: 'Web MIDI is not available in this browser. Use Chrome or Edge.',
+  denied:
+    'MIDI access was blocked. Allow MIDI access for this site in the browser settings, then reload the page.',
+  error: 'MIDI could not start. Reload the page and try again.',
+};
 
 export function MIDISettingsModal({
   isOpen,
@@ -37,10 +49,20 @@ export function MIDISettingsModal({
   devices,
   currentDevice,
   onConnectDevice,
+  availability,
 }: MIDISettingsModalProps) {
   const [selectedDeviceId, setSelectedDeviceId] = useState<string>(config.selectedDeviceId || '');
   const [selectedKit, setSelectedKit] = useState<string>(config.selectedKitName);
   const drumKitNames = getAllDrumKitNames();
+  // Only fixed strings are shown. The raw browser error is never rendered.
+  const statusMessage =
+    availability === 'available'
+      ? devices.length === 0
+        ? NO_DEVICES_MESSAGE
+        : null
+      : AVAILABILITY_MESSAGES[availability];
+  const isProblem =
+    availability === 'unsupported' || availability === 'denied' || availability === 'error';
 
   // Update local state when modal opens
   useEffect(() => {
@@ -102,9 +124,16 @@ export function MIDISettingsModal({
                 </option>
               ))}
             </select>
-            {devices.length === 0 && (
-              <p className="text-xs text-slate-500 dark:text-slate-400">
-                No MIDI devices detected. Connect your device and try again.
+            {statusMessage && (
+              <p
+                role="status"
+                className={
+                  isProblem
+                    ? 'text-xs text-amber-700 dark:text-amber-400'
+                    : 'text-xs text-slate-500 dark:text-slate-400'
+                }
+              >
+                {statusMessage}
               </p>
             )}
           </div>

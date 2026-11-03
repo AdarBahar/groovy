@@ -419,6 +419,7 @@ export default function ProductionPage() {
         savedGroovesCount={myGrooves.grooves.length}
         midiConfig={midiInput.config}
         midiDevices={midiInput.devices}
+        midiAvailability={midiInput.availability}
         midiCurrentDevice={midiInput.currentDevice}
         onMIDIConfigChange={midiInput.updateConfig}
         onMIDIConnectDevice={midiInput.connectDevice}
