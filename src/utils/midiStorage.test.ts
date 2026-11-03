@@ -25,7 +25,7 @@ describe('MIDI Storage', () => {
         return keys[index] || null;
       },
       length: 0,
-    } as any;
+    } as unknown as Storage;
   });
 
   describe('loadMIDIConfig', () => {
