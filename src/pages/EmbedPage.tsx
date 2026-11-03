@@ -138,10 +138,10 @@ export default function EmbedPage() {
               {!isControlsExpanded && (<span>
                 <button
                   onClick={handlePlay}
-                  aria-label={isPlaying ? 'Pause' : 'Play'}
-                  title={isPlaying ? 'Pause' : 'Play'}
+                  aria-label={isPlaying ? 'Stop' : 'Play'}
+                  title={isPlaying ? 'Stop' : 'Play'}
                   className="px-3 py-1 bg-slate-500 embed:text-white   text-sm font-medium hover:opacity-80 transition-opacity">
-                  {isPlaying ? ' ⏸ ' : '▶ '}
+                  {isPlaying ? ' ⏹ ' : '▶ '}
                 </button>
               <span className="px-3 text-sm text-slate-500 ">{elapsedTime}</span>
               </span>
@@ -159,7 +159,7 @@ export default function EmbedPage() {
                 isControlsExpanded ? 'rotate-0' : '-rotate-90'
               }`}
             />
-            <span className="hidden group-hover:inline text-black text-xs">Set Tempo & Swing</span>
+            <span className="hidden group-hover:inline group-focus-visible:inline text-black text-xs">Set Tempo & Swing</span>
           </button>
                     </div>
         </div>
@@ -171,8 +171,8 @@ export default function EmbedPage() {
             aria-label="Edit groove"
             className="inline-flex items-center gap-1 text-xs  flex-shrink-0 light group"
             >
-          <span className="hidden group-hover:inline text-xs">Edit Groove</span>
-          <ExternalLink className="w-3 h-3 group-hover:hidden" />
+          <span className="hidden group-hover:inline group-focus-visible:inline text-xs">Edit Groove</span>
+          <ExternalLink className="w-3 h-3 group-hover:hidden group-focus-visible:hidden" />
         </a>
         </div>
          <div className="flex items-center justify-between text-s">
