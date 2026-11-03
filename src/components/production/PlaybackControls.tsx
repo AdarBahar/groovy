@@ -1,4 +1,4 @@
-import { Play, Pause, Plus } from 'lucide-react';
+import { Play, Square, Plus } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Slider } from '../ui/slider';
 import { TimeSignature } from '../../types';
@@ -71,13 +71,13 @@ export function PlaybackControls({
     countingInButton === 'play' && countingInLabel
       ? countingInLabel
       : isPlaying && !isAutoSpeedUpActive
-        ? 'Pause'
+        ? 'Stop'
         : 'Play';
   const playWithSpeedUpLabel =
     countingInButton === 'playPlus' && countingInLabel
       ? countingInLabel
       : isPlaying && isAutoSpeedUpActive
-        ? 'Pause auto speed-up'
+        ? 'Stop auto speed-up'
         : 'Play with auto speed-up';
 
   return (
@@ -102,7 +102,7 @@ export function PlaybackControls({
             {countingInButton === 'play' && countdownNumber !== null ? (
               <span className="text-white text-xl sm:text-2xl font-bold">{countdownNumber}</span>
             ) : isPlaying && !isAutoSpeedUpActive ? (
-              <Pause className="w-5 h-5 sm:w-6 sm:h-6 fill-white" />
+              <Square className="w-5 h-5 sm:w-6 sm:h-6 fill-white" />
             ) : (
               <Play className="w-5 h-5 sm:w-6 sm:h-6 fill-white ml-0.5" />
             )}
@@ -122,7 +122,7 @@ export function PlaybackControls({
               {countingInButton === 'playPlus' && countdownNumber !== null ? (
                 <span className="text-white text-xl sm:text-2xl font-bold">{countdownNumber}</span>
               ) : isPlaying && isAutoSpeedUpActive ? (
-                <Pause className="w-5 h-5 sm:w-6 sm:h-6 fill-white" />
+                <Square className="w-5 h-5 sm:w-6 sm:h-6 fill-white" />
               ) : (
                 <Play className="w-5 h-5 sm:w-6 sm:h-6 fill-white ml-0.5" />
               )}
