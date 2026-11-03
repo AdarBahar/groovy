@@ -280,6 +280,9 @@ export function ShareModal({ groove, isOpen, onClose }: ShareModalProps) {
                   </>
                 )}
               </Button>
+              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                Shortening sends this link to an external service (go.bahar.co.il).
+              </p>
             </div>
           )}
 
