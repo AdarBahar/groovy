@@ -207,7 +207,7 @@ export function trackShareModalOpen(): void {
 }
 
 export function trackShareMethod(
-  method: 'link' | 'twitter' | 'facebook' | 'reddit' | 'embed' | 'qr' | 'email' | 'shorten',
+  method: 'link' | 'twitter' | 'facebook' | 'reddit' | 'whatsapp' | 'embed' | 'qr' | 'email' | 'shorten',
   properties?: Record<string, unknown>
 ): void {
   analytics.track('Groovy Share Method Used', { method, ...properties });
