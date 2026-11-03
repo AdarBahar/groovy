@@ -12,7 +12,8 @@ import { safeGetItem, safeSetItem, safeRemoveItem } from './safeStorage';
 
 // Production domain where analytics should be enabled (configurable via env)
 const ANALYTICS_DOMAIN = import.meta.env.VITE_ANALYTICS_DOMAIN || 'bahar.co.il';
-const ANALYTICS_SCRIPT_URL = import.meta.env.VITE_ANALYTICS_SCRIPT_URL || 'https://www.bahar.co.il/assets/universal-analytics.js';
+// The server caches the script for one year. Change "v" when the script changes.
+const ANALYTICS_SCRIPT_URL = import.meta.env.VITE_ANALYTICS_SCRIPT_URL || 'https://www.bahar.co.il/assets/universal-analytics.js?v=1.1.0';
 
 const ANALYTICS_OPT_OUT_KEY = 'groovy-analytics-disabled';
 
