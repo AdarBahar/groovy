@@ -92,6 +92,27 @@ describe('opted out', () => {
     expect(stub.trackButtonClick).not.toHaveBeenCalled();
   });
 
+  it('stops events immediately when the storage write fails', async () => {
+    const mod = await loadEnabled();
+    const stub = stubBaharAnalytics();
+    const failing = createMemoryStorage();
+    failing.setItem = () => {
+      throw new DOMException('Quota exceeded', 'QuotaExceededError');
+    };
+    vi.stubGlobal('localStorage', failing);
+
+    expect(mod.setAnalyticsOptOut(true)).toBe(false);
+    expect(mod.isAnalyticsOptedOut()).toBe(true);
+    mod.trackPlay('normal', 100, '4/4');
+    expect(stub.track).not.toHaveBeenCalled();
+  });
+
+  it('returns true when the browser saves the choice', async () => {
+    const mod = await loadEnabled();
+    expect(mod.setAnalyticsOptOut(true)).toBe(true);
+    expect(mod.setAnalyticsOptOut(false)).toBe(true);
+  });
+
   it('sends events again after the user opts in', async () => {
     const mod = await loadEnabled();
     const stub = stubBaharAnalytics();
