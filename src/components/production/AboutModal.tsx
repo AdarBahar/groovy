@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { X } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { logger } from '../../utils/logger';
-import { isAnalyticsOptedOut, setAnalyticsOptOut } from '../../utils/analytics';
+import { isAnalyticsOptedOut, isAnalyticsOptedOutOnPageLoad, setAnalyticsOptOut } from '../../utils/analytics';
 
 interface AboutModalProps {
   isOpen: boolean;
@@ -14,6 +14,9 @@ export function AboutModal({ isOpen, onClose }: AboutModalProps) {
   const [debugMode, setDebugMode] = useState(logger.isDebugMode());
 
   const [shareUsage, setShareUsage] = useState(!isAnalyticsOptedOut());
+  // The analytics script loads (or not) one time, when the page loads.
+  // A change to the opt-out applies fully only after a reload.
+  const [isAnalyticsOptedOutAtLoad] = useState(isAnalyticsOptedOutOnPageLoad);
 
   const handleShareUsageToggle = () => {
     const next = !shareUsage;
@@ -138,6 +141,9 @@ export function AboutModal({ isOpen, onClose }: AboutModalProps) {
                 Share anonymous usage statistics
               </label>
             </div>
+            {shareUsage === isAnalyticsOptedOutAtLoad && (
+              <p className="mt-1 text-xs">Reload the page to apply this change fully.</p>
+            )}
             <p className="mt-1">
               © 2026 Groovy. Created by{' '}
               <button

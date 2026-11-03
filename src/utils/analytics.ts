@@ -73,6 +73,14 @@ function loadAnalyticsScript(): void {
   document.head.appendChild(script);
 }
 
+// The opt-out value when the page loaded. The script load uses this value.
+const OPTED_OUT_ON_PAGE_LOAD = isAnalyticsOptedOut();
+
+/** Return true when the user had opted out at page load (the script did not load) */
+export function isAnalyticsOptedOutOnPageLoad(): boolean {
+  return OPTED_OUT_ON_PAGE_LOAD;
+}
+
 // Load analytics on module initialization
 loadAnalyticsScript();
 
