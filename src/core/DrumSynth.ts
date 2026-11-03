@@ -4,12 +4,20 @@ import { logger } from '../utils/logger';
 /**
  * Drum sample player using Web Audio API
  * Loads and plays drum samples
+ *
+ * The real AudioContext starts at the first resume() call. Browsers block audio
+ * before a user gesture, so the constructor does not create the real context.
+ * The constructor decodes samples with an OfflineAudioContext instead.
+ * Call dispose() to close the real context when the synth is not in use.
  */
 export class DrumSynth {
-  private audioContext: AudioContext;
+  private audioContext: AudioContext | null = null;
+  private decodeContext: BaseAudioContext | null = null;
   private samples: Map<string, AudioBuffer> = new Map();
   private isLoaded = false;
-  private masterGainNode: GainNode;
+  private masterGainNode: GainNode | null = null;
+  private masterVolume = 1.0;
+  private isDisposed = false;
   private initError: Error | null = null;
 
   // Rate limiting for audio playback (prevent spam/DoS)
@@ -53,27 +61,47 @@ export class DrumSynth {
 
   constructor() {
     try {
-      this.audioContext = new AudioContext();
+      if (typeof OfflineAudioContext !== 'undefined') {
+        // Decode samples without a real AudioContext (no user gesture needed)
+        this.decodeContext = new OfflineAudioContext(1, 1, 44100);
+      } else if (typeof AudioContext !== 'undefined') {
+        // Old browsers: create the real context at once
+        this.decodeContext = this.createRealContext();
+      } else {
+        this.initError = new Error('Web Audio API is not available');
+        logger.error('❌ Failed to initialize AudioContext:', this.initError.message);
+        return;
+      }
 
-      // Initialize master gain node for volume control
-      this.masterGainNode = this.audioContext.createGain();
-      this.masterGainNode.gain.value = 1.0; // Default to full volume
-      this.masterGainNode.connect(this.audioContext.destination);
-
-      this.setupErrorHandling();
       this.loadSamples();
     } catch (error) {
       this.initError = error instanceof Error ? error : new Error(String(error));
       logger.error('❌ Failed to initialize AudioContext:', this.initError.message);
-      throw this.initError;
     }
+  }
+
+  /**
+   * Create the real AudioContext and the master gain node (runs at most once)
+   */
+  private createRealContext(): AudioContext {
+    if (this.audioContext) {
+      return this.audioContext;
+    }
+    const context = new AudioContext();
+    const gainNode = context.createGain();
+    gainNode.gain.value = this.masterVolume;
+    gainNode.connect(context.destination);
+    this.audioContext = context;
+    this.masterGainNode = gainNode;
+    this.setupErrorHandling();
+    return context;
   }
 
   /**
    * Check if initialization succeeded
    */
   isInitialized(): boolean {
-    return !this.initError && this.audioContext !== undefined;
+    return this.initError === null && !this.isDisposed;
   }
 
   /**
@@ -86,9 +114,9 @@ export class DrumSynth {
   /**
    * Set up error event handling for audio context
    */
-  private setupErrorHandling() {
+  private setupErrorHandling(): void {
     // Listen for audio processing errors
-    if (this.audioContext instanceof AudioContext && 'addEventListener' in this.audioContext) {
+    if (this.audioContext && 'addEventListener' in this.audioContext) {
       this.audioContext.addEventListener?.('processorerror', (event: Event) => {
         logger.error('AudioContext processorerror:', event);
       });
@@ -99,7 +127,7 @@ export class DrumSynth {
    * Load all drum samples with individual error handling
    * Allows partial loading - app continues even if some samples fail
    */
-  private async loadSamples() {
+  private async loadSamples(): Promise<void> {
     const voices: DrumVoice[] = Object.keys(this.sampleFiles) as DrumVoice[];
     const failedVoices: DrumVoice[] = [];
 
@@ -120,7 +148,10 @@ export class DrumSynth {
           }
 
           const arrayBuffer = await response.arrayBuffer();
-          const audioBuffer = await this.audioContext.decodeAudioData(arrayBuffer);
+          if (!this.decodeContext) {
+            return;
+          }
+          const audioBuffer = await this.decodeContext.decodeAudioData(arrayBuffer);
           this.samples.set(voice, audioBuffer);
           logger.log(`✅ Loaded: ${voice}`);
         } catch (error) {
@@ -147,13 +178,17 @@ export class DrumSynth {
   /**
    * Generate simple synthetic drum sounds as fallback
    */
-  private generateFallbackSamples() {
-    const sampleRate = this.audioContext.sampleRate;
+  private generateFallbackSamples(): void {
+    const decodeContext = this.decodeContext;
+    if (!decodeContext) {
+      return;
+    }
+    const sampleRate = decodeContext.sampleRate;
     const duration = 0.5; // 500ms samples
     const length = sampleRate * duration;
 
     // Generate kick (low frequency)
-    const kickBuffer = this.audioContext.createBuffer(1, length, sampleRate);
+    const kickBuffer = decodeContext.createBuffer(1, length, sampleRate);
     const kickData = kickBuffer.getChannelData(0);
     for (let i = 0; i < length; i++) {
       const t = i / sampleRate;
@@ -163,7 +198,7 @@ export class DrumSynth {
     this.samples.set('kick', kickBuffer);
 
     // Generate snare (noise)
-    const snareBuffer = this.audioContext.createBuffer(1, length, sampleRate);
+    const snareBuffer = decodeContext.createBuffer(1, length, sampleRate);
     const snareData = snareBuffer.getChannelData(0);
     for (let i = 0; i < length; i++) {
       const t = i / sampleRate;
@@ -173,7 +208,7 @@ export class DrumSynth {
     this.samples.set('snare-normal', snareBuffer);
 
     // Generate hi-hat (bright noise)
-    const hihatBuffer = this.audioContext.createBuffer(1, Math.floor(sampleRate * 0.2), sampleRate);
+    const hihatBuffer = decodeContext.createBuffer(1, Math.floor(sampleRate * 0.2), sampleRate);
     const hihatData = hihatBuffer.getChannelData(0);
     for (let i = 0; i < hihatData.length; i++) {
       const t = i / sampleRate;
@@ -188,12 +223,14 @@ export class DrumSynth {
   /**
    * Play a drum hit with rate limiting to prevent audio spam
    */
-  playDrum(voice: DrumVoice, time: number = 0, velocity: number = 100) {
-    if (!this.isInitialized() || !this.isLoaded) {
+  playDrum(voice: DrumVoice, time: number = 0, velocity: number = 100): void {
+    const audioContext = this.audioContext;
+    const masterGainNode = this.masterGainNode;
+    if (!this.isInitialized() || !this.isLoaded || !audioContext || !masterGainNode) {
       return;
     }
 
-    const playTime = this.audioContext.currentTime + time;
+    const playTime = audioContext.currentTime + time;
 
     // Rate limiting: prevent rapid-fire calls for the same voice using audio time
     const lastPlay = this.lastPlayTime.get(voice) || 0;
@@ -223,11 +260,11 @@ export class DrumSynth {
 
     try {
       // Create buffer source
-      const source = this.audioContext.createBufferSource();
+      const source = audioContext.createBufferSource();
       source.buffer = sample;
 
       // Create gain node for velocity
-      const gainNode = this.audioContext.createGain();
+      const gainNode = audioContext.createGain();
       let volume = velocity / 127;
 
       // Boost metronome samples (they are quieter than drum samples)
@@ -238,7 +275,7 @@ export class DrumSynth {
 
       // Connect nodes through master gain
       source.connect(gainNode);
-      gainNode.connect(this.masterGainNode);
+      gainNode.connect(masterGainNode);
 
       // Play
       source.start(playTime);
@@ -249,21 +286,31 @@ export class DrumSynth {
 
   /**
    * Resume audio context (required for user interaction)
+   * The first call creates the real AudioContext, before any await.
    */
-  async resume() {
+  async resume(): Promise<void> {
     if (!this.isInitialized()) {
       return;
     }
-    if (this.audioContext.state === 'suspended') {
+    if (!this.audioContext) {
+      try {
+        this.createRealContext();
+      } catch (error) {
+        this.initError = error instanceof Error ? error : new Error(String(error));
+        logger.error('❌ Failed to create AudioContext:', this.initError.message);
+        return;
+      }
+    }
+    if (this.audioContext && this.audioContext.state === 'suspended') {
       await this.audioContext.resume();
     }
   }
 
   /**
-   * Get current audio context time
+   * Get current audio context time (0 before the first resume)
    */
   getCurrentTime(): number {
-    if (!this.isInitialized()) {
+    if (!this.isInitialized() || !this.audioContext) {
       return 0;
     }
     return this.audioContext.currentTime;
@@ -271,24 +318,45 @@ export class DrumSynth {
 
   /**
    * Set master volume (0-1)
+   * The value is stored and applied when the real context starts.
    */
   setMasterVolume(volume: number): void {
-    if (!this.isInitialized()) {
-      return;
-    }
     // Clamp volume to 0-1 range
-    const clampedVolume = Math.max(0, Math.min(1, volume));
-    this.masterGainNode.gain.value = clampedVolume;
+    this.masterVolume = Math.max(0, Math.min(1, volume));
+    if (this.masterGainNode) {
+      this.masterGainNode.gain.value = this.masterVolume;
+    }
   }
 
   /**
    * Get current master volume (0-1)
    */
   getMasterVolume(): number {
-    if (!this.isInitialized()) {
-      return 1.0;
+    return this.masterVolume;
+  }
+
+  /**
+   * Close the real AudioContext and release resources. Safe to call more than once.
+   */
+  dispose(): void {
+    if (this.isDisposed) {
+      return;
     }
-    return this.masterGainNode.gain.value;
+    this.isDisposed = true;
+    const context = this.audioContext;
+    if (context && context.state !== 'closed') {
+      context.close().catch((error: unknown) => {
+        logger.error('Failed to close AudioContext:', error);
+      });
+    }
+    try {
+      this.masterGainNode?.disconnect();
+    } catch (error) {
+      logger.warn(`Failed to disconnect master gain: ${error}`);
+    }
+    this.audioContext = null;
+    this.masterGainNode = null;
+    this.decodeContext = null;
+    this.lastPlayTime.clear();
   }
 }
-
