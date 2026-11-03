@@ -9,6 +9,7 @@ vi.mock('../../services/urlShortener', () => ({
   isShortenerConfigured: vi.fn(() => false),
   shortenURL: vi.fn(() => Promise.resolve('')),
   getShortenerErrorMessage: vi.fn(() => 'Failed to shorten URL'),
+  getShortenerHost: vi.fn(() => 'go.bahar.co.il'),
 }));
 
 // Import after mocking so vi.mocked() resolves the mock references

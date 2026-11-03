@@ -55,7 +55,7 @@ export function MIDISettingsModal({
     if (selectedDeviceId) {
       const selectedDevice = devices.find(d => d.id === selectedDeviceId);
       if (selectedDevice) {
-        trackMIDIDeviceConnected(selectedDevice.name, selectedDevice.id);
+        trackMIDIDeviceConnected(selectedDevice.name);
       }
       onConnectDevice(selectedDeviceId);
     }
@@ -89,7 +89,7 @@ export function MIDISettingsModal({
                 setSelectedDeviceId(e.target.value);
                 const selectedDevice = devices.find(d => d.id === e.target.value);
                 if (selectedDevice) {
-                  trackMIDIDeviceSelected(selectedDevice.name, selectedDevice.id);
+                  trackMIDIDeviceSelected(selectedDevice.name);
                 }
               }}
               className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm"
