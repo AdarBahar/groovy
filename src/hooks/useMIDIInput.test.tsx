@@ -50,12 +50,19 @@ vi.mock('../utils/latencyStorage', () => ({
 
 // Track DrumSynth constructor calls to verify no duplicates are created
 let drumSynthInstanceCount = 0;
+const createdSynths: Array<{
+  resume: ReturnType<typeof vi.fn>;
+  playDrum: ReturnType<typeof vi.fn>;
+  dispose: ReturnType<typeof vi.fn>;
+}> = [];
 vi.mock('../core/DrumSynth', () => {
   class MockDrumSynth {
-    resume = vi.fn();
+    resume = vi.fn().mockResolvedValue(undefined);
     playDrum = vi.fn();
+    dispose = vi.fn();
     constructor() {
       drumSynthInstanceCount++;
+      createdSynths.push(this);
     }
   }
   return { DrumSynth: MockDrumSynth };
@@ -81,32 +88,96 @@ describe('useMIDIInput - DrumSynth instantiation (#115)', () => {
     vi.clearAllMocks();
     // Reset instance counter before each test
     drumSynthInstanceCount = 0;
+    createdSynths.length = 0;
   });
 
   afterEach(() => {
     vi.clearAllMocks();
   });
 
-  it('constructs at most one fallback DrumSynth across multiple renders (no synth provided)', async () => {
-    const { rerender } = await act(async () => {
-      return renderHook(() => useMIDIInput(undefined));
-    });
+  type NoteCallback = (note: number, velocity: number, voice: unknown, timestamp: number) => void;
 
-    const instancesAfterMount = drumSynthInstanceCount;
-
-    // Re-render with undefined synth — must NOT construct a second DrumSynth
+  async function mountWithNoteHandler<P>(
+    useProps: (props: P) => DrumSynth | undefined,
+    initialProps: P
+  ) {
+    const spy = vi.spyOn(midiHandler, 'setNoteOnHandler');
+    let rendered!: ReturnType<typeof renderHook<unknown, P>>;
     await act(async () => {
-      rerender();
+      rendered = renderHook((props: P) => useMIDIInput(useProps(props)), { initialProps });
     });
+    const calls = spy.mock.calls.filter((c) => typeof c[0] === 'function');
+    const handler = calls[calls.length - 1][0] as unknown as NoteCallback;
+    return { ...rendered, handler, spy };
+  }
 
-    expect(drumSynthInstanceCount).toBe(instancesAfterMount);
-    // Exactly one fallback should have been created
-    expect(instancesAfterMount).toBe(1);
+  it('constructs no fallback DrumSynth on mount or rerender (no synth provided)', async () => {
+    const { rerender } = await mountWithNoteHandler((s: DrumSynth | undefined) => s, undefined);
+    await act(async () => {
+      rerender(undefined);
+    });
+    expect(drumSynthInstanceCount).toBe(0);
+  });
+
+  it('uses a synth that the parent provides later and constructs nothing', async () => {
+    const provided = { resume: vi.fn().mockResolvedValue(undefined), playDrum: vi.fn(), dispose: vi.fn() };
+    const { rerender, handler } = await mountWithNoteHandler(
+      (s: DrumSynth | undefined) => s,
+      undefined as DrumSynth | undefined
+    );
+    await act(async () => {
+      rerender(provided as unknown as DrumSynth);
+    });
+    act(() => handler(36, 100, null, 0));
+    expect(drumSynthInstanceCount).toBe(0);
+    expect(provided.resume).toHaveBeenCalled();
+    expect(provided.playDrum).toHaveBeenCalledWith('kick', 0, 100);
+  });
+
+  it('creates one fallback synth at the first note and reuses it', async () => {
+    const { handler } = await mountWithNoteHandler((s: DrumSynth | undefined) => s, undefined);
+    act(() => handler(36, 100, null, 0));
+    act(() => handler(38, 90, null, 1));
+    expect(drumSynthInstanceCount).toBe(1);
+    expect(createdSynths[0].resume).toHaveBeenCalled();
+    expect(createdSynths[0].playDrum).toHaveBeenCalledWith('kick', 0, 100);
+  });
+
+  it('disposes the owned fallback when a provided synth arrives', async () => {
+    const provided = { resume: vi.fn().mockResolvedValue(undefined), playDrum: vi.fn(), dispose: vi.fn() };
+    const { rerender, handler } = await mountWithNoteHandler(
+      (s: DrumSynth | undefined) => s,
+      undefined as DrumSynth | undefined
+    );
+    act(() => handler(36, 100, null, 0));
+    await act(async () => {
+      rerender(provided as unknown as DrumSynth);
+    });
+    expect(createdSynths[0].dispose).toHaveBeenCalledTimes(1);
+    act(() => handler(38, 100, null, 1));
+    expect(provided.playDrum).toHaveBeenCalledTimes(1);
+  });
+
+  it('disposes the owned fallback on unmount', async () => {
+    const { handler, unmount } = await mountWithNoteHandler((s: DrumSynth | undefined) => s, undefined);
+    act(() => handler(36, 100, null, 0));
+    unmount();
+    expect(createdSynths[0].dispose).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not dispose a provided synth on unmount', async () => {
+    const provided = { resume: vi.fn().mockResolvedValue(undefined), playDrum: vi.fn(), dispose: vi.fn() };
+    const { unmount } = await mountWithNoteHandler(
+      (s: DrumSynth | undefined) => s,
+      provided as unknown as DrumSynth
+    );
+    unmount();
+    expect(provided.dispose).not.toHaveBeenCalled();
   });
 
   it('adopts the provided synth when one is given and constructs no fallback DrumSynth', async () => {
     const providedSynth = {
-      resume: vi.fn(),
+      resume: vi.fn().mockResolvedValue(undefined),
       playDrum: vi.fn(),
     } as unknown as DrumSynth;
 
@@ -133,7 +204,7 @@ describe('useMIDIInput - Listener Attachment', () => {
 
   it('attaches MIDI note handler exactly once on mount', async () => {
     const drumSynthStub = {
-      resume: vi.fn(),
+      resume: vi.fn().mockResolvedValue(undefined),
       playDrum: vi.fn(),
     } as unknown as DrumSynth;
 
@@ -146,7 +217,7 @@ describe('useMIDIInput - Listener Attachment', () => {
 
   it('does NOT re-attach when config.throughEnabled changes', async () => {
     const drumSynthStub = {
-      resume: vi.fn(),
+      resume: vi.fn().mockResolvedValue(undefined),
       playDrum: vi.fn(),
     } as unknown as DrumSynth;
 
@@ -168,7 +239,7 @@ describe('useMIDIInput - Listener Attachment', () => {
 
   it('does NOT re-attach when config.latencyCompensation changes', async () => {
     const drumSynthStub = {
-      resume: vi.fn(),
+      resume: vi.fn().mockResolvedValue(undefined),
       playDrum: vi.fn(),
     } as unknown as DrumSynth;
 
@@ -195,7 +266,7 @@ describe('useMIDIInput - Listener Attachment', () => {
 
   it('note handler reads fresh config.throughEnabled via ref', async () => {
     const drumSynthStub = {
-      resume: vi.fn(),
+      resume: vi.fn().mockResolvedValue(undefined),
       playDrum: vi.fn(),
     } as unknown as DrumSynth;
 
@@ -235,7 +306,7 @@ describe('useMIDIInput - Listener Attachment', () => {
 
   it('calls setNoteOnHandler with no-op on unmount', async () => {
     const drumSynthStub = {
-      resume: vi.fn(),
+      resume: vi.fn().mockResolvedValue(undefined),
       playDrum: vi.fn(),
     } as unknown as DrumSynth;
 
@@ -275,7 +346,7 @@ describe('useMIDIInput - pending initialization after unmount', () => {
     vi.mocked(midiAccess.getInputDevices).mockReturnValue([
       { id: 'fake-midi-device', name: 'Fake', manufacturer: '', state: 'connected' },
     ]);
-    const drumSynthStub = { resume: vi.fn(), playDrum: vi.fn() } as unknown as DrumSynth;
+    const drumSynthStub = { resume: vi.fn().mockResolvedValue(undefined), playDrum: vi.fn() } as unknown as DrumSynth;
 
     const { unmount } = renderHook(() => useMIDIInput(drumSynthStub));
     unmount();
