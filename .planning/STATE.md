@@ -99,6 +99,7 @@ None currently. Ready to begin Phase 1 planning.
 | fast | Add ?v=1.1.0 to the analytics script URL (one-year cache on the server) | 2026-11-03 | 99a7a34 | — |
 | 261103-o2j | AudioContext lifecycle (#24): lazy real context, offline decode, DrumSynth.dispose, owned-synth dispose in GrooveEngine and useMIDIInput | 2026-11-03 | ab6db71 | [261103-o2j-fix-audiocontext-lifecycle-for-issue-24](./quick/261103-o2j-fix-audiocontext-lifecycle-for-issue-24/) |
 | fast | Add WhatsApp to the social share options (#78) | 2026-11-03 | 99613cd | — |
+| 261103-os8 | Stop label on the transport button, MIDI availability status in the settings modal, focus-visible labels in EmbedPage (#155) | 2026-11-03 | eebe98d | [261103-os8-stop-label-and-midi-unavailable-status-f](./quick/261103-os8-stop-label-and-midi-unavailable-status-f/) |
 
 ## Next Steps
 
@@ -120,4 +121,4 @@ None currently. Ready to begin Phase 1 planning.
 - Decisions captured: 4 (Handler Lifecycle, Listener Dependencies, Cleanup Strategy, Memory Verification)
 - Next: Plan Phase 1
 
-Last activity: 2026-11-03 - Completed quick task 261103-o2j: AudioContext lifecycle fix for issue #24
+Last activity: 2026-11-03 - Completed quick task 261103-os8: Stop label and MIDI availability status for issue #155
