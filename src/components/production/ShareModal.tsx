@@ -24,7 +24,7 @@ import { Input } from '../ui/input';
 import { GrooveData } from '../../types';
 import { getShareableURL, getShareableURLWithValidation, URLValidationResult, escapeXml } from '../../core';
 import { trackShareMethod, trackShareModeToggle } from '../../utils/analytics';
-import { shortenURL, isShortenerConfigured, getShortenerErrorMessage } from '../../services/urlShortener';
+import { shortenURL, isShortenerConfigured, getShortenerErrorMessage, getShortenerHost } from '../../services/urlShortener';
 
 type ShareTab = 'link' | 'social' | 'embed' | 'qr' | 'email';
 
@@ -281,7 +281,7 @@ export function ShareModal({ groove, isOpen, onClose }: ShareModalProps) {
                 )}
               </Button>
               <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                Shortening sends this link to an external service (go.bahar.co.il).
+                Shortening sends this link to an external service ({getShortenerHost()}).
               </p>
             </div>
           )}
@@ -359,6 +359,11 @@ export function ShareModal({ groove, isOpen, onClose }: ShareModalProps) {
       <p className="text-sm text-slate-600 dark:text-slate-400">
         Scan this QR code to open the groove on any device.
       </p>
+      {isShortenerConfigured() && (
+        <p className="text-xs text-slate-500 dark:text-slate-400">
+          To make the QR code smaller, this tab sends the link to an external service ({getShortenerHost()}).
+        </p>
+      )}
       {isShorteningQR ? (
         <div className="flex justify-center items-center p-6 bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 min-h-[140px]">
           <Loader2 className="w-8 h-8 animate-spin text-purple-600 dark:text-purple-400" />
