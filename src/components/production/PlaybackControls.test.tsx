@@ -32,15 +32,16 @@ describe('PlaybackControls accessible names', () => {
     expect(screen.getByRole('button', { name: /play with auto speed-up/i })).toBeTruthy();
   });
 
-  it('names the main button Pause while playing normally', () => {
+  it('names the main button Stop while playing normally', () => {
     render(<PlaybackControls {...baseProps} isPlaying />);
-    expect(screen.getByRole('button', { name: /^pause$/i })).toBeTruthy();
+    expect(screen.getByRole('button', { name: /^stop$/i })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: /pause/i })).toBeNull();
     expect(screen.getByRole('button', { name: /play with auto speed-up/i })).toBeTruthy();
   });
 
-  it('names the speed-up button Pause while auto speed-up is active', () => {
+  it('names the speed-up button Stop while auto speed-up is active', () => {
     render(<PlaybackControls {...baseProps} isPlaying isAutoSpeedUpActive />);
-    expect(screen.getByRole('button', { name: /pause auto speed-up/i })).toBeTruthy();
+    expect(screen.getByRole('button', { name: /stop auto speed-up/i })).toBeTruthy();
     expect(screen.getByRole('button', { name: /^play$/i })).toBeTruthy();
   });
 
