@@ -91,6 +91,7 @@ export function MIDITimingIndicator({
         console.log(`🎯 Timing Indicator: accuracy=${timingAccuracy}, position=${positionPercent.toFixed(1)}%, label=${getLabel()}, color=${getColor()}`);
       }
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- getColor and getLabel derive from timingAccuracy, which is already a dependency.
   }, [timingAccuracy, positionPercent, isTrackingActive]);
 
   // Disabled state - grayed out range
