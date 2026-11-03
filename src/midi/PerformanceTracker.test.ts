@@ -9,6 +9,9 @@ import { performanceTracker } from './PerformanceTracker';
 import { BPMEstimator } from './BPMEstimator';
 import type { GrooveData } from '../types';
 
+/** Test grooves use only some voices, so the notes record is partial. */
+type PartialNotes = GrooveData['measures'][number]['notes'];
+
 describe('PerformanceTracker', () => {
   // Mock GrooveData with swing-aware configuration
   const mockGroove: GrooveData = {
@@ -25,7 +28,7 @@ describe('PerformanceTracker', () => {
           'kick': [true, false, true, false, true, false, true, false],
           'snare-normal': [false, true, false, true, false, true, false, true],
           'hihat-closed': [true, true, true, true, true, true, true, true],
-        } as any,
+        } as unknown as PartialNotes,
       },
     ],
   };
@@ -401,14 +404,14 @@ describe('PerformanceTracker', () => {
             'kick': [false, false, false, false, false, false, false, false],
             'snare-normal': [true, false, false, false, false, false, false, false],
             'hihat-closed': [false, false, false, false, false, false, false, false],
-          } as any,
+          } as unknown as PartialNotes,
         },
         {
           notes: {
             'kick': [false, false, false, false, false, false, false, false],
             'snare-normal': [false, false, true, false, false, false, false, false],
             'hihat-closed': [false, false, false, false, false, false, false, false],
-          } as any,
+          } as unknown as PartialNotes,
         },
       ],
     };
@@ -488,7 +491,7 @@ describe('PerformanceTracker', () => {
           {
             notes: {
               'kick': [true, false, true, false, true, false],
-            } as any,
+            } as unknown as PartialNotes,
           },
         ],
       };
@@ -513,7 +516,7 @@ describe('PerformanceTracker', () => {
           {
             notes: {
               'kick': [true, false, true, false, true, false],
-            } as any,
+            } as unknown as PartialNotes,
           },
         ],
       };
@@ -540,7 +543,7 @@ describe('PerformanceTracker', () => {
           {
             notes: {
               'kick': [true, false, true, false, true, false],
-            } as any,
+            } as unknown as PartialNotes,
           },
         ],
       };
@@ -566,7 +569,7 @@ describe('PerformanceTracker', () => {
         {
           notes: {
             'kick': [true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true],
-          } as any,
+          } as unknown as PartialNotes,
         },
       ],
     };
@@ -581,7 +584,7 @@ describe('PerformanceTracker', () => {
         {
           notes: {
             'kick': [true, true, true, true, true, true, true, true],
-          } as any,
+          } as unknown as PartialNotes,
         },
       ],
     };

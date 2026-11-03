@@ -188,7 +188,7 @@ describe('MIDIHandler', () => {
       const mockEvent = {
         data: null,
         timeStamp: Date.now(),
-      } as any;
+      } as unknown as MIDIMessageEvent;
 
       midiHandler.handleMessage(mockEvent);
 
