@@ -31,7 +31,7 @@ export function useMemoryProfiler(): MemoryMetrics {
     const originalMethod = midiHandler.setNoteOnHandler;
 
     // Replace with wrapper that counts attachments
-    midiHandler.setNoteOnHandler = function (callback: any) {
+    midiHandler.setNoteOnHandler = function (callback: Parameters<typeof originalMethod>[0]) {
       metricsRef.current.listenerAttachmentCount++;
       metricsRef.current.lastAttachmentTime = performance.now();
       originalMethod.call(this, callback);

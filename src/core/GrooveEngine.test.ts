@@ -10,6 +10,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { GrooveEngine } from './GrooveEngine';
 import { DrumSynth } from './DrumSynth';
 import { DEFAULT_GROOVE } from '../types';
+import type { GrooveData } from '../types';
 
 // Stub DrumSynth to avoid AudioContext (not available in jsdom)
 vi.mock('./DrumSynth', () => {
@@ -74,7 +75,7 @@ describe('GrooveEngine', () => {
 
     it('engine stored groove reflects the auto-corrected division', async () => {
       // Capture emitted groove via grooveChange event
-      let emittedGroove: any = null;
+      let emittedGroove = null as GrooveData | null;
       engine.on('grooveChange', (g) => { emittedGroove = g; });
 
       const incompatibleGroove = {
@@ -88,20 +89,20 @@ describe('GrooveEngine', () => {
 
       // Engine should have emitted a corrected groove (different division from caller)
       expect(emittedGroove).not.toBeNull();
-      expect(emittedGroove.division).not.toBe(incompatibleGroove.division);
+      expect(emittedGroove?.division).not.toBe(incompatibleGroove.division);
     });
 
     it('valid groove is stored without unexpected mutations', () => {
       // A groove with no corrections needed should still work properly
       const validGroove = { ...DEFAULT_GROOVE };
-      let emittedGroove: any = null;
+      let emittedGroove = null as GrooveData | null;
       engine.on('grooveChange', (g) => { emittedGroove = g; });
 
       engine.updateGroove(validGroove);
 
       expect(emittedGroove).not.toBeNull();
-      expect(emittedGroove.division).toBe(validGroove.division);
-      expect(emittedGroove.swing).toBe(validGroove.swing);
+      expect(emittedGroove?.division).toBe(validGroove.division);
+      expect(emittedGroove?.swing).toBe(validGroove.swing);
     });
   });
 

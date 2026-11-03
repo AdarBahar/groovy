@@ -51,7 +51,7 @@ export default function VolumeKnob({ volume, onVolumeChange, label = 'Volume' }:
       const y = clientY - rect.top;
 
       const r = getRadians(x - CX, y - CY);
-      let res = Math.round(toDegrees(r)) + 90;
+      const res = Math.round(toDegrees(r)) + 90;
 
       let value = res <= 180 ? res : res - 360;
       value = value <= DEG_RANGE * -1 ? DEG_RANGE * -1 : value;

@@ -1,4 +1,4 @@
-import { Trash2, Download, Printer, Share2, Save } from 'lucide-react';
+import { Download, Printer, Share2, Save } from 'lucide-react';
 import { Button } from './ui/button';
 
 export function BottomToolbar() {

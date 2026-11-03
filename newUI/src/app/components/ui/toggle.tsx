@@ -44,4 +44,5 @@ function Toggle({
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components -- shadcn pattern: export variants with the component.
 export { Toggle, toggleVariants };

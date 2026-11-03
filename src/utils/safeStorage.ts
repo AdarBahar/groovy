@@ -24,7 +24,7 @@ export interface StorageResult {
 export function getStorageUsage(): number {
   let total = 0;
   for (const key in localStorage) {
-    if (localStorage.hasOwnProperty(key)) {
+    if (Object.prototype.hasOwnProperty.call(localStorage, key)) {
       const value = localStorage.getItem(key) || '';
       // Estimate: key length + value length * 2 bytes per char (UTF-16)
       total += (key.length + value.length) * 2;
