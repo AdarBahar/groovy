@@ -7,12 +7,12 @@ import type { DrumSynth } from '../core/DrumSynth';
 
 // Mock all MIDI singletons
 vi.mock('../midi/MIDIAccess', () => {
-  let onDeviceListChange: ((devices: any[]) => void) | null = null;
+  let onDeviceListChange: ((devices: unknown[]) => void) | null = null;
   return {
     midiAccess: {
       initialize: vi.fn().mockResolvedValue(false),
       getInputDevices: vi.fn().mockReturnValue([]),
-      onDeviceListChange: { get: () => onDeviceListChange, set: (fn: any) => { onDeviceListChange = fn; } },
+      onDeviceListChange: { get: () => onDeviceListChange, set: (fn: ((devices: unknown[]) => void) | null) => { onDeviceListChange = fn; } },
       bindInput: vi.fn().mockReturnValue(false),
       disconnect: vi.fn(),
       dispose: vi.fn(),
@@ -108,7 +108,7 @@ describe('useMIDIInput - DrumSynth instantiation (#115)', () => {
     const providedSynth = {
       resume: vi.fn(),
       playDrum: vi.fn(),
-    } as any;
+    } as unknown as DrumSynth;
 
     await act(async () => {
       renderHook(() => useMIDIInput(providedSynth));
@@ -120,7 +120,7 @@ describe('useMIDIInput - DrumSynth instantiation (#115)', () => {
 });
 
 describe('useMIDIInput - Listener Attachment', () => {
-  let setNoteOnHandlerSpy: any;
+  let setNoteOnHandlerSpy: ReturnType<typeof vi.spyOn>;
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -135,7 +135,7 @@ describe('useMIDIInput - Listener Attachment', () => {
     const drumSynthStub = {
       resume: vi.fn(),
       playDrum: vi.fn(),
-    } as any;
+    } as unknown as DrumSynth;
 
     await act(async () => {
       renderHook(() => useMIDIInput(drumSynthStub));
@@ -148,7 +148,7 @@ describe('useMIDIInput - Listener Attachment', () => {
     const drumSynthStub = {
       resume: vi.fn(),
       playDrum: vi.fn(),
-    } as any;
+    } as unknown as DrumSynth;
 
     const { result } = await act(async () => {
       return renderHook(() => useMIDIInput(drumSynthStub));
@@ -170,7 +170,7 @@ describe('useMIDIInput - Listener Attachment', () => {
     const drumSynthStub = {
       resume: vi.fn(),
       playDrum: vi.fn(),
-    } as any;
+    } as unknown as DrumSynth;
 
     const { result } = await act(async () => {
       return renderHook(() => useMIDIInput(drumSynthStub));
@@ -197,7 +197,7 @@ describe('useMIDIInput - Listener Attachment', () => {
     const drumSynthStub = {
       resume: vi.fn(),
       playDrum: vi.fn(),
-    } as any;
+    } as unknown as DrumSynth;
 
     const { result } = await act(async () => {
       return renderHook(() => useMIDIInput(drumSynthStub));
@@ -205,7 +205,7 @@ describe('useMIDIInput - Listener Attachment', () => {
 
     // Capture the installed handler
     const handler = setNoteOnHandlerSpy.mock.calls[0][0];
-    const initialPlayDrumCalls = drumSynthStub.playDrum.mock.calls.length;
+    const initialPlayDrumCalls = vi.mocked(drumSynthStub.playDrum).mock.calls.length;
 
     // Change config to disable playback
     await act(async () => {
@@ -237,7 +237,7 @@ describe('useMIDIInput - Listener Attachment', () => {
     const drumSynthStub = {
       resume: vi.fn(),
       playDrum: vi.fn(),
-    } as any;
+    } as unknown as DrumSynth;
 
     const { unmount } = await act(async () => {
       return renderHook(() => useMIDIInput(drumSynthStub));

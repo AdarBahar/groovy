@@ -24,7 +24,7 @@ describe('MIDI Integration', () => {
     it('converts MIDI note to DrumVoice through complete chain', () => {
       const mockPlayDrum = vi.fn();
 
-      midiHandler.setNoteOnHandler((note, velocity, _voice, _timestamp) => {
+      midiHandler.setNoteOnHandler((note, velocity) => {
         const mappedVoice = midiDrumMapping.getVoiceFromNote(note);
         if (mappedVoice) {
           // This simulates what useMIDIInput would do

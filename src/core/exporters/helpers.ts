@@ -126,6 +126,7 @@ export function escapeXml(str: string): string {
 
   return str
     // Remove null bytes and control characters (except tab, newline, carriage return)
+    // eslint-disable-next-line no-control-regex -- Intentional: remove characters that are not valid in XML.
     .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '')
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
