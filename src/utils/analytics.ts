@@ -23,18 +23,27 @@ export function isAnalyticsHost(hostname: string, domain: string): boolean {
   return host === root || host.endsWith('.' + root);
 }
 
+// The choice that the user made in this page session. It has priority over storage,
+// so the choice applies immediately, also when the storage write fails.
+let sessionOptOut: boolean | null = null;
+
 /** Return true when the user turned off usage statistics */
 export function isAnalyticsOptedOut(): boolean {
+  if (sessionOptOut !== null) return sessionOptOut;
   return safeGetItem(ANALYTICS_OPT_OUT_KEY) === 'true';
 }
 
-/** Save the opt-out choice of the user. Pass true to turn analytics off. */
-export function setAnalyticsOptOut(disabled: boolean): void {
-  if (disabled) {
-    safeSetItem(ANALYTICS_OPT_OUT_KEY, 'true');
-  } else {
-    safeRemoveItem(ANALYTICS_OPT_OUT_KEY);
-  }
+/**
+ * Set the opt-out choice of the user. Pass true to turn analytics off.
+ * The choice applies immediately. Return false when the browser did not save it,
+ * because then the choice applies only until the page reloads.
+ */
+export function setAnalyticsOptOut(disabled: boolean): boolean {
+  sessionOptOut = disabled;
+  const result = disabled
+    ? safeSetItem(ANALYTICS_OPT_OUT_KEY, 'true')
+    : safeRemoveItem(ANALYTICS_OPT_OUT_KEY);
+  return result.success;
 }
 
 // Check if analytics is allowed on this host and the user did not opt out

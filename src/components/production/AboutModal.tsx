@@ -18,9 +18,12 @@ export function AboutModal({ isOpen, onClose }: AboutModalProps) {
   // A change to the opt-out applies fully only after a reload.
   const [isAnalyticsOptedOutAtLoad] = useState(isAnalyticsOptedOutOnPageLoad);
 
+  const [isShareUsageSaveFailed, setIsShareUsageSaveFailed] = useState(false);
+
   const handleShareUsageToggle = () => {
     const next = !shareUsage;
-    setAnalyticsOptOut(!next);
+    const isSaved = setAnalyticsOptOut(!next);
+    setIsShareUsageSaveFailed(!isSaved);
     setShareUsage(next);
   };
 
@@ -141,8 +144,14 @@ export function AboutModal({ isOpen, onClose }: AboutModalProps) {
                 Share anonymous usage statistics
               </label>
             </div>
-            {shareUsage === isAnalyticsOptedOutAtLoad && (
-              <p className="mt-1 text-xs">Reload the page to apply this change fully.</p>
+            {isShareUsageSaveFailed ? (
+              <p role="alert" className="mt-1 text-xs text-amber-600 dark:text-amber-400">
+                Your browser did not save this choice. It applies only until you reload the page.
+              </p>
+            ) : (
+              shareUsage === isAnalyticsOptedOutAtLoad && (
+                <p className="mt-1 text-xs">Reload the page to apply this change fully.</p>
+              )
             )}
             <p className="mt-1">
               © 2026 Groovy. Created by{' '}
