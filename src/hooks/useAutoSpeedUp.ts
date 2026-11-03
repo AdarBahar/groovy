@@ -125,6 +125,7 @@ export function useAutoSpeedUp({
     if (!isPlaying && state.isActive) {
       stop();
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- The stop callback is declared below this effect and has a stable identity. Keep the effect order.
   }, [isPlaying, state.isActive]);
 
   // Countdown timer to update timeRemaining
@@ -209,6 +210,7 @@ export function useAutoSpeedUp({
     };
 
     scheduleIncrease();
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- Keep deps: callback identity must change with config and onTempoChange.
   }, [config, tempo, onTempoChange]);
 
   const stop = useCallback(() => {

@@ -121,6 +121,7 @@ export function useMIDIInput(synth?: DrumSynth): UseMIDIInputReturn {
       // handler survives an unmount or a StrictMode/HMR remount.
       midiAccess.dispose();
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- Mount-only: MIDI init must run once. A re-run disposes and re-registers listeners.
   }, []);
 
   // Handle device list changes and device disconnections

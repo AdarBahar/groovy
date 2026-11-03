@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components -- This file exports storage helpers with the component. */
 import { useState, useEffect } from 'react';
 import './SyncOffsetControl.css';
 
