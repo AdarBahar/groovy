@@ -336,12 +336,12 @@ export default function ProductionPage() {
 
   // My Grooves handlers
   const handleSaveGroove = (name: string, existingId?: string) => {
-    analytics.trackGrooveSave(name, !!existingId);
+    analytics.trackGrooveSave(name.trim().length > 0, !!existingId);
     myGrooves.saveGroove(groove, name, existingId);
   };
 
   const handleLoadGroove = (saved: SavedGroove) => {
-    analytics.trackGrooveLoad(saved.name);
+    analytics.trackGrooveLoad(saved.name.trim().length > 0);
     const loadedGroove = decodeGroove(saved);
     setGroove(loadedGroove);
     // URL will update automatically via useURLSync
@@ -349,7 +349,7 @@ export default function ProductionPage() {
 
   const handleDeleteGroove = (id: string) => {
     const groove = myGrooves.grooves.find(g => g.id === id);
-    if (groove) analytics.trackGrooveDelete(groove.name);
+    if (groove) analytics.trackGrooveDelete(groove.name.trim().length > 0);
     myGrooves.deleteGroove(id);
   };
 
