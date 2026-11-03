@@ -67,6 +67,7 @@ export function useMIDITracking(
     }
 
     lastStateRef.current = { isPlaying, trackingEnabled };
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- The engine is read only at the enable transition. A new engine must not re-run the tracker enable.
   }, [isPlaying, trackingEnabled, groove]);
 
   // Sync tempo changes mid-session (for auto speed-up support)
