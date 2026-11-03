@@ -23,7 +23,7 @@ vi.mock('../utils/safeStorage', () => {
   };
 });
 
-// GrooveURLCodec is used internally; stub its encode/decode to avoid lz-string in tests
+// GrooveURLCodec is used internally; stub its encode/decode to keep these tests focused on storage
 vi.mock('./GrooveURLCodec', () => ({
   encodeGrooveToURL: vi.fn().mockReturnValue('mock-url'),
   decodeURLToGroove: vi.fn(),
