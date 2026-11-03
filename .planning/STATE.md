@@ -97,6 +97,7 @@ None currently. Ready to begin Phase 1 planning.
 | 261103-mxb | Analytics privacy (#148): no groove names/device IDs/referrer, gated error events, exact host check, opt-out toggle, shortener notice | 2026-11-03 | 301638c | [261103-mxb-analytics-privacy-fixes-for-issue-148](./quick/261103-mxb-analytics-privacy-fixes-for-issue-148/) |
 | 261103-n66 | Fix all ESLint problems: ignore .claude and archive, type tests, justified disables for hooks and fast refresh | 2026-11-03 | 3e262f2 | [261103-n66-fix-all-eslint-problems](./quick/261103-n66-fix-all-eslint-problems/) |
 | fast | Add ?v=1.1.0 to the analytics script URL (one-year cache on the server) | 2026-11-03 | 99a7a34 | — |
+| 261103-o2j | AudioContext lifecycle (#24): lazy real context, offline decode, DrumSynth.dispose, owned-synth dispose in GrooveEngine and useMIDIInput | 2026-11-03 | ab6db71 | [261103-o2j-fix-audiocontext-lifecycle-for-issue-24](./quick/261103-o2j-fix-audiocontext-lifecycle-for-issue-24/) |
 
 ## Next Steps
 
@@ -118,4 +119,4 @@ None currently. Ready to begin Phase 1 planning.
 - Decisions captured: 4 (Handler Lifecycle, Listener Dependencies, Cleanup Strategy, Memory Verification)
 - Next: Plan Phase 1
 
-Last activity: 2026-11-03 - Completed quick tasks 261103-mxb (analytics privacy, #148) and 261103-n66 (ESLint cleanup)
+Last activity: 2026-11-03 - Completed quick task 261103-o2j: AudioContext lifecycle fix for issue #24
