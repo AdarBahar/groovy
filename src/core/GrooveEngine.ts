@@ -58,7 +58,11 @@ export class GrooveEngine {
 
   private listeners: Partial<GrooveEngineEvents> = {};
 
+  // The engine closes only the synth that it created
+  private readonly ownsSynth: boolean;
+
   constructor(synth?: DrumSynth) {
+    this.ownsSynth = !synth;
     this.synth = synth || new DrumSynth();
   }
 
@@ -456,5 +460,8 @@ export class GrooveEngine {
   dispose(): void {
     this.stop();
     this.listeners = {};
+    if (this.ownsSynth) {
+      this.synth.dispose();
+    }
   }
 }
