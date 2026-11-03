@@ -180,6 +180,106 @@ describe('MIDIAccess teardown (no listener accumulation)', () => {
   });
 });
 
+describe('MIDIAccess availability (#155)', () => {
+  const originalHostname = window.location.hostname;
+
+  function setHostname(hostname: string): void {
+    Object.defineProperty(window.location, 'hostname', { value: hostname, writable: true, configurable: true });
+  }
+
+  function stubRequest(impl: (() => Promise<unknown>) | undefined): void {
+    Object.defineProperty(navigator, 'requestMIDIAccess', {
+      value: impl ? vi.fn().mockImplementation(impl) : undefined,
+      writable: true,
+      configurable: true,
+    });
+  }
+
+  function okAccess() {
+    return { inputs: new Map(), onstatechange: null };
+  }
+
+  afterEach(() => {
+    midiAccess.dispose();
+    setHostname(originalHostname);
+    stubRequest(undefined);
+  });
+
+  it('is unsupported when requestMIDIAccess is missing on a non-localhost host', async () => {
+    setHostname('example.com');
+    stubRequest(undefined);
+    expect(await midiAccess.initialize()).toBe(false);
+    expect(midiAccess.getAvailability()).toBe('unsupported');
+  });
+
+  it.each(['NotAllowedError', 'SecurityError'])('is denied on %s', async (name) => {
+    setHostname('example.com');
+    stubRequest(() => Promise.reject(new DOMException('x', name)));
+    expect(await midiAccess.initialize()).toBe(false);
+    expect(midiAccess.getAvailability()).toBe('denied');
+  });
+
+  it('is error for another failure', async () => {
+    setHostname('example.com');
+    stubRequest(() => Promise.reject(new Error('boom')));
+    expect(await midiAccess.initialize()).toBe(false);
+    expect(midiAccess.getAvailability()).toBe('error');
+  });
+
+  it('is available when requestMIDIAccess resolves', async () => {
+    setHostname('example.com');
+    stubRequest(() => Promise.resolve(okAccess()));
+    expect(await midiAccess.initialize()).toBe(true);
+    expect(midiAccess.getAvailability()).toBe('available');
+  });
+
+  it('is available on localhost when requestMIDIAccess is missing or rejects', async () => {
+    setHostname('localhost');
+    stubRequest(undefined);
+    expect(await midiAccess.initialize()).toBe(true);
+    expect(midiAccess.getAvailability()).toBe('available');
+
+    stubRequest(() => Promise.reject(new DOMException('x', 'NotAllowedError')));
+    expect(await midiAccess.initialize()).toBe(true);
+    expect(midiAccess.getAvailability()).toBe('available');
+  });
+
+  it('a stale rejected init does not overwrite the newest availability', async () => {
+    setHostname('example.com');
+    let rejectFirst!: (e: unknown) => void;
+    const first = new Promise<unknown>((_, reject) => {
+      rejectFirst = reject;
+    });
+    const queue: Promise<unknown>[] = [first, Promise.resolve(okAccess())];
+    stubRequest(() => queue.shift() as Promise<unknown>);
+
+    const p1 = midiAccess.initialize();
+    const p2 = midiAccess.initialize();
+    expect(await p2).toBe(true);
+    expect(midiAccess.getAvailability()).toBe('available');
+    rejectFirst(new DOMException('x', 'NotAllowedError'));
+    expect(await p1).toBe(false);
+    expect(midiAccess.getAvailability()).toBe('available');
+  });
+
+  it('a rejected init after dispose() does not set denied', async () => {
+    setHostname('example.com');
+    let rejectFirst!: (e: unknown) => void;
+    const first = new Promise<unknown>((_, reject) => {
+      rejectFirst = reject;
+    });
+    stubRequest(() => first);
+    const before = midiAccess.getAvailability();
+
+    const p1 = midiAccess.initialize();
+    midiAccess.dispose();
+    rejectFirst(new DOMException('x', 'NotAllowedError'));
+    expect(await p1).toBe(false);
+    expect(midiAccess.getAvailability()).toBe(before);
+    expect(midiAccess.getAvailability()).not.toBe('denied');
+  });
+});
+
 describe('MIDIAccess pending initialization is invalidated by dispose()/re-init', () => {
   function makeMockAccess(id: string) {
     const input = { id, name: `Kit ${id}`, manufacturer: 'Test', state: 'connected' as string, onmidimessage: null };

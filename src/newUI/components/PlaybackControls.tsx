@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Play, Pause, Plus } from 'lucide-react';
+import { Play, Square, Plus } from 'lucide-react';
 import { Button } from './ui/button';
 import { Slider } from './ui/slider';
 
@@ -24,7 +24,7 @@ export function PlaybackControls() {
             className="w-14 h-14 rounded-full bg-gradient-to-br from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 shadow-lg shadow-purple-500/20"
           >
             {isPlaying ? (
-              <Pause className="w-6 h-6 fill-white" />
+              <Square className="w-6 h-6 fill-white" />
             ) : (
               <Play className="w-6 h-6 fill-white ml-0.5" />
             )}

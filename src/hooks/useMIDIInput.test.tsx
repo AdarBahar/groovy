@@ -17,6 +17,7 @@ vi.mock('../midi/MIDIAccess', () => {
       disconnect: vi.fn(),
       dispose: vi.fn(),
       getCurrentDevice: vi.fn().mockReturnValue(null),
+      getAvailability: vi.fn().mockReturnValue('unsupported'),
       sendFakeMIDIMessage: vi.fn(),
     },
     FAKE_MIDI_DEVICE_ID_EXPORT: 'fake-midi-device',
@@ -357,5 +358,26 @@ describe('useMIDIInput - pending initialization after unmount', () => {
     });
 
     expect(midiAccess.bindInput).not.toHaveBeenCalled();
+  });
+
+  it('exposes availability: pending first, then the value from MIDIAccess (#155)', async () => {
+    vi.mocked(midiAccess.getAvailability).mockReturnValue('denied');
+    const drumSynthStub = { resume: vi.fn().mockResolvedValue(undefined), playDrum: vi.fn() } as unknown as DrumSynth;
+
+    let resolveInit!: (value: boolean) => void;
+    vi.mocked(midiAccess.initialize).mockReturnValueOnce(
+      new Promise<boolean>((resolve) => {
+        resolveInit = resolve;
+      })
+    );
+
+    const { result } = renderHook(() => useMIDIInput(drumSynthStub));
+    expect(result.current.availability).toBe('pending');
+
+    await act(async () => {
+      resolveInit(false);
+    });
+
+    expect(result.current.availability).toBe('denied');
   });
 });
