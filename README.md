@@ -102,12 +102,13 @@ The app is configured to deploy to `/groovy/` subdirectory by default.
 ### Quick Deploy
 
 ```bash
-# 1. Build for production
-npm run build:prod
+# 1. Merge your change to main on GitHub (the tool deploys origin/main)
 
 # 2. Deploy with the inmotion-deploy service "groovy"
-#    (python3 inmotionDeploy.py groovy --dry-run, then without --dry-run)
-# See DEPLOYMENT.md for detailed instructions
+cd ~/Code/deployment/inmotion
+python3 inmotionDeploy.py groovy --dry-run   # builds origin/main in a temporary folder, shows the changes
+python3 inmotionDeploy.py groovy             # asks for a yes, backs up, copies, checks
+# No build by hand. See DEPLOYMENT.md for detailed instructions
 ```
 
 ### Change Deployment Path
