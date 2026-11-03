@@ -9,7 +9,7 @@ import { MetronomeOptionsMenu } from './MetronomeOptionsMenu';
 import { MobileMoreMenu } from './MobileMoreMenu';
 import { MIDISettingsModal } from './MIDISettingsModal';
 import { AutoSpeedUpConfig, MetronomeConfig, MetronomeFrequency, MetronomeOffsetClick } from '../../types';
-import { MIDIConfig, MIDIDeviceInfo } from '../../midi/types';
+import { MIDIAvailability, MIDIConfig, MIDIDeviceInfo } from '../../midi/types';
 import { trackThemeToggle, trackAutoSpeedUpConfigOpen } from '../../utils/analytics';
 import { METRONOME_OPTIONS, type MetronomeOption } from '../../utils/metronomeConstants';
 
@@ -35,6 +35,7 @@ interface HeaderProps {
   // MIDI props
   midiConfig?: MIDIConfig;
   midiDevices?: MIDIDeviceInfo[];
+  midiAvailability?: MIDIAvailability;
   midiCurrentDevice?: MIDIDeviceInfo | null;
   onMIDIConfigChange?: (updates: Partial<MIDIConfig>) => void;
   onMIDIConnectDevice?: (deviceId: string) => void;
@@ -61,6 +62,7 @@ export function Header({
   savedGroovesCount = 0,
   midiConfig,
   midiDevices = [],
+  midiAvailability = 'pending',
   midiCurrentDevice = null,
   onMIDIConfigChange,
   onMIDIConnectDevice,
@@ -314,6 +316,7 @@ export function Header({
           config={midiConfig}
           onConfigChange={onMIDIConfigChange}
           devices={midiDevices}
+          availability={midiAvailability}
           currentDevice={midiCurrentDevice}
           onConnectDevice={onMIDIConnectDevice}
         />

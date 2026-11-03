@@ -13,7 +13,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { midiAccess } from '../midi/MIDIAccess';
 import { midiHandler } from '../midi/MIDIHandler';
 import { midiDrumMapping } from '../midi/MIDIDrumMapping';
-import { MIDIConfig, MIDIDeviceInfo } from '../midi/types';
+import { MIDIAvailability, MIDIConfig, MIDIDeviceInfo } from '../midi/types';
 import { loadMIDIConfig, saveMIDIConfig } from '../utils/midiStorage';
 import { loadLatencyConfig } from '../utils/latencyStorage';
 import { DrumSynth } from '../core/DrumSynth';
@@ -28,6 +28,7 @@ interface UseMIDIInputReturn {
   config: MIDIConfig;
   updateConfig: (updates: Partial<MIDIConfig>) => void;
   devices: MIDIDeviceInfo[];
+  availability: MIDIAvailability;
   isConnected: boolean;
   currentDevice: MIDIDeviceInfo | null;
   connectDevice: (deviceId: string) => void;
@@ -72,6 +73,7 @@ export function useMIDIInput(synth?: DrumSynth): UseMIDIInputReturn {
 
   const [config, setConfig] = useState<MIDIConfig>(loadMIDIConfig);
   const [devices, setDevices] = useState<MIDIDeviceInfo[]>([]);
+  const [availability, setAvailability] = useState<MIDIAvailability>('pending');
   const [isConnected, setIsConnected] = useState(false);
   const [currentDevice, setCurrentDevice] = useState<MIDIDeviceInfo | null>(null);
 
@@ -107,6 +109,8 @@ export function useMIDIInput(synth?: DrumSynth): UseMIDIInputReturn {
       // The manager has already discarded this initialization; do not touch
       // state or bind a device from a stale continuation.
       if (cancelled) return;
+
+      setAvailability(midiAccess.getAvailability());
 
       if (success) {
         const initialDevices = midiAccess.getInputDevices();
@@ -299,6 +303,7 @@ export function useMIDIInput(synth?: DrumSynth): UseMIDIInputReturn {
     config,
     updateConfig,
     devices,
+    availability,
     isConnected,
     currentDevice,
     connectDevice,
