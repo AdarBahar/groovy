@@ -11,6 +11,7 @@ const COMMENT_MAX_LENGTH = 300;
 function sanitizeMetadataInput(value: string, maxLength: number): string {
   return value
     .normalize('NFKC')
+    // eslint-disable-next-line no-control-regex -- Intentional: remove control characters from user input.
     .replace(/[\u0000-\u001F\u007F-\u009F]/g, '')
     .slice(0, maxLength);
 }
