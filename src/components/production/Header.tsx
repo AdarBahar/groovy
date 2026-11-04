@@ -105,7 +105,7 @@ export function Header({
             <button
               key={option}
               onClick={() => onMetronomeChange?.(option)}
-              className={`${metronome === option ? 'text-slate-900 dark:text-white' : 'text-slate-400 dark:text-slate-500'} hover:text-slate-900 dark:hover:text-white transition-colors uppercase`}
+              className={`${metronome === option ? 'text-slate-900 dark:text-white' : 'text-slate-600 dark:text-slate-400'} hover:text-slate-900 dark:hover:text-white transition-colors uppercase`}
             >
               {option === 'off' ? 'OFF' : option}
             </button>
@@ -118,7 +118,7 @@ export function Header({
                 className={`ml-2 p-1 rounded transition-colors ${
                   showMetronomeOptions
                     ? 'text-purple-500 bg-purple-100 dark:bg-purple-900/30'
-                    : 'text-slate-400 dark:text-slate-500 hover:text-slate-900 dark:hover:text-white'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                 }`}
                 title="Metronome Options"
               >
