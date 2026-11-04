@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type RefObject } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog';
 import { useTheme } from '../../contexts/ThemeContext';
 import { logger } from '../../utils/logger';
@@ -7,9 +7,11 @@ import { isAnalyticsOptedOut, isAnalyticsOptedOutOnPageLoad, setAnalyticsOptOut 
 interface AboutModalProps {
   isOpen: boolean;
   onClose: () => void;
+  /** The control that gets keyboard focus when the dialog closes. */
+  returnFocusRef: RefObject<HTMLElement | null> | null;
 }
 
-export function AboutModal({ isOpen, onClose }: AboutModalProps) {
+export function AboutModal({ isOpen, onClose, returnFocusRef }: AboutModalProps) {
   const { isDark } = useTheme();
   const [debugMode, setDebugMode] = useState(logger.isDebugMode());
 
@@ -36,6 +38,14 @@ export function AboutModal({ isOpen, onClose }: AboutModalProps) {
     <Dialog open={isOpen} onOpenChange={(open) => { if (!open) onClose(); }}>
       <DialogContent
         aria-describedby={undefined}
+        onCloseAutoFocus={(event) => {
+          // The dialog has no Radix trigger, so Radix cannot return focus by itself.
+          const target = returnFocusRef?.current ?? null;
+          if (target) {
+            event.preventDefault();
+            target.focus();
+          }
+        }}
         className={`${isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'} max-w-2xl p-0 gap-0 sm:p-0`}
       >
         {/* Header */}

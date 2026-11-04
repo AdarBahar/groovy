@@ -9,19 +9,19 @@ vi.mock('../../contexts/ThemeContext', () => ({
 
 describe('AboutModal', () => {
   it('renders a named dialog when open', () => {
-    render(<AboutModal isOpen onClose={vi.fn()} />);
+    render(<AboutModal isOpen onClose={vi.fn()} returnFocusRef={null} />);
     const dialog = screen.getByRole('dialog', { name: 'About Groovy' });
     expect(dialog).toBeTruthy();
   });
 
   it('renders nothing when closed', () => {
-    render(<AboutModal isOpen={false} onClose={vi.fn()} />);
+    render(<AboutModal isOpen={false} onClose={vi.fn()} returnFocusRef={null} />);
     expect(screen.queryByRole('dialog')).toBeNull();
   });
 
   it('calls onClose when Escape is pressed', () => {
     const onClose = vi.fn();
-    render(<AboutModal isOpen onClose={onClose} />);
+    render(<AboutModal isOpen onClose={onClose} returnFocusRef={null} />);
     fireEvent.keyDown(screen.getByRole('dialog'), { key: 'Escape' });
     expect(onClose).toHaveBeenCalledTimes(1);
   });
