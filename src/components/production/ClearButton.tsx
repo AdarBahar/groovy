@@ -86,7 +86,7 @@ export function ClearButton({ onClear }: ClearButtonProps) {
         className={`flex items-center gap-2 h-auto py-2 px-4 ${
           isOpen
             ? 'text-slate-900 dark:text-white bg-slate-200 dark:bg-slate-700'
-            : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+            : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
         }`}
       >
         <Trash2 className="w-4 h-4" />
@@ -114,7 +114,7 @@ export function ClearButton({ onClear }: ClearButtonProps) {
                   variant="ghost"
                   size="sm"
                   onClick={handleCancel}
-                  className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white text-xs uppercase px-3 py-1 h-auto"
+                  className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white text-xs uppercase px-3 py-1 h-auto"
                 >
                   Cancel
                 </Button>

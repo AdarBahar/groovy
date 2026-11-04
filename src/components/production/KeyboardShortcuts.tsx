@@ -23,7 +23,7 @@ export function KeyboardShortcuts({ inline = false }: KeyboardShortcutsProps) {
             <kbd className="bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 px-2 py-1 rounded font-mono">
               {shortcut.key}
             </kbd>
-            <span className="text-slate-500 dark:text-slate-400">{shortcut.description}</span>
+            <span className="text-slate-600 dark:text-slate-400">{shortcut.description}</span>
           </div>
         ))}
       </div>
@@ -39,7 +39,7 @@ export function KeyboardShortcuts({ inline = false }: KeyboardShortcutsProps) {
             <kbd className="bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 px-2 py-1 rounded font-mono">
               {shortcut.key}
             </kbd>
-            <span className="text-slate-500 dark:text-slate-400">{shortcut.description}</span>
+            <span className="text-slate-600 dark:text-slate-400">{shortcut.description}</span>
           </div>
         ))}
       </div>

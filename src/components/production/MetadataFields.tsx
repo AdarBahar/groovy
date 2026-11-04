@@ -153,7 +153,7 @@ export const MetadataFields = forwardRef<MetadataFieldsRef, MetadataFieldsProps>
   // State 3: Editing Mode
   if (isEditing) {
     return (
-      <div className="space-y-2 mt-[5px]">
+      <div className="space-y-2 mt-1">
         {/* Row 1: Title / Author */}
         <div className="grid grid-cols-1 md:grid-cols-[minmax(0,52ch)_auto_minmax(0,52ch)] md:justify-start gap-2 items-start">
           <div className="space-y-1.5 min-w-0 md:max-w-[52ch]">
@@ -255,21 +255,32 @@ export const MetadataFields = forwardRef<MetadataFieldsRef, MetadataFieldsProps>
   // State 2: Display Mode (Edit Mode - Not Editing)
   return (
     <div className="flex items-start gap-2.5">
-      <div className="space-y-1 flex-1 min-w-0 mt-[10px]">
-        <button
-          type="button"
-          onClick={handleEdit}
-          className="group max-w-full flex items-center gap-2 text-left text-slate-900 dark:text-white hover:text-purple-700 dark:hover:text-purple-300 transition-colors"
-          title="Edit groove details"
-        >
-          <h1 className="text-xl sm:text-2xl font-semibold truncate">{titleAuthorLine}</h1>
-          <Edit2 className="w-4 h-4 flex-shrink-0 text-slate-500 dark:text-slate-400 group-hover:text-purple-700 dark:group-hover:text-purple-300" />
-          <span className="text-xs uppercase hidden sm:inline text-slate-500 dark:text-slate-400 group-hover:text-purple-700 dark:group-hover:text-purple-300">
-            Edit
-          </span>
-        </button>
+      <div className="space-y-1 flex-1 min-w-0 mt-2.5">
+        <div className="group max-w-full flex items-center gap-2 text-left text-slate-900 dark:text-white hover:text-purple-700 dark:hover:text-purple-300 transition-colors">
+          <h1 className="text-xl sm:text-2xl font-semibold break-words min-w-0">
+            <button
+              type="button"
+              onClick={handleEdit}
+              className="text-left"
+              title="Edit groove details"
+            >
+              {titleAuthorLine}
+            </button>
+          </h1>
+          <button
+            type="button"
+            onClick={handleEdit}
+            aria-label="Edit groove details"
+            className="flex items-center gap-2"
+          >
+            <Edit2 className="w-4 h-4 flex-shrink-0 text-slate-600 dark:text-slate-400 group-hover:text-purple-700 dark:group-hover:text-purple-300" />
+            <span className="text-xs uppercase hidden sm:inline text-slate-600 dark:text-slate-400 group-hover:text-purple-700 dark:group-hover:text-purple-300">
+              Edit
+            </span>
+          </button>
+        </div>
         {displayComments && (
-          <p className="text-xs text-slate-500 dark:text-slate-400 truncate">{displayComments}</p>
+          <p className="text-xs text-slate-600 dark:text-slate-400 truncate">{displayComments}</p>
         )}
       </div>
       <div className="flex items-center gap-2 mt-0.5 flex-wrap justify-end">
@@ -282,7 +293,7 @@ export const MetadataFields = forwardRef<MetadataFieldsRef, MetadataFieldsProps>
             className={`flex items-center gap-2 touch-target ${
               isStickingSetupActive
                 ? 'bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 border border-purple-300 dark:border-purple-600 hover:bg-purple-200 dark:hover:bg-purple-800/60'
-                : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
             }`}
             title="Toggle sticking setup"
           >
@@ -294,7 +305,7 @@ export const MetadataFields = forwardRef<MetadataFieldsRef, MetadataFieldsProps>
           variant="ghost"
           size="sm"
           onClick={onSaveGroove}
-          className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center gap-2 touch-target"
+          className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center gap-2 touch-target"
           title="Save Groove"
         >
           <Save className="w-4 h-4" />
@@ -304,7 +315,7 @@ export const MetadataFields = forwardRef<MetadataFieldsRef, MetadataFieldsProps>
           variant="ghost"
           size="sm"
           onClick={onDownload}
-          className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center gap-2 touch-target"
+          className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center gap-2 touch-target"
           title="Download"
         >
           <Download className="w-4 h-4" />
@@ -314,7 +325,7 @@ export const MetadataFields = forwardRef<MetadataFieldsRef, MetadataFieldsProps>
           variant="ghost"
           size="sm"
           onClick={onPrint}
-          className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center gap-2 touch-target"
+          className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center gap-2 touch-target"
           title="Print"
         >
           <Printer className="w-4 h-4" />
@@ -324,7 +335,7 @@ export const MetadataFields = forwardRef<MetadataFieldsRef, MetadataFieldsProps>
           variant="ghost"
           size="sm"
           onClick={onShare}
-          className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center gap-2 touch-target"
+          className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center gap-2 touch-target"
           title="Share"
         >
           <Share2 className="w-4 h-4" />
