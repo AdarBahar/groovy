@@ -100,6 +100,7 @@ None currently. Ready to begin Phase 1 planning.
 | 261103-o2j | AudioContext lifecycle (#24): lazy real context, offline decode, DrumSynth.dispose, owned-synth dispose in GrooveEngine and useMIDIInput | 2026-11-03 | ab6db71 | [261103-o2j-fix-audiocontext-lifecycle-for-issue-24](./quick/261103-o2j-fix-audiocontext-lifecycle-for-issue-24/) |
 | fast | Add WhatsApp to the social share options (#78) | 2026-11-03 | 99613cd | — |
 | 261103-os8 | Stop label on the transport button, MIDI availability status in the settings modal, focus-visible labels in EmbedPage (#155) | 2026-11-03 | eebe98d | [261103-os8-stop-label-and-midi-unavailable-status-f](./quick/261103-os8-stop-label-and-midi-unavailable-status-f/) |
+| fast | Remove the unused lz-string dependency (#150) | 2026-11-03 | bd79e73 | — |
 
 ## Next Steps
 
