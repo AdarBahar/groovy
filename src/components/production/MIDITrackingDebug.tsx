@@ -137,6 +137,7 @@ export function MIDITrackingDebug() {
         <h3 className="font-bold text-purple-600 dark:text-purple-400">MIDI Tracking Debug POC</h3>
         <button
           onClick={() => setIsOpen(false)}
+          aria-label="Close debug panel"
           className="p-1 hover:bg-slate-100 dark:hover:bg-slate-700 rounded"
         >
           <X className="w-4 h-4" />

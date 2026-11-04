@@ -147,7 +147,7 @@ export function PlaybackControls({
         {/* Tempo Slider */}
         <div className="flex-1 lg:max-w-md">
           <div className="flex items-center justify-between mb-2">
-            <label className="text-sm text-slate-500 dark:text-slate-400">Tempo (BPM)</label>
+            <label className="text-sm text-slate-600 dark:text-slate-400">Tempo (BPM)</label>
             <div className="flex items-center gap-3">
               <span className="text-sm text-purple-600 dark:text-purple-400 font-semibold">{tempo}</span>
               {performedBpm !== null && trackingEnabled && (
@@ -160,6 +160,7 @@ export function PlaybackControls({
           <Slider
             value={[tempo]}
             onValueChange={(v) => onTempoChange(v[0])}
+            thumbAriaLabel="Tempo (BPM)"
             min={40}
             max={240}
             step={1}
@@ -170,15 +171,17 @@ export function PlaybackControls({
         {/* Swing Slider */}
         <div className="flex-1 lg:max-w-md">
           <div className="flex items-center justify-between mb-2">
-            <label className="text-sm text-slate-500 dark:text-slate-400">Swing</label>
+            <label className="text-sm text-slate-600 dark:text-slate-400">Swing</label>
             <div className="flex items-center gap-2">
-              <span className="text-xs text-slate-500 dark:text-slate-500">{getSwingType(swingToDisplay(swing))}</span>
+              <span className="text-xs text-slate-600 dark:text-slate-400">{getSwingType(swingToDisplay(swing))}</span>
               <span className="text-sm text-purple-600 dark:text-purple-400 font-semibold">{swingToDisplay(swing)}%</span>
             </div>
           </div>
           <Slider
             value={[swingToDisplay(swing)]}
             onValueChange={(v) => onSwingChange(swingToInternal(v[0]))}
+            thumbAriaLabel="Swing"
+            thumbAriaValueText={`${swingToDisplay(swing)}% ${getSwingType(swingToDisplay(swing))}`}
             min={50}
             max={67}
             step={1}

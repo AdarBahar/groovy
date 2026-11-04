@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Undo2, Redo2, X } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Division, TimeSignature } from '../../types';
@@ -40,6 +41,16 @@ export function Sidebar({
     { label: '1/16', value: 24, sublabel: 'Triplets' },
   ];
 
+  // Escape closes the open mobile drawer
+  useEffect(() => {
+    if (!isOpen || !onClose) return;
+    const handleEscape = (e: KeyboardEvent): void => {
+      if (e.key === 'Escape') onClose();
+    };
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [isOpen, onClose]);
+
   // Handle click on sidebar actions - close drawer on mobile after action
   const handleAction = (action: () => void) => {
     action();
@@ -63,8 +74,8 @@ export function Sidebar({
         className={`
           w-20 bg-slate-50 dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700
           flex flex-col items-center py-6 gap-6
-          fixed inset-y-0 left-0 z-50 transition-transform duration-300 ease-in-out
-          ${isOpen ? 'translate-x-0' : '-translate-x-full'}
+          fixed inset-y-0 left-0 z-50 transition-[transform,visibility] duration-300 ease-in-out
+          ${isOpen ? 'translate-x-0 visible' : '-translate-x-full max-md:invisible'}
           md:relative md:translate-x-0 md:z-auto md:transition-none
           gpu-accelerated
         `}
@@ -75,6 +86,7 @@ export function Sidebar({
             variant="ghost"
             size="icon"
             onClick={onClose}
+            aria-label="Close sidebar"
             className="absolute top-2 right-2 md:hidden text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
           >
             <X className="w-5 h-5" />
@@ -133,7 +145,7 @@ export function Sidebar({
                   }`}
                 >
                   <div className="font-bold">{option.label}</div>
-                  <div className="text-[10px] opacity-80 whitespace-nowrap">{option.sublabel}</div>
+                  <div className="text-xs whitespace-nowrap">{option.sublabel}</div>
                 </Button>
               ))}
             </div>
@@ -148,6 +160,8 @@ export function Sidebar({
                 size="icon"
                 onClick={onUndo}
                 disabled={!canUndo}
+                aria-label="Undo"
+                title="Undo"
                 className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-30"
               >
                 <Undo2 className="w-5 h-5" />
@@ -157,6 +171,8 @@ export function Sidebar({
                 size="icon"
                 onClick={onRedo}
                 disabled={!canRedo}
+                aria-label="Redo"
+                title="Redo"
                 className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-30"
               >
                 <Redo2 className="w-5 h-5" />
