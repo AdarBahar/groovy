@@ -17,7 +17,7 @@
 
 .primary-icon {
   font-size: 1rem;
-  color: #667eea;
+  color: #fff;
   z-index: 1;
 }
 
@@ -46,11 +46,11 @@
 
 /* Specific icon styling based on category */
 .note-cell.active .note-icon {
-  color: #667eea;
+  color: #fff;
 }
 
 .note-cell.active:hover .note-icon {
-  color: #764ba2;
+  color: #f1f5f9;
   transform: scale(1.1);
 }
 
@@ -104,15 +104,15 @@
 /* Dark mode support */
 @media (prefers-color-scheme: dark) {
   .primary-icon {
-    color: #8b9dff;
+    color: #fff;
   }
 
   .note-cell.active .note-icon {
-    color: #8b9dff;
+    color: #fff;
   }
 
   .note-cell.active:hover .note-icon {
-    color: #a5b4ff;
+    color: #f1f5f9;
   }
 
   .layer-1 {

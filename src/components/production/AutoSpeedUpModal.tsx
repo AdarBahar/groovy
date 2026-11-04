@@ -59,6 +59,7 @@ export function AutoSpeedUpModal({
         <div className="relative">
           <input
             type="range"
+            aria-label="BPM speed up"
             min="1"
             max="20"
             value={bpmSpeedUp}
@@ -79,6 +80,7 @@ export function AutoSpeedUpModal({
         <div className="relative">
           <input
             type="range"
+            aria-label="Every (minutes)"
             min="1"
             max="10"
             value={minutesInterval}

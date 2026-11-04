@@ -54,6 +54,7 @@ export function TimeSignatureSelectorModal({
           {/* Selectors */}
           <div className="flex items-center justify-center gap-4">
             <select
+              aria-label="Beats per measure"
               value={tempBeats}
               onChange={(e) => setTempBeats(Number(e.target.value))}
               className="text-2xl font-bold p-2 rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white"
@@ -66,6 +67,7 @@ export function TimeSignatureSelectorModal({
             <span className="text-3xl font-bold text-slate-400">/</span>
 
             <select
+              aria-label="Note value"
               value={tempNoteValue}
               onChange={(e) => setTempNoteValue(Number(e.target.value) as 4 | 8 | 16)}
               className="text-2xl font-bold p-2 rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white"
