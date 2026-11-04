@@ -101,6 +101,7 @@ None currently. Ready to begin Phase 1 planning.
 | fast | Add WhatsApp to the social share options (#78) | 2026-11-03 | 99613cd | — |
 | 261103-os8 | Stop label on the transport button, MIDI availability status in the settings modal, focus-visible labels in EmbedPage (#155) | 2026-11-03 | eebe98d | [261103-os8-stop-label-and-midi-unavailable-status-f](./quick/261103-os8-stop-label-and-midi-unavailable-status-f/) |
 | fast | Remove the unused lz-string dependency (#150) | 2026-11-03 | bd79e73 | — |
+| 261104-kp2 | Fix UI audit findings on the main editor (15 findings: focus ring, names, contrast, header fit, dialogs) | 2026-11-04 | b48f19a | [261104-kp2-fix-ui-audit-findings-on-the-main-editor](./quick/261104-kp2-fix-ui-audit-findings-on-the-main-editor/) |
 
 ## Next Steps
 
@@ -122,4 +123,4 @@ None currently. Ready to begin Phase 1 planning.
 - Decisions captured: 4 (Handler Lifecycle, Listener Dependencies, Cleanup Strategy, Memory Verification)
 - Next: Plan Phase 1
 
-Last activity: 2026-11-03 - Completed quick task 261103-os8: Stop label and MIDI availability status for issue #155
+Last activity: 2026-11-04 - Completed quick task 261104-kp2: Fix UI audit findings on the main editor
