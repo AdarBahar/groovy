@@ -15,7 +15,7 @@ export function BottomToolbar({ onShare, onSave, onDownload, onPrint }: BottomTo
     <div className="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-700 px-4 md:px-6 py-3 md:py-4">
       <div className={`flex ${hasActions ? 'flex-col-reverse sm:flex-row items-center justify-between gap-3 sm:gap-0' : 'items-center justify-center'}`}>
         {/* Copyright - hidden on very small screens */}
-        <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-slate-500 dark:text-slate-400 text-xs sm:text-sm">
+        <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-slate-600 dark:text-slate-400 text-xs sm:text-sm">
           <span>Groovy by Adar Bahar © 2026</span>
           <a
             href="https://github.com/AdarBahar/groovy/"
@@ -35,7 +35,7 @@ export function BottomToolbar({ onShare, onSave, onDownload, onPrint }: BottomTo
             variant="ghost"
             size="sm"
             onClick={onDownload}
-            className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex flex-col items-center gap-1 h-auto py-2 px-3 sm:px-4 touch-target"
+            className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex flex-col items-center gap-1 h-auto py-2 px-3 sm:px-4 touch-target"
           >
             <Download className="w-4 h-4 sm:w-5 sm:h-5" />
             <span className="text-[10px] sm:text-xs uppercase">Download</span>
@@ -45,7 +45,7 @@ export function BottomToolbar({ onShare, onSave, onDownload, onPrint }: BottomTo
             variant="ghost"
             size="sm"
             onClick={onPrint}
-            className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex flex-col items-center gap-1 h-auto py-2 px-3 sm:px-4 touch-target"
+            className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex flex-col items-center gap-1 h-auto py-2 px-3 sm:px-4 touch-target"
           >
             <Printer className="w-4 h-4 sm:w-5 sm:h-5" />
             <span className="text-[10px] sm:text-xs uppercase">Print</span>
@@ -55,7 +55,7 @@ export function BottomToolbar({ onShare, onSave, onDownload, onPrint }: BottomTo
             variant="ghost"
             size="sm"
             onClick={onShare}
-            className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex flex-col items-center gap-1 h-auto py-2 px-3 sm:px-4 touch-target"
+            className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex flex-col items-center gap-1 h-auto py-2 px-3 sm:px-4 touch-target"
           >
             <Share2 className="w-4 h-4 sm:w-5 sm:h-5" />
             <span className="text-[10px] sm:text-xs uppercase">Share</span>

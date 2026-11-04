@@ -142,9 +142,9 @@ export function Header({
         </div>
       </div>
 
-      <div className="flex items-center gap-1 md:gap-2 lg:gap-4">
+      <div className="flex items-center gap-1 md:gap-2 lg:gap-4 xl:gap-3">
         {/* Desktop navigation buttons - hidden on mobile */}
-        <div className="hidden md:flex items-center gap-2 lg:gap-4 flex-shrink-0">
+        <div className="hidden md:flex items-center gap-2 lg:gap-4 xl:gap-3 flex-shrink-0">
           {/* My Groovies Button */}
           <Button
             variant="ghost"
