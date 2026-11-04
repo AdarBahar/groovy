@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { X } from 'lucide-react';
+import { useState } from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog';
 import { useTheme } from '../../contexts/ThemeContext';
 import { logger } from '../../utils/logger';
 import { isAnalyticsOptedOut, isAnalyticsOptedOutOnPageLoad, setAnalyticsOptOut } from '../../utils/analytics';
@@ -32,43 +32,16 @@ export function AboutModal({ isOpen, onClose }: AboutModalProps) {
     setDebugMode(newMode);
   };
 
-  // Handle ESC key press
-  useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isOpen) {
-        onClose();
-      }
-    };
-
-    document.addEventListener('keydown', handleEscape);
-    return () => document.removeEventListener('keydown', handleEscape);
-  }, [isOpen, onClose]);
-
-  if (!isOpen) return null;
-
-  const handleBackdropClick = (e: React.MouseEvent) => {
-    if (e.target === e.currentTarget) {
-      onClose();
-    }
-  };
-
   return (
-    <div
-      className={`fixed inset-0 ${isDark ? 'bg-black/60' : 'bg-black/40'} flex items-center justify-center z-50`}
-      onClick={handleBackdropClick}
-    >
-      <div className={`${isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'} rounded-lg shadow-2xl w-full max-w-2xl mx-4 border`}>
+    <Dialog open={isOpen} onOpenChange={(open) => { if (!open) onClose(); }}>
+      <DialogContent
+        aria-describedby={undefined}
+        className={`${isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'} max-w-2xl p-0 gap-0 sm:p-0`}
+      >
         {/* Header */}
-        <div className={`flex items-center justify-between px-6 py-4 border-b ${isDark ? 'border-slate-700' : 'border-slate-200'}`}>
-          <h2 className={`text-xl font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}>About Groovy</h2>
-          <button
-            onClick={onClose}
-            className={`${isDark ? 'text-slate-400 hover:text-white' : 'text-slate-500 hover:text-slate-900'} transition-colors`}
-            aria-label="Close"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
+        <DialogHeader className={`px-6 py-4 border-b ${isDark ? 'border-slate-700' : 'border-slate-200'}`}>
+          <DialogTitle className={`text-xl font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}>About Groovy</DialogTitle>
+        </DialogHeader>
 
         {/* Content */}
         <div className={`px-6 py-6 ${isDark ? 'text-slate-300' : 'text-slate-600'} space-y-4 max-h-[70vh] overflow-y-auto`}>
@@ -170,8 +143,7 @@ export function AboutModal({ isOpen, onClose }: AboutModalProps) {
             </p>
           </div>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }
-

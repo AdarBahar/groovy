@@ -23,6 +23,7 @@ import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { GrooveData } from '../../types';
 import { getShareableURL, getShareableURLWithValidation, URLValidationResult, escapeXml } from '../../core';
+import { logger } from '../../utils/logger';
 import { trackShareMethod, trackShareModeToggle } from '../../utils/analytics';
 import { shortenURL, isShortenerConfigured, getShortenerErrorMessage, getShortenerHost } from '../../services/urlShortener';
 
@@ -49,6 +50,7 @@ function defaultUrlModeForTab(tab: ShareTab): 'embed' | 'editor' {
 export function ShareModal({ groove, isOpen, onClose }: ShareModalProps) {
   const [activeTab, setActiveTab] = useState<ShareTab>('link');
   const [copied, setCopied] = useState<'url' | 'embed' | 'shortUrl' | null>(null);
+  const [copyError, setCopyError] = useState<string | null>(null);
   const [urlMode, setUrlMode] = useState<'embed' | 'editor'>(defaultUrlModeForTab('link'));
 
   // URL shortener state (Link tab)
@@ -112,10 +114,18 @@ export function ShareModal({ groove, isOpen, onClose }: ShareModalProps) {
   }, [activeTab, shareableURL, urlMode]);
 
   // Shared clipboard helper — writes text and updates the copied indicator (C3).
-  const copyToClipboard = async (text: string, kind: 'url' | 'embed' | 'shortUrl'): Promise<void> => {
-    await navigator.clipboard.writeText(text);
+  const copyToClipboard = async (text: string, kind: 'url' | 'embed' | 'shortUrl'): Promise<boolean> => {
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch (error) {
+      logger.error('Clipboard write failed:', error);
+      setCopyError('Could not copy. Select the text and copy it manually.');
+      return false;
+    }
+    setCopyError(null);
     setCopied(kind);
     setTimeout(() => setCopied(null), 2000);
+    return true;
   };
 
   // Handle URL shortening
@@ -137,8 +147,9 @@ export function ShareModal({ groove, isOpen, onClose }: ShareModalProps) {
   // Copy short URL to clipboard
   const handleCopyShortURL = async () => {
     if (!shortURL) return;
-    await copyToClipboard(shortURL, 'shortUrl');
-    trackShareMethod('link', { urlMode });
+    if (await copyToClipboard(shortURL, 'shortUrl')) {
+      trackShareMethod('link', { urlMode });
+    }
   };
 
   // Generate embed code with embed=true parameter for minimal view
@@ -148,13 +159,15 @@ export function ShareModal({ groove, isOpen, onClose }: ShareModalProps) {
   }, [groove, grooveTitle]);
 
   const handleCopyURL = async () => {
-    await copyToClipboard(shareableURL, 'url');
-    trackShareMethod('link', { urlMode });
+    if (await copyToClipboard(shareableURL, 'url')) {
+      trackShareMethod('link', { urlMode });
+    }
   };
 
   const handleCopyEmbed = async () => {
-    await copyToClipboard(embedCode, 'embed');
-    trackShareMethod('embed', { urlMode });
+    if (await copyToClipboard(embedCode, 'embed')) {
+      trackShareMethod('embed', { urlMode });
+    }
   };
 
   const handleSocialShare = (platform: 'twitter' | 'facebook' | 'reddit' | 'whatsapp') => {
@@ -345,6 +358,7 @@ export function ShareModal({ groove, isOpen, onClose }: ShareModalProps) {
       </div>
       <textarea
         value={embedCode}
+        aria-label="Embed code"
         readOnly
         rows={5}
         className="w-full p-3 font-mono text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg resize-none"
@@ -498,6 +512,12 @@ export function ShareModal({ groove, isOpen, onClose }: ShareModalProps) {
         {/* Tab content */}
         <div className="py-4 min-h-[200px]">
           {renderTabContent()}
+          {copyError && (
+            <div role="alert" className="mt-4 flex items-start gap-2 p-3 rounded-lg text-sm bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
+              <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5 text-red-600 dark:text-red-400" />
+              <p className="text-red-800 dark:text-red-200">{copyError}</p>
+            </div>
+          )}
         </div>
       </DialogContent>
     </Dialog>
