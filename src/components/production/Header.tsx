@@ -152,9 +152,10 @@ export function Header({
             onClick={onOpenMyGrooves}
             className="text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white relative flex-shrink-0"
             title="My Groovies"
+            aria-label="My Groovies"
           >
             <FolderOpen className="w-4 h-4 mr-1" />
-            <span className="hidden lg:inline">My Groovies</span>
+            <span className="hidden xl:inline">My Groovies</span>
             {savedGroovesCount > 0 && (
               <span className="absolute -top-1 -right-1 w-4 h-4 text-xs bg-purple-600 text-white rounded-full flex items-center justify-center">
                 {savedGroovesCount > 9 ? '9+' : savedGroovesCount}
@@ -169,9 +170,10 @@ export function Header({
             onClick={onOpenGrooveLibrary}
             className="text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white flex-shrink-0"
             title="Groove Library"
+            aria-label="Groove Library"
           >
             <Library className="w-4 h-4 mr-1" />
-            <span className="hidden lg:inline">Library</span>
+            <span className="hidden xl:inline">Library</span>
           </Button>
 
           {/* Count In Toggle - hidden at tablet width */}
@@ -179,6 +181,8 @@ export function Header({
             variant="ghost"
             size="sm"
             onClick={onCountInToggle}
+            aria-label={`Count in - ${countInEnabled ? 'ON' : 'OFF'}`}
+            title="Count in"
             className={`hidden lg:flex items-center transition-colors ${
               countInEnabled
                 ? 'text-white bg-purple-600 hover:bg-purple-700'
@@ -186,7 +190,7 @@ export function Header({
             }`}
           >
             <Clock className="w-4 h-4 mr-1" />
-            Count in - {countInEnabled ? 'ON' : 'OFF'}
+            <span className="hidden xl:inline">Count in - {countInEnabled ? 'ON' : 'OFF'}</span>
           </Button>
 
           {/* Auto Speed Up Button with Dropdown - hidden at tablet width */}
@@ -196,6 +200,8 @@ export function Header({
                 variant="ghost"
                 size="sm"
                 onClick={() => { if (!showSpeedUpModal) trackAutoSpeedUpConfigOpen(); setShowSpeedUpModal(!showSpeedUpModal); }}
+                aria-label="Auto Speed up"
+                title="Auto Speed up"
                 className={`flex items-center transition-colors ${
                   showSpeedUpModal
                     ? 'text-white bg-slate-700'
@@ -203,7 +209,7 @@ export function Header({
                 }`}
               >
                 <Zap className="w-4 h-4 mr-1" />
-                Auto Speed up
+                <span className="hidden xl:inline">Auto Speed up</span>
               </Button>
 
               <AutoSpeedUpModal
@@ -221,6 +227,8 @@ export function Header({
             variant="ghost"
             size="sm"
             onClick={() => setShowAboutModal(!showAboutModal)}
+            aria-label="About"
+            title="About"
             className={`hidden lg:flex transition-colors ${
               showAboutModal
                 ? 'text-white bg-slate-700'
@@ -228,7 +236,7 @@ export function Header({
             }`}
           >
             <Info className="w-4 h-4 mr-1" />
-            About
+            <span className="hidden xl:inline">About</span>
           </Button>
 
           {/* MIDI Settings Button - Beta */}
@@ -244,11 +252,12 @@ export function Header({
                     : 'text-red-600 dark:text-red-400'
                 }`}
                 title="MIDI Settings"
+                aria-label="MIDI Settings"
               >
                 <Cable className="w-4 h-4 mr-1" />
-                <span className="hidden lg:inline">MIDI</span>
+                <span className="hidden xl:inline">MIDI</span>
               </Button>
-              <span className="hidden lg:inline text-xs font-semibold px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300">
+              <span className="hidden xl:inline text-xs font-semibold px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300">
                 Beta
               </span>
             </div>

@@ -22,6 +22,7 @@ import {
   downloadAsMP3,
   isFormatSupported,
 } from '../../core';
+import { logger } from '../../utils/logger';
 import { trackDownload } from '../../utils/analytics';
 
 interface DownloadModalProps {
@@ -100,8 +101,8 @@ export function DownloadModal({ groove, isOpen, onClose }: DownloadModalProps) {
       setDownloadSuccess(true);
       setTimeout(() => setDownloadSuccess(false), 2000);
     } catch (err) {
-      console.error('Download failed:', err);
-      setError(err instanceof Error ? err.message : 'Download failed');
+      logger.error('Download failed:', err);
+      setError('Could not create the file. Try again, or choose a different format.');
     } finally {
       setIsDownloading(false);
     }
