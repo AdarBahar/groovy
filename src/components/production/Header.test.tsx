@@ -1,5 +1,5 @@
-/** Tests for Header metronome option semantics */
-import { render, screen, within } from '@testing-library/react';
+/** Tests for Header metronome option semantics and About dialog focus */
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { describe, expect, it, vi } from 'vitest';
 import { Header } from './Header';
@@ -25,5 +25,22 @@ describe('Header metronome options', () => {
     for (const b of buttons) {
       expect(b.hasAttribute('aria-pressed')).toBe(true);
     }
+  });
+});
+
+describe('Header About dialog', () => {
+  it('returns keyboard focus to the About button when the dialog closes', async () => {
+    render(
+      <MemoryRouter>
+        <Header metronome="off" onMetronomeChange={vi.fn()} />
+      </MemoryRouter>,
+    );
+    const aboutButton = screen.getByRole('button', { name: 'About' });
+    aboutButton.focus();
+    fireEvent.click(aboutButton);
+    const dialog = await screen.findByRole('dialog', { name: 'About Groovy' });
+    fireEvent.keyDown(dialog, { key: 'Escape' });
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    expect(document.activeElement).toBe(aboutButton);
   });
 });

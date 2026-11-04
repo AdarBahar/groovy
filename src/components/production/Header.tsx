@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Info, Sun, Moon, FolderOpen, Library, Settings, Menu, MoreVertical, Cable, Clock, Zap } from 'lucide-react';
 import { Button } from '../ui/button';
@@ -71,6 +71,10 @@ export function Header({
   const { toggleTheme, isDark } = useTheme();
   const [showSpeedUpModal, setShowSpeedUpModal] = useState(false);
   const [showAboutModal, setShowAboutModal] = useState(false);
+  const aboutButtonRef = useRef<HTMLButtonElement>(null);
+  const moreOptionsButtonRef = useRef<HTMLButtonElement>(null);
+  // The control that opened the About dialog. Focus returns to it on close.
+  const aboutReturnFocusRef = useRef<HTMLElement | null>(null);
   const [showMetronomeOptions, setShowMetronomeOptions] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [showMIDIModal, setShowMIDIModal] = useState(false);
@@ -226,7 +230,11 @@ export function Header({
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => setShowAboutModal(!showAboutModal)}
+            ref={aboutButtonRef}
+            onClick={() => {
+              aboutReturnFocusRef.current = aboutButtonRef.current;
+              setShowAboutModal(!showAboutModal);
+            }}
             aria-label="About"
             title="About"
             className={`hidden lg:flex transition-colors ${
@@ -280,6 +288,7 @@ export function Header({
           <Button
             variant="ghost"
             size="icon"
+            ref={moreOptionsButtonRef}
             onClick={() => setShowMobileMenu(!showMobileMenu)}
             className="text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white touch-target"
             aria-label="More options"
@@ -297,7 +306,11 @@ export function Header({
             autoSpeedUpConfig={autoSpeedUpConfig}
             onAutoSpeedUpConfigChange={onAutoSpeedUpConfigChange}
             onAutoSpeedUpSaveDefault={onAutoSpeedUpSaveDefault}
-            onShowAbout={() => setShowAboutModal(true)}
+            onShowAbout={() => {
+              // The menu item unmounts, so focus returns to the menu button.
+              aboutReturnFocusRef.current = moreOptionsButtonRef.current;
+              setShowAboutModal(true);
+            }}
             savedGroovesCount={savedGroovesCount}
             // Metronome props for mobile menu
             metronome={metronome}
@@ -318,6 +331,7 @@ export function Header({
       <AboutModal
         isOpen={showAboutModal}
         onClose={() => setShowAboutModal(false)}
+        returnFocusRef={aboutReturnFocusRef}
       />
 
       {/* MIDI Settings Modal */}
