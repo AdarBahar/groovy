@@ -467,7 +467,7 @@ export default function ProductionPage() {
               />
 
               {/* Metadata Details - Title, Author, Comments */}
-              <div className={isMetadataEditing ? 'mt-2' : '-mt-3'}>
+              <div className={isMetadataEditing ? 'mt-2' : 'mt-1'}>
                 <MetadataFields
                   ref={metadataFieldsRef}
                   title={groove.title || ''}

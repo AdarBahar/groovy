@@ -265,4 +265,32 @@ describe('ShareModal social share window', () => {
 
     openSpy.mockRestore();
   });
+
+  describe('clipboard failure', () => {
+    it('shows an inline message when the clipboard write rejects', async () => {
+      const original = Object.getOwnPropertyDescriptor(navigator, 'clipboard');
+      Object.defineProperty(navigator, 'clipboard', {
+        configurable: true,
+        value: { writeText: vi.fn(() => Promise.reject(new Error('denied'))) },
+      });
+      const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+      render(<ShareModal groove={DEFAULT_GROOVE} isOpen onClose={vi.fn()} />);
+      const embedTab = screen.getAllByText('Embed').find((el) => el.tagName === 'SPAN')!;
+      fireEvent.click(embedTab);
+      fireEvent.click(screen.getByRole('button', { name: /^Copy$/ }));
+
+      expect(
+        await screen.findByText('Could not copy. Select the text and copy it manually.'),
+      ).toBeTruthy();
+      expect(screen.queryByText('Copied')).toBeNull();
+
+      errorSpy.mockRestore();
+      if (original) {
+        Object.defineProperty(navigator, 'clipboard', original);
+      } else {
+        delete (navigator as unknown as Record<string, unknown>).clipboard;
+      }
+    });
+  });
 });
