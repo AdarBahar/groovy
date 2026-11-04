@@ -73,6 +73,7 @@ export function MetronomeOptionsMenu({
         </label>
         <input
           type="range"
+          aria-label="Metronome volume"
           min="0"
           max="100"
           value={config.volume}

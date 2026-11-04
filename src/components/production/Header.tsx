@@ -101,15 +101,18 @@ export function Header({
         {/* Desktop metronome controls - hidden on mobile */}
         <div className="hidden lg:flex items-center gap-4 text-sm relative">
           <span className="text-slate-500 dark:text-slate-400">Metronome:</span>
-          {METRONOME_OPTIONS.map((option) => (
-            <button
-              key={option}
-              onClick={() => onMetronomeChange?.(option)}
-              className={`${metronome === option ? 'text-slate-900 dark:text-white' : 'text-slate-600 dark:text-slate-400'} hover:text-slate-900 dark:hover:text-white transition-colors uppercase`}
-            >
-              {option === 'off' ? 'OFF' : option}
-            </button>
-          ))}
+          <div role="group" aria-label="Metronome" className="flex items-center gap-4">
+            {METRONOME_OPTIONS.map((option) => (
+              <button
+                key={option}
+                onClick={() => onMetronomeChange?.(option)}
+                aria-pressed={metronome === option}
+                className={`py-2 -my-2 ${metronome === option ? 'text-slate-900 dark:text-white font-semibold underline underline-offset-4 decoration-2 decoration-purple-500' : 'text-slate-600 dark:text-slate-400'} hover:text-slate-900 dark:hover:text-white transition-colors uppercase`}
+              >
+                {option === 'off' ? 'OFF' : option}
+              </button>
+            ))}
+          </div>
           {/* Metronome Options Button */}
           {metronomeConfig && onMetronomeFrequencyChange && (
             <>

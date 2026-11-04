@@ -345,6 +345,7 @@ export function ShareModal({ groove, isOpen, onClose }: ShareModalProps) {
       </div>
       <textarea
         value={embedCode}
+        aria-label="Embed code"
         readOnly
         rows={5}
         className="w-full p-3 font-mono text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg resize-none"
