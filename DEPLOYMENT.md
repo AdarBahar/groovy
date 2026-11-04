@@ -47,6 +47,7 @@ The tool takes `origin/main` from GitHub, builds it, and copies the content of `
 2. Change to the tool folder: `cd ~/Code/deployment/inmotion`.
 3. Show the changes. Change nothing: `python3 inmotionDeploy.py groovy --dry-run`.
 4. Deploy: `python3 inmotionDeploy.py groovy`. Answer `y` when the tool asks.
+   If the shell has no terminal (for example, an agent or a script runs the tool), the tool cannot ask and stops before it changes a file. Read the dry-run list first. Then run `python3 inmotionDeploy.py groovy --yes`.
 5. Test the page: https://www.bahar.co.il/groovy/ and the playback controls.
 
 What the tool does:

@@ -160,9 +160,19 @@ Each articulation has a unique icon:
 | `E` | Toggle Advanced Edit Mode |
 | `Space` | Play/Pause |
 | `1-8` | Select articulation in context menu |
-| `Esc` | Close dialogs/menus |
+| `Esc` | Close dialogs, menus, and the sidebar on a phone |
 | `Ctrl+Drag` | Paint notes |
 | `Alt+Drag` | Erase notes |
+
+---
+
+## ♿ Accessibility
+
+- **Keyboard focus:** A purple ring shows the control that has keyboard focus. It is visible in the dark and the light theme.
+- **Screen readers:** All buttons, sliders, and fields have names. For example, the tempo slider is "Tempo (BPM)".
+- **Metronome:** The selected option is bold and underlined, so the state does not depend on color only.
+- **Medium screens:** From 1024px to 1279px wide, the header shows icons only. Move the pointer on an icon to see its name.
+- **Dialogs:** When you close the About dialog, the focus goes back to the button that opened it.
 
 ---
 
