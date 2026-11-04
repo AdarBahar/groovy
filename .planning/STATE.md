@@ -102,6 +102,7 @@ None currently. Ready to begin Phase 1 planning.
 | 261103-os8 | Stop label on the transport button, MIDI availability status in the settings modal, focus-visible labels in EmbedPage (#155) | 2026-11-03 | eebe98d | [261103-os8-stop-label-and-midi-unavailable-status-f](./quick/261103-os8-stop-label-and-midi-unavailable-status-f/) |
 | fast | Remove the unused lz-string dependency (#150) | 2026-11-03 | bd79e73 | — |
 | 261104-kp2 | Fix UI audit findings on the main editor (15 findings: focus ring, names, contrast, header fit, dialogs) | 2026-11-04 | b48f19a | [261104-kp2-fix-ui-audit-findings-on-the-main-editor](./quick/261104-kp2-fix-ui-audit-findings-on-the-main-editor/) |
+| fast | Add the UI rules and update the guides after PR #165 | 2026-11-04 | b34f906 | — |
 
 ## Next Steps
 
