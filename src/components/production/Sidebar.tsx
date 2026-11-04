@@ -133,7 +133,7 @@ export function Sidebar({
                   }`}
                 >
                   <div className="font-bold">{option.label}</div>
-                  <div className="text-[10px] opacity-80 whitespace-nowrap">{option.sublabel}</div>
+                  <div className="text-xs whitespace-nowrap">{option.sublabel}</div>
                 </Button>
               ))}
             </div>

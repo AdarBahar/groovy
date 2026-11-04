@@ -263,13 +263,13 @@ export const MetadataFields = forwardRef<MetadataFieldsRef, MetadataFieldsProps>
           title="Edit groove details"
         >
           <h1 className="text-xl sm:text-2xl font-semibold truncate">{titleAuthorLine}</h1>
-          <Edit2 className="w-4 h-4 flex-shrink-0 text-slate-500 dark:text-slate-400 group-hover:text-purple-700 dark:group-hover:text-purple-300" />
-          <span className="text-xs uppercase hidden sm:inline text-slate-500 dark:text-slate-400 group-hover:text-purple-700 dark:group-hover:text-purple-300">
+          <Edit2 className="w-4 h-4 flex-shrink-0 text-slate-600 dark:text-slate-400 group-hover:text-purple-700 dark:group-hover:text-purple-300" />
+          <span className="text-xs uppercase hidden sm:inline text-slate-600 dark:text-slate-400 group-hover:text-purple-700 dark:group-hover:text-purple-300">
             Edit
           </span>
         </button>
         {displayComments && (
-          <p className="text-xs text-slate-500 dark:text-slate-400 truncate">{displayComments}</p>
+          <p className="text-xs text-slate-600 dark:text-slate-400 truncate">{displayComments}</p>
         )}
       </div>
       <div className="flex items-center gap-2 mt-0.5 flex-wrap justify-end">
@@ -282,7 +282,7 @@ export const MetadataFields = forwardRef<MetadataFieldsRef, MetadataFieldsProps>
             className={`flex items-center gap-2 touch-target ${
               isStickingSetupActive
                 ? 'bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 border border-purple-300 dark:border-purple-600 hover:bg-purple-200 dark:hover:bg-purple-800/60'
-                : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
             }`}
             title="Toggle sticking setup"
           >
@@ -294,7 +294,7 @@ export const MetadataFields = forwardRef<MetadataFieldsRef, MetadataFieldsProps>
           variant="ghost"
           size="sm"
           onClick={onSaveGroove}
-          className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center gap-2 touch-target"
+          className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center gap-2 touch-target"
           title="Save Groove"
         >
           <Save className="w-4 h-4" />
@@ -304,7 +304,7 @@ export const MetadataFields = forwardRef<MetadataFieldsRef, MetadataFieldsProps>
           variant="ghost"
           size="sm"
           onClick={onDownload}
-          className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center gap-2 touch-target"
+          className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center gap-2 touch-target"
           title="Download"
         >
           <Download className="w-4 h-4" />
@@ -314,7 +314,7 @@ export const MetadataFields = forwardRef<MetadataFieldsRef, MetadataFieldsProps>
           variant="ghost"
           size="sm"
           onClick={onPrint}
-          className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center gap-2 touch-target"
+          className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center gap-2 touch-target"
           title="Print"
         >
           <Printer className="w-4 h-4" />
@@ -324,7 +324,7 @@ export const MetadataFields = forwardRef<MetadataFieldsRef, MetadataFieldsProps>
           variant="ghost"
           size="sm"
           onClick={onShare}
-          className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center gap-2 touch-target"
+          className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center gap-2 touch-target"
           title="Share"
         >
           <Share2 className="w-4 h-4" />

@@ -249,7 +249,7 @@ export function DrumGridDark({
                   className="w-9 h-9 md:w-8 md:h-8 flex items-center justify-center rounded hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors group touch-target"
                   title="Clear measure"
                 >
-                  <Trash2 className="w-4 h-4 text-slate-400 group-hover:text-slate-900 dark:group-hover:text-white" />
+                  <Trash2 className="w-4 h-4 text-slate-500 group-hover:text-slate-900 dark:group-hover:text-white" />
                 </button>
                 <button
                   onClick={() => onMeasureDuplicate?.(measureIndex)}
@@ -257,7 +257,7 @@ export function DrumGridDark({
                   className="w-9 h-9 md:w-8 md:h-8 flex items-center justify-center rounded hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed group touch-target"
                   title="Duplicate measure"
                 >
-                  <Copy className="w-4 h-4 text-slate-400 group-hover:text-slate-900 dark:group-hover:text-white" />
+                  <Copy className="w-4 h-4 text-slate-500 group-hover:text-slate-900 dark:group-hover:text-white" />
                 </button>
                 <button
                   onClick={() => onMeasureAdd?.(measureIndex)}
@@ -265,7 +265,7 @@ export function DrumGridDark({
                   className="w-9 h-9 md:w-8 md:h-8 flex items-center justify-center rounded hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed group touch-target"
                   title="Add measure"
                 >
-                  <Plus className="w-4 h-4 text-slate-400 group-hover:text-slate-900 dark:group-hover:text-white" />
+                  <Plus className="w-4 h-4 text-slate-500 group-hover:text-slate-900 dark:group-hover:text-white" />
                 </button>
                 <button
                   onClick={() => onMeasureRemove?.(measureIndex)}
@@ -294,7 +294,7 @@ export function DrumGridDark({
                   <div
                     key={pos}
                     className={`w-11 sm:w-12 md:w-10 text-center text-[10px] sm:text-xs leading-none font-medium ${
-                      grid.isDownbeat(pos) ? 'text-slate-700 dark:text-slate-300' : 'text-slate-400 dark:text-slate-500'
+                      grid.isDownbeat(pos) ? 'text-slate-700 dark:text-slate-300' : 'text-slate-600 dark:text-slate-400'
                     }`}
                   >
                     {countLabel}
