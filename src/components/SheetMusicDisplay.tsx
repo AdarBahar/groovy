@@ -58,7 +58,6 @@ function SheetMusicDisplay({
 
   // Track previous position to detect loop reset
   const prevPositionRef = useRef<number>(-1);
-  const isResettingRef = useRef<boolean>(false);
 
   // Total positions across all measures
   const totalPositions = useMemo(() => GrooveUtils.getTotalPositions(groove), [groove]);
@@ -87,21 +86,6 @@ function SheetMusicDisplay({
     const bounds = lineBoundsRef.current;
     const prevPos = prevPositionRef.current;
 
-    // Detect loop reset
-    const isLoopReset = prevPos >= totalPositions - 2 &&
-                        currentPosition === 0 &&
-                        isPlaying &&
-                        prevPos !== -1;
-
-    if (isLoopReset) {
-      isResettingRef.current = true;
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          isResettingRef.current = false;
-        });
-      });
-    }
-
     // Hide cursor if not playing or invalid position
     if (!isPlaying || currentPosition < 0 || bounds.length === 0) {
       cursor.style.display = 'none';
@@ -120,38 +104,49 @@ function SheetMusicDisplay({
       return;
     }
 
-    // Calculate cursor position
-    const targetPosition = isResettingRef.current ? 0 : currentPosition + 1;
+    // Convert a position on the current line to a left offset in percent
     const linePositions = currentLine.endPos - currentLine.startPos + 1;
-    const clampedTarget = Math.min(targetPosition, currentLine.endPos + 1);
-    const posInLine = clampedTarget - currentLine.startPos;
     const lineWidth = currentLine.right - currentLine.left;
-    let cursorLeft = currentLine.left + (posInLine / linePositions) * lineWidth;
-    cursorLeft = Math.min(cursorLeft, currentLine.right);
+    const toLeftPercent = (position: number): number => {
+      const clamped = Math.min(position, currentLine.endPos + 1);
+      const posInLine = clamped - currentLine.startPos;
+      const left = currentLine.left + (posInLine / linePositions) * lineWidth;
+      return Math.min(left, currentLine.right);
+    };
 
-    // Check if we're transitioning between lines
+    // The cursor must jump (no animation) when playback starts, when the
+    // loop restarts, or when the cursor moves to a different line
     const prevLine = bounds.find(
       line => prevPos >= line.startPos && prevPos <= line.endPos
     );
-    const isLineTransition = prevLine !== currentLine && prevPos >= 0;
+    const isJump = prevPos < 0 ||
+                   currentPosition <= prevPos ||
+                   prevLine !== currentLine;
 
-    // Update cursor styles directly
     cursor.style.display = 'block';
-    cursor.style.left = `${cursorLeft}%`;
     cursor.style.top = `${currentLine.top}%`;
     cursor.style.height = `${currentLine.bottom - currentLine.top}%`;
-    cursor.style.transition = (isResettingRef.current || isLineTransition)
-      ? 'none'
-      : `left ${transitionDurationMs}ms linear`;
+
+    if (isJump) {
+      // Put the cursor at the start of the current step with no animation.
+      // Read offsetWidth to force a reflow, so the browser applies this
+      // position before the animation below starts.
+      cursor.style.transition = 'none';
+      cursor.style.left = `${toLeftPercent(currentPosition)}%`;
+      void cursor.offsetWidth;
+    }
+
+    // Move the cursor to the end of the current step over one step duration
+    cursor.style.transition = `left ${transitionDurationMs}ms linear`;
+    cursor.style.left = `${toLeftPercent(currentPosition + 1)}%`;
 
     prevPositionRef.current = currentPosition;
-  }, [currentPosition, isPlaying, totalPositions, transitionDurationMs]);
+  }, [currentPosition, isPlaying, transitionDurationMs]);
 
   // Reset state when playback stops
   useEffect(() => {
     if (!isPlaying) {
       prevPositionRef.current = -1;
-      isResettingRef.current = false;
       if (cursorRef.current) {
         cursorRef.current.style.display = 'none';
       }
