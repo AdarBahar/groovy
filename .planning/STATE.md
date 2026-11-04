@@ -125,3 +125,4 @@ None currently. Ready to begin Phase 1 planning.
 - Next: Plan Phase 1
 
 Last activity: 2026-11-04 - Completed quick task 261104-kp2: Fix UI audit findings on the main editor
+| 2026-11-04 | fast | Remove sheet music cursor pause at loop restart | ✅ |
