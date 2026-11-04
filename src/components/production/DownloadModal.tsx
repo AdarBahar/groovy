@@ -184,6 +184,7 @@ export function DownloadModal({ groove, isOpen, onClose }: DownloadModalProps) {
               <div className="flex items-center gap-3">
                 <input
                   type="range"
+                  aria-label="Number of loops"
                   min={1}
                   max={16}
                   value={loopCount}
