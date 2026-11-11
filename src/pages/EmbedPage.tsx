@@ -189,7 +189,7 @@ export default function EmbedPage() {
           />
        {/* Playback Controls - Full toolbar */}
       {isControlsExpanded && (
-          <div className="mt-3 embed:text-black">
+          <div className="mt-3 px-3 embed:text-black">
             <PlaybackControls
               isPlaying={isPlaying}
               onPlay={handlePlay}
