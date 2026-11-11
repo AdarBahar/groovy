@@ -105,6 +105,7 @@ None currently. Ready to begin Phase 1 planning.
 | 261111-eps | Apply UI skill mix: unslop UI and colors, UI/UX Pro Max fonts, Vercel accessibility fixes | 2026-11-11 | f08a97a | [261111-eps-apply-ui-skill-mix-unslop-ui-and-colors-](./quick/261111-eps-apply-ui-skill-mix-unslop-ui-and-colors-/) |
 | 261111-nrb | Fix PR #168 review follow-ups: embed slider contrast, 40px controls, metronome menu a11y and Escape, tokens, useHistory test | 2026-11-11 | 0b2d2d0 | [261111-nrb-fix-pr-168-review-follow-ups](./quick/261111-nrb-fix-pr-168-review-follow-ups/) |
 | fast | PR #168 re-review fixes: embed slider surface tokens, metronome button weight and height, comment | 2026-11-11 | 779a77f | - |
+| fast | Update the UI rules and the user guide after PR #168 | 2026-11-11 | c7b81fc | - |
 | fast | Add the UI rules and update the guides after PR #165 | 2026-11-04 | b34f906 | — |
 
 ## Next Steps
