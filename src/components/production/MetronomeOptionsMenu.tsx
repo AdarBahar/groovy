@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, type RefObject } from 'react';
 import { Button } from '../ui/button';
 import { MetronomeConfig, MetronomeFrequency, MetronomeOffsetClick } from '../../types';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -12,6 +12,7 @@ interface MetronomeOptionsMenuProps {
   onCountInChange: (countIn: boolean) => void;
   onVolumeChange: (volume: number) => void;
   onOffsetClickChange: (offsetClick: MetronomeOffsetClick) => void;
+  returnFocusRef?: RefObject<HTMLElement | null>;
 }
 
 export function MetronomeOptionsMenu({
@@ -23,6 +24,7 @@ export function MetronomeOptionsMenu({
   onCountInChange,
   onVolumeChange,
   onOffsetClickChange,
+  returnFocusRef,
 }: MetronomeOptionsMenuProps) {
   const { isDark } = useTheme();
 
@@ -30,11 +32,16 @@ export function MetronomeOptionsMenu({
   useEffect(() => {
     if (!isOpen) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
+      if (e.key !== 'Escape') return;
+      if (e.defaultPrevented) return;
+      if (document.querySelector('[role="dialog"][data-state="open"]')) return;
+      e.preventDefault();
+      onClose();
+      returnFocusRef?.current?.focus();
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [isOpen, onClose]);
+  }, [isOpen, onClose, returnFocusRef]);
 
   if (!isOpen) return null;
 
@@ -46,8 +53,8 @@ export function MetronomeOptionsMenu({
   ];
 
   // Colors based on theme
-  const trackColor = isDark ? "#2c2c2f" : "#e6e6e8";
-  const thumbBorderColor = isDark ? "#19191b" : "#ffffff";
+  const trackColor = 'var(--ui-surface-4)';
+  const thumbBorderColor = 'var(--ui-surface-2)';
 
   return (
     <div className={`absolute top-full left-0 mt-1 rounded-lg shadow-xl w-80 p-5 border z-50 ${
@@ -63,9 +70,10 @@ export function MetronomeOptionsMenu({
             <button
               key={option.value}
               onClick={() => onFrequencyChange(option.value)}
+              aria-pressed={config.frequency === option.value}
               className={`flex-1 py-2 px-3 rounded text-sm font-medium transition-colors ${
                 config.frequency === option.value
-                  ? 'bg-brass hover:bg-brass-hover text-brass-ink'
+                  ? 'bg-brass hover:bg-brass-hover text-brass-ink font-semibold underline underline-offset-4'
                   : isDark
                     ? 'bg-slate-700 text-slate-300 hover:bg-slate-600'
                     : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
