@@ -102,7 +102,7 @@ export function SaveGrooveModal({
 
         <div className="py-4 space-y-2">
           <div className="space-y-2">
-            <label htmlFor="groove-name" className="text-sm font-medium text-slate-900 dark:text-white">
+            <label htmlFor="groove-name" className="text-sm font-medium text-ink-1">
               Groovie Name
             </label>
             <Input
@@ -142,7 +142,7 @@ export function SaveGrooveModal({
           {/* Overwrite confirmation */}
           {existingGroove && wantsOverwrite && (
             <div className="flex items-start gap-2 p-3 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg">
-              <Save className="w-4 h-4 text-purple-600 dark:text-purple-400 flex-shrink-0 mt-0.5" />
+              <Save className="w-4 h-4 text-brass-text flex-shrink-0 mt-0.5" />
               <div className="text-sm">
                 <p className="text-purple-800 dark:text-purple-200">
                   The existing groovie will be overwritten.
@@ -159,7 +159,7 @@ export function SaveGrooveModal({
           <Button
             onClick={handleSave}
             disabled={!canSave}
-            className="bg-purple-600 hover:bg-purple-700 text-white disabled:opacity-50"
+            className="bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
           >
             <Save className="w-4 h-4 mr-2" />
             {wantsOverwrite ? 'Overwrite' : 'Save'}

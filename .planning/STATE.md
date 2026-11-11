@@ -102,6 +102,10 @@ None currently. Ready to begin Phase 1 planning.
 | 261103-os8 | Stop label on the transport button, MIDI availability status in the settings modal, focus-visible labels in EmbedPage (#155) | 2026-11-03 | eebe98d | [261103-os8-stop-label-and-midi-unavailable-status-f](./quick/261103-os8-stop-label-and-midi-unavailable-status-f/) |
 | fast | Remove the unused lz-string dependency (#150) | 2026-11-03 | bd79e73 | — |
 | 261104-kp2 | Fix UI audit findings on the main editor (15 findings: focus ring, names, contrast, header fit, dialogs) | 2026-11-04 | b48f19a | [261104-kp2-fix-ui-audit-findings-on-the-main-editor](./quick/261104-kp2-fix-ui-audit-findings-on-the-main-editor/) |
+| 261111-eps | Apply UI skill mix: unslop UI and colors, UI/UX Pro Max fonts, Vercel accessibility fixes | 2026-11-11 | f08a97a | [261111-eps-apply-ui-skill-mix-unslop-ui-and-colors-](./quick/261111-eps-apply-ui-skill-mix-unslop-ui-and-colors-/) |
+| 261111-nrb | Fix PR #168 review follow-ups: embed slider contrast, 40px controls, metronome menu a11y and Escape, tokens, useHistory test | 2026-11-11 | 0b2d2d0 | [261111-nrb-fix-pr-168-review-follow-ups](./quick/261111-nrb-fix-pr-168-review-follow-ups/) |
+| fast | PR #168 re-review fixes: embed slider surface tokens, metronome button weight and height, comment | 2026-11-11 | 779a77f | - |
+| fast | Update the UI rules and the user guide after PR #168 | 2026-11-11 | c7b81fc | - |
 | fast | Add the UI rules and update the guides after PR #165 | 2026-11-04 | b34f906 | — |
 
 ## Next Steps
@@ -124,5 +128,5 @@ None currently. Ready to begin Phase 1 planning.
 - Decisions captured: 4 (Handler Lifecycle, Listener Dependencies, Cleanup Strategy, Memory Verification)
 - Next: Plan Phase 1
 
-Last activity: 2026-11-04 - Completed quick task 261104-kp2: Fix UI audit findings on the main editor
+Last activity: 2026-11-11 - Completed quick task 261111-nrb: Fix PR #168 review follow-ups
 | 2026-11-04 | fast | Remove sheet music cursor pause at loop restart | ✅ |

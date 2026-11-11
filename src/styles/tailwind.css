@@ -9,43 +9,70 @@
 
 :root {
   --font-size: 16px;
-  --background: #ffffff;
-  --foreground: oklch(0.145 0 0);
+
+  /* Graphite ramp, light. One neutral ramp for every surface. */
+  --ui-surface-0: #f4f4f5; /* rail, deepest */
+  --ui-surface-1: #fafafa; /* page */
+  --ui-surface-2: #ffffff; /* card */
+  --ui-surface-3: #f4f4f5; /* raised: active row, input, key */
+  --ui-surface-4: #e9e9eb; /* hover on raised */
+  --ui-line: rgba(23, 23, 23, 0.1);
+  --ui-line-strong: rgba(23, 23, 23, 0.2);
+  --ui-tick: rgba(23, 23, 23, 0.55);
+  --ui-ink-1: #171717; /* primary text */
+  --ui-ink-2: #3f3f3f; /* secondary text */
+  --ui-ink-3: #595959; /* muted text and icons */
+  /* One accent: cymbal brass. It marks what sounds and what is selected. */
+  --ui-brass: #dfa23f;
+  --ui-brass-hover: #d1932e;
+  --ui-brass-ink: #1a1407;
+  --ui-brass-edge: #96610a;
+  --ui-brass-flash: #ffffff;
+  --ui-brass-text: #8a5700;
+  --ui-positive: #16803c;
+  --ui-negative: #c0392b;
+  /* The chart on the music stand */
+  --ui-paper: #ffffff;
+  --ui-paper-ink: #171717;
+  --ui-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+
+  --background: #fafafa;
+  --foreground: #171717;
   --card: #ffffff;
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: #030213;
-  --primary-foreground: oklch(1 0 0);
-  --secondary: oklch(0.95 0.0058 264.53);
-  --secondary-foreground: #030213;
-  --muted: #ececf0;
-  --muted-foreground: #717182;
-  --accent: #e9ebef;
-  --accent-foreground: #030213;
-  --destructive: #d4183d;
+  --card-foreground: #171717;
+  --popover: #ffffff;
+  --popover-foreground: #171717;
+  --primary: #171717;
+  --primary-foreground: #ffffff;
+  --secondary: #f4f4f5;
+  --secondary-foreground: #171717;
+  --muted: #f4f4f5;
+  --muted-foreground: #595959;
+  --accent: #f4f4f5;
+  --accent-foreground: #171717;
+  --destructive: #c0392b;
   --destructive-foreground: #ffffff;
-  --border: rgba(0, 0, 0, 0.1);
+  --border: rgba(23, 23, 23, 0.1);
   --input: transparent;
-  --input-background: #f3f3f5;
-  --switch-background: #cbced4;
+  --input-background: #f4f4f5;
+  --switch-background: #cfcfd3;
   --font-weight-medium: 500;
   --font-weight-normal: 400;
-  --ring: oklch(0.558 0.288 302.321);
+  --ring: #8a5700;
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
   --chart-4: oklch(0.828 0.189 84.429);
   --chart-5: oklch(0.769 0.188 70.08);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: #030213;
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.558 0.288 302.321);
+  --radius: 0.5rem;
+  --sidebar: #f4f4f5;
+  --sidebar-foreground: #171717;
+  --sidebar-primary: #171717;
+  --sidebar-primary-foreground: #fafafa;
+  --sidebar-accent: #e9e9eb;
+  --sidebar-accent-foreground: #171717;
+  --sidebar-border: rgba(23, 23, 23, 0.1);
+  --sidebar-ring: #8a5700;
 }
 
 .embed {
@@ -55,25 +82,49 @@
 
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.145 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.145 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.985 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
+  /* Graphite ramp, dark. Depth comes from surface steps and hairlines. */
+  --ui-surface-0: #0f0f10;
+  --ui-surface-1: #141415;
+  --ui-surface-2: #19191b;
+  --ui-surface-3: #232325;
+  --ui-surface-4: #2c2c2f;
+  --ui-line: rgba(237, 237, 237, 0.08);
+  --ui-line-strong: rgba(237, 237, 237, 0.16);
+  --ui-tick: rgba(237, 237, 237, 0.5);
+  --ui-ink-1: #fafafa;
+  --ui-ink-2: #d0d0d5;
+  --ui-ink-3: #b4b4ba;
+  --ui-brass: #e2a94f;
+  --ui-brass-hover: #ecbd70;
+  --ui-brass-ink: #1a1407;
+  --ui-brass-edge: transparent;
+  --ui-brass-flash: #ffffff;
+  --ui-brass-text: #e2a94f;
+  --ui-positive: #4cc38a;
+  --ui-negative: #f0807a;
+  --ui-paper: #e8e4da;
+  --ui-paper-ink: #1c1b19;
+  --ui-shadow-sm: none;
+
+  --background: #141415;
+  --foreground: #fafafa;
+  --card: #19191b;
+  --card-foreground: #fafafa;
+  --popover: #19191b;
+  --popover-foreground: #fafafa;
+  --primary: #ededed;
+  --primary-foreground: #141415;
+  --secondary: #232325;
+  --secondary-foreground: #ededed;
+  --muted: #232325;
+  --muted-foreground: #b4b4ba;
+  --accent: #2c2c2f;
+  --accent-foreground: #ededed;
   --destructive: oklch(0.396 0.141 25.723);
   --destructive-foreground: oklch(0.637 0.237 25.331);
-  --border: oklch(0.269 0 0);
-  --input: oklch(0.269 0 0);
-  --ring: oklch(0.714 0.203 305.504);
+  --border: rgba(237, 237, 237, 0.08);
+  --input: #2c2c2f;
+  --ring: #e2a94f;
   --font-weight-medium: 500;
   --font-weight-normal: 400;
   --chart-1: oklch(0.488 0.243 264.376);
@@ -81,22 +132,94 @@
   --chart-3: oklch(0.769 0.188 70.08);
   --chart-4: oklch(0.627 0.265 303.9);
   --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(0.269 0 0);
-  --sidebar-ring: oklch(0.714 0.203 305.504);
+  --sidebar: #0f0f10;
+  --sidebar-foreground: #ededed;
+  --sidebar-primary: #ededed;
+  --sidebar-primary-foreground: #141415;
+  --sidebar-accent: #232325;
+  --sidebar-accent-foreground: #ededed;
+  --sidebar-border: rgba(237, 237, 237, 0.08);
+  --sidebar-ring: #e2a94f;
 }
 
 .embed {
   background: white;
   color: var(--foreground);
+  /* The embed surface is always white, so its ink is always dark, in both themes. */
+  --ui-ink-1: #171717;
+  --ui-ink-2: #3f3f3f;
+  --ui-ink-3: #595959;
+  /* The embed surface uses the light surface colors in both themes. */
+  --ui-surface-1: #fafafa;
+  --ui-surface-2: #ffffff;
+  --ui-surface-3: #f4f4f5;
+  --ui-surface-4: #e9e9eb;
+  /* With the ink and surface tokens above, the slider track (surface-4) and fill (ink-2) are readable on white. */
+  --primary: #171717;
+  --primary-foreground: #ffffff;
+  --muted: #e9e9eb;
+  --background: #ffffff;
+  --ring: #8a5700;
+}
+
+@theme {
+  --font-sans: 'Poppins', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Righteous', 'Poppins', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* One easing curve and three durations for the whole app */
+  --default-transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  --default-transition-duration: 150ms;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* The slate classes now resolve to the graphite ramp (no blue tint). */
+  --color-slate-50: #fafafa;
+  --color-slate-100: #f4f4f5;
+  --color-slate-200: #e6e6e8;
+  --color-slate-300: #d9d9dd;
+  --color-slate-400: #b4b4ba;
+  --color-slate-500: #5e5e63;
+  --color-slate-600: #404044;
+  --color-slate-700: #2c2c2f;
+  --color-slate-800: #19191b;
+  --color-slate-900: #141415;
+  --color-slate-950: #0f0f10;
+
+  /* The purple classes now resolve to the brass accent ramp. */
+  --color-purple-50: #fbf6ea;
+  --color-purple-100: #f6ead0;
+  --color-purple-200: #eed9a8;
+  --color-purple-300: #e8c37a;
+  --color-purple-400: #e2a94f;
+  --color-purple-500: #c98a2b;
+  --color-purple-600: #96610a;
+  --color-purple-700: #7c4f08;
+  --color-purple-800: #5e3c08;
+  --color-purple-900: #43290a;
+  --color-purple-950: #2a1a05;
 }
 
 @theme inline {
+  --color-surface-0: var(--ui-surface-0);
+  --color-surface-1: var(--ui-surface-1);
+  --color-surface-2: var(--ui-surface-2);
+  --color-surface-3: var(--ui-surface-3);
+  --color-surface-4: var(--ui-surface-4);
+  --color-line: var(--ui-line);
+  --color-line-strong: var(--ui-line-strong);
+  --color-tick: var(--ui-tick);
+  --color-ink-1: var(--ui-ink-1);
+  --color-ink-2: var(--ui-ink-2);
+  --color-ink-3: var(--ui-ink-3);
+  --color-brass: var(--ui-brass);
+  --color-brass-hover: var(--ui-brass-hover);
+  --color-brass-ink: var(--ui-brass-ink);
+  --color-brass-text: var(--ui-brass-text);
+  --color-positive: var(--ui-positive);
+  --color-negative: var(--ui-negative);
+  --color-paper: var(--ui-paper);
+  --color-paper-ink: var(--ui-paper-ink);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -139,40 +262,58 @@
 
 @layer base {
   *:not(button, a, input, select, textarea) {
-    @apply border-border outline-ring/50;
+    @apply border-border outline-ring;
   }
 
   body {
     @apply bg-background text-foreground;
-    font-family: 'Inter', ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+    font-family: var(--font-sans);
+    font-variant-numeric: tabular-nums;
   }
 
   html {
     font-size: var(--font-size);
   }
 
+  /* One icon stroke for the whole lucide set */
+  .lucide {
+    stroke-width: 1.5;
+  }
+
+  kbd {
+    font-family: var(--font-mono);
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    text-wrap: balance;
+  }
+
   h1 {
+    font-family: var(--font-display);
     font-size: var(--text-2xl);
     font-weight: var(--font-weight-medium);
-    line-height: 1.5;
+    line-height: 1.25;
   }
 
   h2 {
     font-size: var(--text-xl);
     font-weight: var(--font-weight-medium);
-    line-height: 1.5;
+    line-height: 1.25;
   }
 
   h3 {
     font-size: var(--text-lg);
     font-weight: var(--font-weight-medium);
-    line-height: 1.5;
+    line-height: 1.25;
   }
 
   h4 {
     font-size: var(--text-base);
     font-weight: var(--font-weight-medium);
-    line-height: 1.5;
+    line-height: 1.25;
   }
 
   label {

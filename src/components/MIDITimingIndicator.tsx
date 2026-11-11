@@ -113,7 +113,7 @@ export function MIDITimingIndicator({
 
           {/* Message below spectrum */}
           <div className="absolute left-0 right-0 top-1 flex items-center justify-center">
-            <span className="text-xs text-slate-400 dark:text-slate-500 font-medium">
+            <span className="text-xs text-ink-3 font-medium">
               MIDI Tracking disabled
             </span>
           </div>

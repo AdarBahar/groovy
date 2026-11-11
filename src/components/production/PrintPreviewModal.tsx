@@ -325,7 +325,7 @@ export function PrintPreviewModal({ groove, isOpen, onClose, onAddTitle }: Print
           <div className="p-6 print:p-0">
             {/* Header - what will be printed */}
             <div className="mb-4 pb-3 border-b border-slate-200">
-              <h2 className="text-xl font-bold text-slate-900">
+              <h2 className="text-xl font-medium text-slate-900">
                 {groove.title || 'Untitled Groove'}
               </h2>
               <div className="flex gap-6 mt-2 text-sm text-slate-600">
@@ -351,11 +351,11 @@ export function PrintPreviewModal({ groove, isOpen, onClose, onAddTitle }: Print
                   level="M"
                   className="flex-shrink-0"
                 />
-                <div className="text-xs text-slate-500 max-w-md break-all">
+                <div className="text-xs text-slate-600 max-w-md break-all">
                   {printURL || shareableURL}
                 </div>
               </div>
-              <div className="text-xs text-slate-400 text-right">
+              <div className="text-xs text-slate-600 text-right">
                 Created with Groovy
               </div>
             </div>
@@ -368,7 +368,7 @@ export function PrintPreviewModal({ groove, isOpen, onClose, onAddTitle }: Print
             <X className="w-4 h-4 mr-2" />
             Cancel
           </Button>
-          <Button onClick={handlePrint} className="bg-purple-600 hover:bg-purple-700">
+          <Button onClick={handlePrint} className="bg-primary text-primary-foreground hover:bg-primary/90">
             <Printer className="w-4 h-4 mr-2" />
             Print
           </Button>

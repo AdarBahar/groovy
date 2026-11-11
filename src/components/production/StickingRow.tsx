@@ -190,7 +190,7 @@ export default function StickingRow({
       className="flex items-center mb-1"
     >
       {/* Label column — matches drum row label width */}
-      <div className="w-16 sm:w-20 md:w-20 flex-shrink-0 px-1 sm:px-2 md:px-2 py-1 text-right text-xs font-semibold text-purple-600 dark:text-purple-400">
+      <div className="w-16 sm:w-20 flex-shrink-0 pl-1 pr-2 sm:pr-3 py-1 text-right text-xs sm:text-[13px] leading-4 text-ink-2">
         Sticking
       </div>
 
@@ -210,14 +210,14 @@ export default function StickingRow({
             onKeyDown={(e) => handleKeyDown(e, index, value)}
             aria-label={`${positionLabel} sticking: ${valueLabel}`}
             className={`
-              w-11 h-8 sm:w-12 sm:h-8 md:w-10 md:h-7
-              border cursor-pointer transition-colors duration-100
+              w-11 h-8 sm:w-12 md:w-10
+              border-2 border-transparent bg-clip-padding rounded-md cursor-pointer transition-colors duration-150
               flex items-center justify-center
-              text-xs font-semibold leading-none
-              focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-1
+              text-xs font-medium leading-none
+              focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring
               ${value !== null
-                ? 'bg-purple-100 dark:bg-purple-900/40 border-purple-300 dark:border-purple-600 text-purple-700 dark:text-purple-300 hover:bg-purple-200 dark:hover:bg-purple-800/60'
-                : 'bg-slate-50 dark:bg-slate-700/50 border-slate-200 dark:border-slate-600 text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700'
+                ? 'bg-surface-4 text-ink-1 shadow-[inset_0_0_0_1px_var(--ui-line-strong),inset_0_-2px_0_var(--ui-brass-text)]'
+                : 'bg-transparent text-ink-3 hover:bg-surface-3 shadow-[inset_0_0_0_1px_var(--ui-line-strong)]'
               }
             `}
           >
