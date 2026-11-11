@@ -71,9 +71,9 @@ export function MetronomeOptionsMenu({
               key={option.value}
               onClick={() => onFrequencyChange(option.value)}
               aria-pressed={config.frequency === option.value}
-              className={`flex-1 py-2 px-3 rounded text-sm font-medium transition-colors ${
+              className={`flex-1 min-h-10 py-2 px-3 rounded text-sm font-medium transition-colors ${
                 config.frequency === option.value
-                  ? 'bg-brass hover:bg-brass-hover text-brass-ink font-semibold underline underline-offset-4'
+                  ? 'bg-brass hover:bg-brass-hover text-brass-ink underline underline-offset-4'
                   : isDark
                     ? 'bg-slate-700 text-slate-300 hover:bg-slate-600'
                     : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
