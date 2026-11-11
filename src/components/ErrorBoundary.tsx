@@ -78,7 +78,7 @@ export class ErrorBoundary extends Component<Props, State> {
 
       // Default fallback UI
       return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center p-4">
+        <div className="min-h-screen bg-surface-1 flex items-center justify-center p-4">
           <div className="bg-white dark:bg-slate-800 rounded-lg shadow-2xl max-w-2xl w-full p-8">
             {/* Error Icon */}
             <div className="flex justify-center mb-6">
@@ -88,22 +88,22 @@ export class ErrorBoundary extends Component<Props, State> {
             </div>
 
             {/* Error Title */}
-            <h1 className="text-2xl font-bold text-center text-slate-900 dark:text-white mb-4">
+            <h1 className="font-sans text-2xl font-medium text-center text-ink-1 mb-4">
               Oops! Something went wrong
             </h1>
 
             {/* Error Message */}
-            <p className="text-center text-slate-600 dark:text-slate-300 mb-6">
+            <p className="text-center text-ink-2 mb-6">
               We're sorry, but something unexpected happened. Don't worry, your grooves are safe!
             </p>
 
             {/* Error Details (Debug Mode) */}
             {logger.isDebugMode() && this.state.error && (
               <details className="mb-6 bg-slate-100 dark:bg-slate-900 rounded-lg p-4">
-                <summary className="cursor-pointer font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                <summary className="cursor-pointer font-semibold text-ink-2 mb-2">
                   Technical Details
                 </summary>
-                <div className="text-sm text-slate-600 dark:text-slate-400 space-y-2">
+                <div className="text-sm text-ink-2 space-y-2">
                   <div>
                     <strong>Error:</strong>
                     <pre className="mt-1 overflow-x-auto bg-white dark:bg-slate-950 p-2 rounded text-xs">
@@ -126,7 +126,7 @@ export class ErrorBoundary extends Component<Props, State> {
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <button
                 onClick={this.handleReset}
-                className="flex items-center justify-center gap-2 px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold transition-colors"
+                className="flex items-center justify-center gap-2 px-6 py-3 bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg font-semibold transition-colors"
               >
                 <RefreshCw className="w-5 h-5" />
                 Try Again
@@ -140,7 +140,7 @@ export class ErrorBoundary extends Component<Props, State> {
               </button>
               <button
                 onClick={this.handleGoHome}
-                className="flex items-center justify-center gap-2 px-6 py-3 bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-900 dark:text-white rounded-lg font-semibold transition-colors"
+                className="flex items-center justify-center gap-2 px-6 py-3 bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-ink-1 rounded-lg font-semibold transition-colors"
               >
                 <Home className="w-5 h-5" />
                 Go Home
@@ -148,13 +148,13 @@ export class ErrorBoundary extends Component<Props, State> {
             </div>
 
             {/* Help Text */}
-            <p className="text-center text-sm text-slate-500 dark:text-slate-400 mt-6">
+            <p className="text-center text-sm text-ink-3 mt-6">
               If this problem persists, please{' '}
               <a
                 href="https://github.com/AdarBahar/groovy/issues"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-purple-600 dark:text-purple-400 underline hover:text-purple-700"
+                className="text-brass-text underline hover:text-purple-700"
               >
                 report it on GitHub
               </a>

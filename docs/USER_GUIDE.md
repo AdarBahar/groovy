@@ -141,13 +141,13 @@ Each articulation has a unique icon:
 - And many more!
 
 ### Cell States
-- **Active:** Blue/purple icon visible
+- **Active:** Brass (gold) cell with the note icon
 - **Current Position:** Pulsing animation (follows playback)
 - **Downbeat:** Slightly darker background
 - **Non-Default Articulation:** Small asterisk (*) indicator
 
 ### Colors
-- **Blue/Purple:** Active notes
+- **Brass (gold):** Active notes
 - **Gray:** Empty cells
 - **Darker:** Downbeats (beats 1, 2, 3, 4)
 
@@ -168,10 +168,11 @@ Each articulation has a unique icon:
 
 ## ♿ Accessibility
 
-- **Keyboard focus:** A purple ring shows the control that has keyboard focus. It is visible in the dark and the light theme.
+- **Keyboard focus:** A brass (gold) ring shows the control that has keyboard focus. It is visible in the dark and the light theme.
 - **Screen readers:** All buttons, sliders, and fields have names. For example, the tempo slider is "Tempo (BPM)".
-- **Metronome:** The selected option is bold and underlined, so the state does not depend on color only.
+- **Metronome:** The selected option is underlined, so the state does not depend on color only. When you press Esc, the metronome menu closes and the focus goes back to the Metronome Options button.
 - **Medium screens:** From 1024px to 1279px wide, the header shows icons only. Move the pointer on an icon to see its name.
+- **Embed page:** The embedded player has a white surface and dark text in the light and the dark theme.
 - **Dialogs:** When you close the About dialog, the focus goes back to the button that opened it.
 
 ---

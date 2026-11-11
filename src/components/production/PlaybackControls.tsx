@@ -80,81 +80,83 @@ export function PlaybackControls({
         ? 'Stop auto speed-up'
         : 'Play with auto speed-up';
 
-  return (
-    <div className="flex flex-col lg:flex-row lg:items-center gap-4 lg:gap-8">
-      {/* Time and Play button - centered on mobile, left on desktop */}
-      <div className="flex items-center justify-center lg:justify-start gap-4">
-        {/* Time signature - hidden on mobile to save space */}
-        {!isEmbedded &&    (  
-          <div>    
-            <div className="hidden sm:block text-xs text-purple-600 dark:text-purple-400 font-semibold">
-            <div>TIME</div>
-            <div className="text-slate-900 dark:text-white text-lg mt-1">{timeSignature.beats}/{timeSignature.noteValue}</div>
-            </div>
-            <div className="flex items-center gap-2 sm:gap-3">
-            <Button
-            onClick={onPlay}
-            aria-label={playLabel}
-            title={playLabel}
-            size="lg"
-            className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-gradient-to-br from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 shadow-lg shadow-purple-500/20 touch-target"
-            >
-            {countingInButton === 'play' && countdownNumber !== null ? (
-              <span className="text-white text-xl sm:text-2xl font-bold">{countdownNumber}</span>
-            ) : isPlaying && !isAutoSpeedUpActive ? (
-              <Square className="w-5 h-5 sm:w-6 sm:h-6 fill-white" />
-            ) : (
-              <Play className="w-5 h-5 sm:w-6 sm:h-6 fill-white ml-0.5" />
-            )}
-            </Button>
-              <div className="relative">
-            <Button
-              onClick={onPlayWithSpeedUp}
-              aria-label={playWithSpeedUpLabel}
-              title={playWithSpeedUpLabel}
-              size="lg"
-              className={`w-12 h-12 sm:w-14 sm:h-14 rounded-full shadow-lg touch-target ${
-                isAutoSpeedUpActive
-                  ? 'bg-gradient-to-br from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 shadow-green-500/20'
-                  : 'bg-gradient-to-br from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 shadow-blue-500/20'
-              }`}
-            >
-              {countingInButton === 'playPlus' && countdownNumber !== null ? (
-                <span className="text-white text-xl sm:text-2xl font-bold">{countdownNumber}</span>
-              ) : isPlaying && isAutoSpeedUpActive ? (
-                <Square className="w-5 h-5 sm:w-6 sm:h-6 fill-white" />
-              ) : (
-                <Play className="w-5 h-5 sm:w-6 sm:h-6 fill-white ml-0.5" />
-              )}
-            </Button>
-          <div className="absolute -top-1 -right-1 w-5 h-5 sm:w-6 sm:h-6 bg-white rounded-full flex items-center justify-center shadow-md">
-              <Plus className="w-3 h-3 sm:w-4 sm:h-4 text-blue-600" strokeWidth={3} />
-          </div>
-        </div>
-        </div>
-        <div className="text-slate-900 dark:text-white text-center sm:text-left">
-          <div className="text-2xl sm:text-3xl font-bold">{elapsedTime}</div>
-          <div className="text-xs text-purple-600 dark:text-purple-400 uppercase tracking-wider">
-            {isPlaying ? 'Loop Active' : 'Stopped'}
-          </div>
-        </div>        
-      </div>)}
+  const sliderClass =
+    '[&_[data-slot=slider-range]]:bg-ink-2 [&_[data-slot=slider-thumb]]:bg-ink-1 [&_[data-slot=slider-thumb]]:border-ink-1 [&_[data-slot=slider-thumb]]:shadow-none [&_[data-slot=slider-track]]:bg-surface-4';
 
+  return (
+    <div className="flex flex-col lg:flex-row lg:items-center gap-6 lg:gap-10">
+      {/* Transport: play buttons, elapsed time, time signature */}
+      <div className="flex items-center justify-center lg:justify-start">
+        {!isEmbedded && (
+          <div className="flex items-center gap-4 sm:gap-6">
+            <div className="flex items-center gap-3">
+              <Button
+                onClick={onPlay}
+                aria-label={playLabel}
+                title={playLabel}
+                size="lg"
+                className="w-12 h-12 p-0 has-[>svg]:px-0 rounded-full bg-ink-1 hover:bg-ink-1/90 text-surface-1 touch-target"
+              >
+                {countingInButton === 'play' && countdownNumber !== null ? (
+                  <span className="text-xl font-medium">{countdownNumber}</span>
+                ) : isPlaying && !isAutoSpeedUpActive ? (
+                  <Square className="w-5 h-5 fill-current" />
+                ) : (
+                  <Play className="w-5 h-5 fill-current ml-0.5" />
+                )}
+              </Button>
+              <div className="relative">
+                <Button
+                  onClick={onPlayWithSpeedUp}
+                  aria-label={playWithSpeedUpLabel}
+                  title={playWithSpeedUpLabel}
+                  size="lg"
+                  className={`w-12 h-12 p-0 has-[>svg]:px-0 rounded-full touch-target ${
+                    isAutoSpeedUpActive
+                      ? 'bg-brass hover:bg-brass-hover text-brass-ink shadow-[inset_0_0_0_1px_var(--ui-brass-edge)]'
+                      : 'bg-surface-3 hover:bg-surface-4 text-ink-1 shadow-[inset_0_0_0_1px_var(--ui-line-strong)]'
+                  }`}
+                >
+                  {countingInButton === 'playPlus' && countdownNumber !== null ? (
+                    <span className="text-xl font-medium">{countdownNumber}</span>
+                  ) : isPlaying && isAutoSpeedUpActive ? (
+                    <Square className="w-5 h-5 fill-current" />
+                  ) : (
+                    <Play className="w-5 h-5 fill-current ml-0.5" />
+                  )}
+                </Button>
+                <div className="absolute -top-1 -right-1 w-5 h-5 bg-surface-1 text-ink-1 border border-line-strong rounded-full flex items-center justify-center pointer-events-none">
+                  <Plus className="w-3 h-3 stroke-2" strokeWidth={3} />
+                </div>
+              </div>
+            </div>
+            <div className="text-ink-1 text-left">
+              <div className="font-display text-[28px] leading-8">{elapsedTime}</div>
+              <div className="text-xs leading-4 text-ink-3">
+                {isPlaying ? 'Loop Active' : 'Stopped'}
+              </div>
+            </div>
+            <div className="hidden sm:flex flex-col-reverse pl-6 border-l border-line">
+              <div className="text-xs leading-4 text-ink-3 lowercase first-letter:uppercase">TIME</div>
+              <div className="text-ink-2 text-[28px] leading-8">{timeSignature.beats}/{timeSignature.noteValue}</div>
+            </div>
+          </div>
+        )}
       </div>
-       {/* Sliders - stacked on mobile, side by side on desktop */}
+
       {/* Sliders - stacked on mobile, side by side on desktop */}
-      <div className="flex flex-col sm:flex-row gap-4 lg:flex-1">
+      <div className="flex flex-col sm:flex-row gap-4 sm:gap-8 lg:flex-1">
         {/* Tempo Slider */}
         <div className="flex-1 lg:max-w-md">
-          <div className="flex items-center justify-between mb-2">
-            <label className="text-sm text-slate-600 dark:text-slate-400">Tempo (BPM)</label>
+          <div className="flex items-center justify-between h-5 mb-3">
+            <span className="text-sm leading-5 font-normal text-ink-2">Tempo (BPM)</span>
             <div className="flex items-center gap-3">
-              <span className="text-sm text-purple-600 dark:text-purple-400 font-semibold">{tempo}</span>
               {performedBpm !== null && trackingEnabled && (
-                <span className="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-2 py-1 rounded">
+                <span className="text-xs text-ink-3">
                   Playing: {performedBpm}
                 </span>
               )}
+              <span className="text-sm leading-5 text-ink-1 font-medium">{tempo}</span>
             </div>
           </div>
           <Slider
@@ -164,17 +166,17 @@ export function PlaybackControls({
             min={40}
             max={240}
             step={1}
-            className="[&_[data-slot=slider-range]]:bg-purple-500 [&_[data-slot=slider-thumb]]:bg-purple-500 [&_[data-slot=slider-thumb]]:border-purple-400 [&_[data-slot=slider-track]]:bg-slate-200 dark:[&_[data-slot=slider-track]]:bg-slate-700"
+            className={sliderClass}
           />
         </div>
 
         {/* Swing Slider */}
         <div className="flex-1 lg:max-w-md">
-          <div className="flex items-center justify-between mb-2">
-            <label className="text-sm text-slate-600 dark:text-slate-400">Swing</label>
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-slate-600 dark:text-slate-400">{getSwingType(swingToDisplay(swing))}</span>
-              <span className="text-sm text-purple-600 dark:text-purple-400 font-semibold">{swingToDisplay(swing)}%</span>
+          <div className="flex items-center justify-between h-5 mb-3">
+            <span className="text-sm leading-5 font-normal text-ink-2">Swing</span>
+            <div className="flex items-center gap-3">
+              <span className="text-xs leading-5 text-ink-3">{getSwingType(swingToDisplay(swing))}</span>
+              <span className="text-sm leading-5 text-ink-1 font-medium">{swingToDisplay(swing)}%</span>
             </div>
           </div>
           <Slider
@@ -185,22 +187,22 @@ export function PlaybackControls({
             min={50}
             max={67}
             step={1}
-            className="[&_[data-slot=slider-range]]:bg-purple-500 [&_[data-slot=slider-thumb]]:bg-purple-500 [&_[data-slot=slider-thumb]]:border-purple-400 [&_[data-slot=slider-track]]:bg-slate-200 dark:[&_[data-slot=slider-track]]:bg-slate-700"
+            className={sliderClass}
           />
         </div>
       </div>
 
       {/* MIDI Tracking Toggle - shown when MIDI connected */}
       {midiConnected && (
-        <div className="flex items-center gap-2 lg:border-l lg:border-slate-200 lg:dark:border-slate-700 lg:pl-6">
+        <div className="flex items-center gap-2 lg:border-l lg:border-line lg:pl-6">
           <Button
             onClick={onTrackingToggle}
             size="sm"
             variant={trackingEnabled ? 'default' : 'outline'}
-            className={`text-xs sm:text-sm ${
+            className={`h-9 px-3 text-sm font-normal ${
               trackingEnabled
-                ? 'bg-blue-600 hover:bg-blue-700 text-white'
-                : 'border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-400'
+                ? 'bg-surface-3 hover:bg-surface-4 text-ink-1 shadow-[inset_0_0_0_1px_var(--ui-line),inset_0_-2px_0_var(--ui-brass-text)]'
+                : 'bg-transparent dark:bg-transparent border-line-strong dark:border-line-strong text-ink-2 hover:bg-surface-3 dark:hover:bg-surface-3 hover:text-ink-1'
             }`}
           >
             {trackingEnabled ? '✓ Tracking On' : 'Tracking Off'}

@@ -92,11 +92,11 @@ export function MobileMoreMenu({
   return (
     <div
       ref={menuRef}
-      className="absolute right-0 top-full mt-2 w-64 max-w-[calc(100vw-1rem)] max-h-[calc(100vh-120px)] bg-white dark:bg-slate-800 rounded-lg shadow-lg border border-slate-200 dark:border-slate-700 py-2 z-50 overflow-x-hidden overflow-y-auto"
+      className="absolute right-0 top-full mt-2 w-64 max-w-[calc(100vw-1rem)] max-h-[calc(100vh-120px)] bg-white dark:bg-slate-800 rounded-lg shadow-lg border border-slate-200 dark:border-slate-700 py-2 z-50 overflow-x-hidden overflow-y-auto overscroll-contain"
     >
       {/* Metronome Section */}
       <div className="px-4 py-2 border-b border-slate-200 dark:border-slate-700">
-        <div className="text-xs uppercase text-slate-500 dark:text-slate-400 mb-2 font-semibold">
+        <div className="text-xs text-ink-2 mb-2">
           Metronome
         </div>
         <div className="flex items-center gap-1">
@@ -106,11 +106,11 @@ export function MobileMoreMenu({
               onClick={() => onMetronomeChange?.(option)}
               className={`flex-1 py-1.5 px-1 rounded text-xs font-medium transition-colors whitespace-nowrap overflow-hidden text-ellipsis ${
                 metronome === option
-                  ? 'bg-purple-600 text-white'
-                  : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600'
+                  ? 'bg-brass hover:bg-brass-hover text-brass-ink'
+                  : 'bg-slate-100 dark:bg-slate-700 text-ink-2 hover:bg-slate-200 dark:hover:bg-slate-600'
               }`}
             >
-              {option === 'off' ? 'OFF' : option}
+              {option === 'off' ? 'Off' : option}
             </button>
           ))}
         </div>
@@ -120,12 +120,12 @@ export function MobileMoreMenu({
       <div className="py-1">
         <button
           onClick={() => handleAction(onOpenMyGrooves)}
-          className="w-full flex items-center gap-3 px-4 py-3 text-left text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+          className="w-full flex items-center gap-3 px-4 py-3 text-left text-ink-2 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
         >
           <FolderOpen className="w-5 h-5" />
           <span>My Groovies</span>
           {savedGroovesCount > 0 && (
-            <span className="ml-auto flex-shrink-0 w-5 h-5 bg-purple-600 text-white text-xs rounded-full flex items-center justify-center">
+            <span className="ml-auto flex-shrink-0 w-5 h-5 bg-surface-4 text-ink-1 text-xs rounded-full flex items-center justify-center">
               {savedGroovesCount > 9 ? '9+' : savedGroovesCount}
             </span>
           )}
@@ -133,7 +133,7 @@ export function MobileMoreMenu({
 
         <button
           onClick={() => handleAction(onOpenGrooveLibrary)}
-          className="w-full flex items-center gap-3 px-4 py-3 text-left text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+          className="w-full flex items-center gap-3 px-4 py-3 text-left text-ink-2 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
         >
           <Library className="w-5 h-5" />
           <span>Library</span>
@@ -143,31 +143,31 @@ export function MobileMoreMenu({
 
         <button
           onClick={() => handleAction(onCountInToggle)}
-          className="w-full flex items-center justify-between px-4 py-3 text-left text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+          className="w-full flex items-center justify-between px-4 py-3 text-left text-ink-2 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
         >
           <div className="flex items-center gap-3">
             <Zap className="w-5 h-5" />
             <span>Count In</span>
           </div>
-          <span className={`text-xs font-semibold px-2 py-1 rounded ${
+          <span className={`text-xs font-medium px-2 py-1 rounded ${
             countInEnabled
-              ? 'bg-purple-600 text-white'
-              : 'bg-slate-200 dark:bg-slate-600 text-slate-600 dark:text-slate-300'
+              ? 'bg-brass text-brass-ink'
+              : 'bg-slate-200 dark:bg-slate-600 text-ink-2'
           }`}>
-            {countInEnabled ? 'ON' : 'OFF'}
+            {countInEnabled ? 'On' : 'Off'}
           </span>
         </button>
 
         <button
           onClick={() => handleAction(onShowMIDISettings)}
-          className="w-full flex items-center justify-between px-4 py-3 text-left text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+          className="w-full flex items-center justify-between px-4 py-3 text-left text-ink-2 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
         >
           <div className="flex items-center gap-3">
             <Cable className="w-5 h-5" />
             <span>MIDI</span>
           </div>
           {midiCurrentDevice && (
-            <span className="text-xs bg-purple-600 text-white px-2 py-1 rounded flex-shrink-0 whitespace-nowrap">
+            <span className="text-xs bg-surface-4 text-ink-1 px-2 py-1 rounded flex-shrink-0 whitespace-nowrap">
               Connected
             </span>
           )}
@@ -177,7 +177,7 @@ export function MobileMoreMenu({
 
         <button
           onClick={() => handleAction(onShowAbout)}
-          className="w-full flex items-center gap-3 px-4 py-3 text-left text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+          className="w-full flex items-center gap-3 px-4 py-3 text-left text-ink-2 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
         >
           <Info className="w-5 h-5" />
           <span>About</span>

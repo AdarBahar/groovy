@@ -126,7 +126,7 @@ export function DownloadModal({ groove, isOpen, onClose }: DownloadModalProps) {
         <div className="space-y-4 py-4">
           {/* Format Selection */}
           <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-900 dark:text-white">
+            <label className="text-sm font-medium text-ink-1">
               Select Format
             </label>
             <div className="grid grid-cols-2 sm:grid-cols-2 gap-2">
@@ -149,19 +149,19 @@ export function DownloadModal({ groove, isOpen, onClose }: DownloadModalProps) {
                       ${!isSupported ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
                     `}
                   >
-                    <div className={`${isSelected ? 'text-purple-600 dark:text-purple-400' : 'text-slate-500 dark:text-slate-400'}`}>
+                    <div className={`${isSelected ? 'text-brass-text' : 'text-ink-3'}`}>
                       {FORMAT_ICONS[format]}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className={`text-sm font-medium ${isSelected ? 'text-purple-900 dark:text-purple-100' : 'text-slate-900 dark:text-white'}`}>
+                      <div className={`text-sm font-medium ${isSelected ? 'text-purple-900 dark:text-purple-100' : 'text-ink-1'}`}>
                         {info.label}
                       </div>
-                      <div className="text-xs text-slate-500 dark:text-slate-400 truncate">
+                      <div className="text-xs text-ink-3 truncate">
                         {info.extension}
                       </div>
                     </div>
                     {!isSupported && (
-                      <span className="text-xs text-slate-400 dark:text-slate-500">Soon</span>
+                      <span className="text-xs text-ink-3">Soon</span>
                     )}
                   </button>
                 );
@@ -171,7 +171,7 @@ export function DownloadModal({ groove, isOpen, onClose }: DownloadModalProps) {
 
           {/* Format Description */}
           <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
-            <p className="text-sm text-slate-600 dark:text-slate-300">
+            <p className="text-sm text-ink-2">
               {formatInfo.description}
             </p>
           </div>
@@ -179,7 +179,7 @@ export function DownloadModal({ groove, isOpen, onClose }: DownloadModalProps) {
           {/* Loop Count (for audio formats) */}
           {supportsLoops && (
             <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-900 dark:text-white">
+              <label className="text-sm font-medium text-ink-1">
                 Number of Loops
               </label>
               <div className="flex items-center gap-3">
@@ -192,11 +192,11 @@ export function DownloadModal({ groove, isOpen, onClose }: DownloadModalProps) {
                   onChange={(e) => setLoopCount(parseInt(e.target.value))}
                   className="flex-1 h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-purple-600"
                 />
-                <span className="w-8 text-center text-sm font-medium text-slate-900 dark:text-white">
+                <span className="w-8 text-center text-sm font-medium text-ink-1">
                   {loopCount}
                 </span>
               </div>
-              <p className="text-xs text-slate-500 dark:text-slate-400">
+              <p className="text-xs text-ink-3">
                 The groove will repeat {loopCount} time{loopCount > 1 ? 's' : ''} in the exported file
               </p>
             </div>
@@ -218,7 +218,7 @@ export function DownloadModal({ groove, isOpen, onClose }: DownloadModalProps) {
           <Button
             onClick={handleDownload}
             disabled={isDownloading || !isFormatSupported(selectedFormat)}
-            className="bg-purple-600 hover:bg-purple-700 text-white"
+            className="bg-primary text-primary-foreground hover:bg-primary/90"
           >
             {downloadSuccess ? (
               <>

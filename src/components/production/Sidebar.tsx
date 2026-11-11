@@ -70,11 +70,11 @@ export function Sidebar({
       )}
 
       {/* Sidebar */}
-      <div
+      <aside
         className={`
-          w-20 bg-slate-50 dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700
-          flex flex-col items-center py-6 gap-6
-          fixed inset-y-0 left-0 z-50 transition-[transform,visibility] duration-300 ease-in-out
+          w-20 bg-surface-0 border-r border-line
+          flex flex-col items-center py-4 gap-6 overscroll-contain
+          fixed inset-y-0 left-0 z-50 transition-[transform,visibility] duration-300 ease-out
           ${isOpen ? 'translate-x-0 visible' : '-translate-x-full max-md:invisible'}
           md:relative md:translate-x-0 md:z-auto md:transition-none
           gpu-accelerated
@@ -87,22 +87,22 @@ export function Sidebar({
             size="icon"
             onClick={onClose}
             aria-label="Close sidebar"
-            className="absolute top-2 right-2 md:hidden text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+            className="absolute top-2 right-2 md:hidden text-ink-3 hover:text-ink-1 hover:bg-surface-3 dark:hover:bg-surface-3"
           >
-            <X className="w-5 h-5" />
+            <X className="size-[18px]" />
           </Button>
         )}
 
         {/* Toggle button at top */}
         <Button
           onClick={() => handleAction(onToggleNotesOnly)}
-          className={`w-16 text-white flex items-center justify-center h-auto py-4 px-3 ${
+          className={`w-16 flex items-center justify-center h-12 px-2 max-md:mt-10 ${
             isNotesOnly
-              ? 'bg-purple-600 hover:bg-purple-700'
-              : 'bg-slate-300 dark:bg-slate-700 hover:bg-slate-400 dark:hover:bg-slate-600'
+              ? 'bg-ink-1 hover:bg-ink-1/90 text-surface-0'
+              : 'bg-surface-3 hover:bg-surface-4 text-ink-1 shadow-[inset_0_0_0_1px_var(--ui-line)]'
           }`}
         >
-          <span className={`text-xs uppercase font-semibold text-center leading-tight ${isNotesOnly ? 'text-white' : 'text-slate-700 dark:text-white'}`}>
+          <span className="text-xs font-medium text-center leading-4">
             {isNotesOnly ? (
               <>
                 <div>Back to</div>
@@ -122,30 +122,30 @@ export function Sidebar({
             {/* Time signature button - clickable to open selector */}
             <button
               onClick={onTimeSignatureClick}
-              className="flex flex-col items-center justify-center text-slate-900 dark:text-white mb-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg p-2 transition-colors cursor-pointer"
+              className="w-16 flex flex-col items-center justify-center text-ink-1 hover:bg-surface-3 rounded-lg py-2 transition-colors cursor-pointer"
               title="Click to change time signature"
             >
-              <div className="text-3xl font-bold">{timeSignature.beats}</div>
-              <div className="w-8 h-px bg-slate-900 dark:bg-white my-1"></div>
-              <div className="text-3xl font-bold">{timeSignature.noteValue}</div>
+              <div className="text-[28px] leading-8 font-medium">{timeSignature.beats}</div>
+              <div className="w-8 h-px bg-ink-1 my-1"></div>
+              <div className="text-[28px] leading-8 font-medium">{timeSignature.noteValue}</div>
             </button>
 
             {/* Division selectors */}
-            <div className="flex flex-col gap-2 w-full px-2">
+            <div className="flex flex-col gap-1 w-full px-2">
               {noteOptions.map((option) => (
                 <Button
                   key={option.value}
                   variant={division === option.value ? 'default' : 'ghost'}
                   size="sm"
                   onClick={() => handleAction(() => onDivisionChange(option.value))}
-                  className={`w-full h-auto py-2 px-2 flex flex-col items-center justify-center text-xs ${
+                  className={`w-full h-12 px-2 flex flex-col items-center justify-center gap-0 text-xs font-normal ${
                     division === option.value
-                      ? 'bg-purple-600 hover:bg-purple-700 text-white'
-                      : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700'
+                      ? 'bg-surface-3 hover:bg-surface-3 text-ink-1 shadow-[inset_0_0_0_1px_var(--ui-line),inset_2px_0_0_var(--ui-brass-text)]'
+                      : 'bg-transparent text-ink-2 hover:text-ink-1 hover:bg-surface-3 dark:hover:bg-surface-3'
                   }`}
                 >
-                  <div className="font-bold">{option.label}</div>
-                  <div className="text-xs whitespace-nowrap">{option.sublabel}</div>
+                  <div className="text-[13px] leading-4 font-medium">{option.label}</div>
+                  <div className="text-xs leading-4 whitespace-nowrap">{option.sublabel}</div>
                 </Button>
               ))}
             </div>
@@ -154,7 +154,7 @@ export function Sidebar({
             <div className="flex-1"></div>
 
             {/* Undo/Redo */}
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-1">
               <Button
                 variant="ghost"
                 size="icon"
@@ -162,9 +162,9 @@ export function Sidebar({
                 disabled={!canUndo}
                 aria-label="Undo"
                 title="Undo"
-                className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-30"
+                className="text-ink-3 hover:text-ink-1 hover:bg-surface-3 dark:hover:bg-surface-3 disabled:opacity-40"
               >
-                <Undo2 className="w-5 h-5" />
+                <Undo2 className="size-[18px]" />
               </Button>
               <Button
                 variant="ghost"
@@ -173,14 +173,14 @@ export function Sidebar({
                 disabled={!canRedo}
                 aria-label="Redo"
                 title="Redo"
-                className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-30"
+                className="text-ink-3 hover:text-ink-1 hover:bg-surface-3 dark:hover:bg-surface-3 disabled:opacity-40"
               >
-                <Redo2 className="w-5 h-5" />
+                <Redo2 className="size-[18px]" />
               </Button>
             </div>
           </>
         )}
-      </div>
+      </aside>
     </>
   );
 }

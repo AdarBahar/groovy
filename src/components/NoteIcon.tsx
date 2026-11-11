@@ -36,7 +36,7 @@ function NoteIcon({ voices, isActive }: NoteIconProps) {
       {isFontAwesome ? (
         <i className={`fa ${primaryMeta.icon} note-icon primary-icon`} aria-hidden="true"></i>
       ) : (
-        <span className="note-icon primary-icon text-icon">{primaryMeta.icon}</span>
+        <span className="note-icon primary-icon text-icon" aria-hidden="true">{primaryMeta.icon}</span>
       )}
 
       {/* Additional layered icons for complex articulations */}
@@ -49,7 +49,7 @@ function NoteIcon({ voices, isActive }: NoteIconProps) {
             aria-hidden="true"
           ></i>
         ) : (
-          <span key={index} className={`note-icon layered-icon layer-${index + 1} text-icon`}>
+          <span key={index} className={`note-icon layered-icon layer-${index + 1} text-icon`} aria-hidden="true">
             {meta.icon}
           </span>
         );

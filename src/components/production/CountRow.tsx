@@ -42,7 +42,7 @@ export default function CountRow({
       className="flex items-center mb-1"
     >
       {/* Label column — matches drum row label width and sticking row width */}
-      <div className="w-16 sm:w-20 md:w-20 flex-shrink-0 px-1 sm:px-2 md:px-2 py-1 text-right text-xs font-semibold text-slate-500 dark:text-slate-400">
+      <div className="w-16 sm:w-20 flex-shrink-0 pl-1 pr-2 sm:pr-3 py-1 text-right text-xs sm:text-[13px] leading-4 text-ink-2">
         Count
       </div>
 
@@ -51,12 +51,12 @@ export default function CountRow({
         <div
           key={index}
           className={`
-            w-11 h-8 sm:w-12 sm:h-8 md:w-10 md:h-7
-            border border-slate-200 dark:border-slate-600
+            w-11 h-8 sm:w-12 md:w-10
+            border-2 border-transparent bg-clip-padding rounded-md
             flex items-center justify-center
-            text-xs font-semibold leading-none
-            bg-slate-50 dark:bg-slate-700/30
-            text-slate-600 dark:text-slate-400
+            text-xs leading-none
+            shadow-[inset_0_0_0_1px_var(--ui-line)]
+            ${/^\d+$/.test(label) ? 'text-ink-1 font-medium' : 'text-ink-3'}
           `}
         >
           {label}

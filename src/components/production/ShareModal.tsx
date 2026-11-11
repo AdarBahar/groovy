@@ -229,7 +229,7 @@ export function ShareModal({ groove, isOpen, onClose }: ShareModalProps) {
 
   const renderLinkTab = () => (
     <div className="space-y-4">
-      <p className="text-sm text-slate-600 dark:text-slate-400">
+      <p className="text-sm text-ink-2">
         Copy the link below to share your groove with anyone.
       </p>
 
@@ -243,7 +243,7 @@ export function ShareModal({ groove, isOpen, onClose }: ShareModalProps) {
               className="flex-1 font-mono text-xs bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800"
               onClick={(e) => (e.target as HTMLInputElement).select()}
             />
-            <Button onClick={handleCopyShortURL} className="bg-purple-600 hover:bg-purple-700 text-white">
+            <Button onClick={handleCopyShortURL} className="bg-primary text-primary-foreground hover:bg-primary/90">
               {copied === 'shortUrl' ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
             </Button>
           </div>
@@ -251,7 +251,7 @@ export function ShareModal({ groove, isOpen, onClose }: ShareModalProps) {
             variant="ghost"
             size="sm"
             onClick={() => setShortURL(null)}
-            className="text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300"
+            className="text-ink-3 hover:text-ink-2 dark:hover:text-slate-300"
           >
             <Minimize2 className="w-3 h-3 mr-1" />
             Show original URL
@@ -267,7 +267,7 @@ export function ShareModal({ groove, isOpen, onClose }: ShareModalProps) {
               className="flex-1 font-mono text-xs"
               onClick={(e) => (e.target as HTMLInputElement).select()}
             />
-            <Button onClick={handleCopyURL} className="bg-purple-600 hover:bg-purple-700 text-white">
+            <Button onClick={handleCopyURL} className="bg-primary text-primary-foreground hover:bg-primary/90">
               {copied === 'url' ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
             </Button>
           </div>
@@ -283,7 +283,7 @@ export function ShareModal({ groove, isOpen, onClose }: ShareModalProps) {
                 size="sm"
                 onClick={handleShortenURL}
                 disabled={isShortening}
-                className="text-purple-600 border-purple-200 hover:bg-purple-50 dark:text-purple-400 dark:border-purple-800 dark:hover:bg-purple-900/20"
+                className="text-brass-text border-purple-200 hover:bg-purple-50 dark:border-purple-800 dark:hover:bg-purple-900/20"
               >
                 {isShortening ? (
                   <>
@@ -297,7 +297,7 @@ export function ShareModal({ groove, isOpen, onClose }: ShareModalProps) {
                   </>
                 )}
               </Button>
-              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+              <p className="mt-1 text-xs text-ink-3">
                 Shortening sends this link to an external service ({getShortenerHost()}).
               </p>
             </div>
@@ -317,7 +317,7 @@ export function ShareModal({ groove, isOpen, onClose }: ShareModalProps) {
 
   const renderSocialTab = () => (
     <div className="space-y-4">
-      <p className="text-sm text-slate-600 dark:text-slate-400">
+      <p className="text-sm text-ink-2">
         Share your groove on social media.
       </p>
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -344,13 +344,13 @@ export function ShareModal({ groove, isOpen, onClose }: ShareModalProps) {
   const renderEmbedTab = () => (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <p className="text-sm text-slate-600 dark:text-slate-400">
+        <p className="text-sm text-ink-2">
           Embed this groove on your website or blog.
         </p>
         <Button
           size="sm"
           onClick={handleCopyEmbed}
-          className="bg-purple-600 hover:bg-purple-700 text-white flex-shrink-0"
+          className="bg-primary text-primary-foreground hover:bg-primary/90 flex-shrink-0"
         >
           {copied === 'embed' ? <Check className="w-3 h-3 mr-1" /> : <Copy className="w-3 h-3 mr-1" />}
           {copied === 'embed' ? 'Copied' : 'Copy'}
@@ -378,27 +378,27 @@ export function ShareModal({ groove, isOpen, onClose }: ShareModalProps) {
 
   const renderQRTab = () => (
     <div className="space-y-4">
-      <p className="text-sm text-slate-600 dark:text-slate-400">
+      <p className="text-sm text-ink-2">
         Scan this QR code to open the groove on any device.
       </p>
       {isShortenerConfigured() && (
-        <p className="text-xs text-slate-500 dark:text-slate-400">
+        <p className="text-xs text-ink-3">
           To make the QR code smaller, this tab sends the link to an external service ({getShortenerHost()}).
         </p>
       )}
       {isShorteningQR ? (
         <div className="flex justify-center items-center p-6 bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 min-h-[140px]">
-          <Loader2 className="w-8 h-8 animate-spin text-purple-600 dark:text-purple-400" />
+          <Loader2 className="w-8 h-8 animate-spin text-brass-text" />
         </div>
       ) : isURLTooLongForQR ? (
         <div className="flex flex-col items-center gap-4 p-6 bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
           <AlertTriangle className="w-12 h-12 text-amber-500" />
           <div className="text-center">
-            <p className="font-medium text-slate-700 dark:text-slate-300">URL too long for QR code</p>
-            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+            <p className="font-medium text-ink-2">URL too long for QR code</p>
+            <p className="text-sm text-ink-3 mt-1">
               This groove has too much data ({shareableURL.length.toLocaleString()} characters).
               {isShortenerConfigured() && (
-                <> Use the <button onClick={() => setActiveTab('link')} className="text-purple-600 dark:text-purple-400 underline">Link tab</button> to shorten it first.</>
+                <> Use the <button onClick={() => setActiveTab('link')} className="text-brass-text underline">Link tab</button> to shorten it first.</>
               )}
             </p>
           </div>
@@ -414,7 +414,7 @@ export function ShareModal({ groove, isOpen, onClose }: ShareModalProps) {
           />
         </div>
       )}
-      <p className="text-xs text-center text-slate-500 dark:text-slate-400">
+      <p className="text-xs text-center text-ink-3">
         {grooveTitle}
       </p>
     </div>
@@ -422,10 +422,10 @@ export function ShareModal({ groove, isOpen, onClose }: ShareModalProps) {
 
   const renderEmailTab = () => (
     <div className="space-y-4">
-      <p className="text-sm text-slate-600 dark:text-slate-400">
+      <p className="text-sm text-ink-2">
         Send this groove via email.
       </p>
-      <Button onClick={handleEmailShare} className="w-full bg-purple-600 hover:bg-purple-700 text-white">
+      <Button onClick={handleEmailShare} className="w-full bg-primary text-primary-foreground hover:bg-primary/90">
         <Mail className="w-4 h-4 mr-2" />
         Open Email Client
       </Button>
@@ -458,8 +458,8 @@ export function ShareModal({ groove, isOpen, onClose }: ShareModalProps) {
         {/* Share mode toggle */}
         <div className="flex items-center justify-between px-3 py-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
           <div className="text-sm">
-            <p className="font-medium text-slate-700 dark:text-slate-300">Share as:</p>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
+            <p className="font-medium text-ink-2">Share as:</p>
+            <p className="text-xs text-ink-3">
               {urlMode === 'embed'
                 ? 'Embed view (optimized for viewing)'
                 : 'Editor view (allows editing)'}
@@ -473,7 +473,7 @@ export function ShareModal({ groove, isOpen, onClose }: ShareModalProps) {
                 setUrlMode('embed');
                 trackShareModeToggle('embed');
               }}
-              className={urlMode === 'embed' ? 'bg-purple-600 hover:bg-purple-700' : ''}
+              className={urlMode === 'embed' ? 'bg-brass hover:bg-brass-hover text-brass-ink' : ''}
             >
               Embed
             </Button>
@@ -484,7 +484,7 @@ export function ShareModal({ groove, isOpen, onClose }: ShareModalProps) {
                 setUrlMode('editor');
                 trackShareModeToggle('editor');
               }}
-              className={urlMode === 'editor' ? 'bg-purple-600 hover:bg-purple-700' : ''}
+              className={urlMode === 'editor' ? 'bg-brass hover:bg-brass-hover text-brass-ink' : ''}
             >
               Editor
             </Button>
@@ -499,8 +499,8 @@ export function ShareModal({ groove, isOpen, onClose }: ShareModalProps) {
               onClick={() => setActiveTab(tab.id)}
               className={`flex items-center justify-center gap-1 px-2 py-2 text-sm font-medium border-b-2 -mb-px transition-colors flex-1 min-w-0 ${
                 activeTab === tab.id
-                  ? 'border-purple-600 text-purple-600 dark:text-purple-400'
-                  : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300'
+                  ? 'border-purple-600 text-brass-text'
+                  : 'border-transparent text-ink-3 hover:text-ink-2 dark:hover:text-slate-300'
               }`}
             >
               {tab.icon}

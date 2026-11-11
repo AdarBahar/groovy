@@ -339,14 +339,15 @@ function SheetMusicDisplay({
   return (
     <div className="sheet-music-display">
       {error ? (
-        <div className="sheet-music-error">
-          <span>⚠️ {error}</span>
+        <div className="sheet-music-error" role="status" aria-live="polite">
+          <span><span aria-hidden="true">⚠️</span> {error}</span>
         </div>
       ) : (
         <div ref={wrapperRef} className="sheet-music-wrapper">
           <div
             ref={containerRef}
             className="sheet-music-container"
+            role="img"
             aria-label="Sheet music notation"
           />
           {/* Vertical playback cursor line - position updated via direct DOM manipulation */}

@@ -1,5 +1,5 @@
 :root {
-  font-family: 'Inter', ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  font-family: 'Poppins', ui-sans-serif, system-ui, sans-serif;
   line-height: 1.5;
   font-weight: 400;
   font-synthesis: none;
@@ -21,7 +21,7 @@ html, body {
   height: 100%;
   min-width: 320px;
   min-height: 100vh;
-  background-color: #0f172a; /* slate-900 */
+  background-color: #141415; /* page, dark graphite */
   overflow-x: hidden;
 
   /* Mobile: Disable tap highlight for app-like feel */
@@ -36,6 +36,15 @@ html, body {
 
   /* Mobile: Optimize touch scrolling */
   -webkit-overflow-scrolling: touch;
+}
+
+/* Native scrollbars and form controls follow the theme class (default: dark) */
+html {
+  color-scheme: dark;
+}
+
+html.light {
+  color-scheme: light;
 }
 
 #root {
@@ -64,6 +73,9 @@ textarea,
 button,
 [role="button"],
 a,
+input,
+select,
+label,
 .clickable {
   /* Ensure touch targets are responsive */
   touch-action: manipulation;
@@ -115,3 +127,9 @@ a,
   }
 }
 
+
+/* Light theme page colour behind the app shell */
+html.light,
+html.light body {
+  background-color: #fafafa;
+}

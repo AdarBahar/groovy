@@ -57,20 +57,20 @@ export function TimeSignatureSelectorModal({
               aria-label="Beats per measure"
               value={tempBeats}
               onChange={(e) => setTempBeats(Number(e.target.value))}
-              className="text-2xl font-bold p-2 rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white"
+              className="text-2xl font-medium p-2 rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white"
             >
               {beatOptions.map(n => (
                 <option key={n} value={n}>{n}</option>
               ))}
             </select>
 
-            <span className="text-3xl font-bold text-slate-400">/</span>
+            <span className="text-3xl font-medium text-ink-3">/</span>
 
             <select
               aria-label="Note value"
               value={tempNoteValue}
               onChange={(e) => setTempNoteValue(Number(e.target.value) as 4 | 8 | 16)}
-              className="text-2xl font-bold p-2 rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white"
+              className="text-2xl font-medium p-2 rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white"
             >
               <option value={4}>4</option>
               <option value={8}>8</option>
@@ -80,10 +80,10 @@ export function TimeSignatureSelectorModal({
 
           {/* Preview */}
           <div className="bg-slate-100 dark:bg-slate-800 rounded-lg p-4 text-center">
-            <p className="text-lg font-semibold text-slate-900 dark:text-white">
+            <p className="text-lg font-semibold text-ink-1">
               {tempBeats}/{tempNoteValue} time signature
             </p>
-            <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+            <p className="text-sm text-ink-2 mt-1">
               {tempBeats} {tempNoteValue === 4 ? 'quarter' : tempNoteValue === 8 ? 'eighth' : 'sixteenth'} notes per measure
             </p>
           </div>
@@ -91,7 +91,7 @@ export function TimeSignatureSelectorModal({
           {/* Buttons */}
           <div className="flex justify-end gap-3">
             <Button variant="outline" onClick={onClose}>Cancel</Button>
-            <Button onClick={handleApply} className="bg-purple-600 hover:bg-purple-700 text-white">Apply</Button>
+            <Button onClick={handleApply} className="bg-primary text-primary-foreground hover:bg-primary/90">Apply</Button>
           </div>
         </div>
       </DialogContent>
