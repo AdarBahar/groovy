@@ -351,11 +351,11 @@ export function PrintPreviewModal({ groove, isOpen, onClose, onAddTitle }: Print
                   level="M"
                   className="flex-shrink-0"
                 />
-                <div className="text-xs text-ink-3 max-w-md break-all">
+                <div className="text-xs text-slate-600 max-w-md break-all">
                   {printURL || shareableURL}
                 </div>
               </div>
-              <div className="text-xs text-ink-3 text-right">
+              <div className="text-xs text-slate-600 text-right">
                 Created with Groovy
               </div>
             </div>
