@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Button } from '../ui/button';
 import { MetronomeConfig, MetronomeFrequency, MetronomeOffsetClick } from '../../types';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -24,6 +25,16 @@ export function MetronomeOptionsMenu({
   onOffsetClickChange,
 }: MetronomeOptionsMenuProps) {
   const { isDark } = useTheme();
+
+  // Close with Escape, as every menu does (docs/UI-RULES.md).
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
