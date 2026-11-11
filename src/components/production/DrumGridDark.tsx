@@ -241,7 +241,7 @@ export function DrumGridDark({
                     disabled={
                       !measure.sticking || !measure.sticking.some(v => v !== null)
                     }
-                    className="w-10 h-10 md:w-8 md:h-8 flex items-center justify-center rounded-md text-ink-3 hover:text-ink-1 hover:bg-surface-3 transition-colors disabled:opacity-40 disabled:cursor-not-allowed touch-target"
+                    className="w-10 h-10 flex items-center justify-center rounded-md text-ink-3 hover:text-ink-1 hover:bg-surface-3 transition-colors disabled:opacity-40 disabled:cursor-not-allowed touch-target"
                     title="Apply sticking to similar measures"
                     aria-label="Apply sticking to similar measures"
                   >
@@ -250,7 +250,7 @@ export function DrumGridDark({
                 )}
                 <button
                   onClick={() => onMeasureClear?.(measureIndex)}
-                  className="w-10 h-10 md:w-8 md:h-8 flex items-center justify-center rounded-md text-ink-3 hover:text-ink-1 hover:bg-surface-3 transition-colors disabled:opacity-40 disabled:cursor-not-allowed touch-target"
+                  className="w-10 h-10 flex items-center justify-center rounded-md text-ink-3 hover:text-ink-1 hover:bg-surface-3 transition-colors disabled:opacity-40 disabled:cursor-not-allowed touch-target"
                   title="Clear measure"
                   aria-label="Clear measure"
                 >
@@ -259,7 +259,7 @@ export function DrumGridDark({
                 <button
                   onClick={() => onMeasureDuplicate?.(measureIndex)}
                   disabled={!canAdd}
-                  className="w-10 h-10 md:w-8 md:h-8 flex items-center justify-center rounded-md text-ink-3 hover:text-ink-1 hover:bg-surface-3 transition-colors disabled:opacity-40 disabled:cursor-not-allowed touch-target"
+                  className="w-10 h-10 flex items-center justify-center rounded-md text-ink-3 hover:text-ink-1 hover:bg-surface-3 transition-colors disabled:opacity-40 disabled:cursor-not-allowed touch-target"
                   title="Duplicate measure"
                   aria-label="Duplicate measure"
                 >
@@ -268,7 +268,7 @@ export function DrumGridDark({
                 <button
                   onClick={() => onMeasureAdd?.(measureIndex)}
                   disabled={!canAdd}
-                  className="w-10 h-10 md:w-8 md:h-8 flex items-center justify-center rounded-md text-ink-3 hover:text-ink-1 hover:bg-surface-3 transition-colors disabled:opacity-40 disabled:cursor-not-allowed touch-target"
+                  className="w-10 h-10 flex items-center justify-center rounded-md text-ink-3 hover:text-ink-1 hover:bg-surface-3 transition-colors disabled:opacity-40 disabled:cursor-not-allowed touch-target"
                   title="Add measure"
                   aria-label="Add measure"
                 >
@@ -277,7 +277,7 @@ export function DrumGridDark({
                 <button
                   onClick={() => onMeasureRemove?.(measureIndex)}
                   disabled={!canRemove}
-                  className="w-10 h-10 md:w-8 md:h-8 flex items-center justify-center rounded-md text-ink-3 hover:text-ink-1 hover:bg-surface-3 transition-colors disabled:opacity-40 disabled:cursor-not-allowed touch-target"
+                  className="w-10 h-10 flex items-center justify-center rounded-md text-ink-3 hover:text-ink-1 hover:bg-surface-3 transition-colors disabled:opacity-40 disabled:cursor-not-allowed touch-target"
                   title="Delete measure"
                   aria-label="Delete measure"
                 >

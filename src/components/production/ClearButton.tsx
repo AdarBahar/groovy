@@ -83,7 +83,7 @@ export function ClearButton({ onClear }: ClearButtonProps) {
         variant="ghost"
         size="sm"
         onClick={handleButtonClick}
-        className={`flex items-center gap-2 h-9 px-3 has-[>svg]:px-3 font-normal ${
+        className={`flex items-center gap-2 h-10 px-3 has-[>svg]:px-3 font-normal ${
           isOpen
             ? 'text-ink-1 bg-surface-3'
             : 'text-ink-2 hover:text-ink-1 hover:bg-surface-3 dark:hover:bg-surface-3'
@@ -106,7 +106,7 @@ export function ClearButton({ onClear }: ClearButtonProps) {
                 <Button
                   size="sm"
                   onClick={handleConfirm}
-                  className="bg-ink-1 hover:bg-ink-1/90 text-surface-1 text-xs px-3 h-8"
+                  className="bg-ink-1 hover:bg-ink-1/90 text-surface-1 text-xs px-3 h-10"
                 >
                   Yes
                 </Button>
@@ -114,7 +114,7 @@ export function ClearButton({ onClear }: ClearButtonProps) {
                   variant="ghost"
                   size="sm"
                   onClick={handleCancel}
-                  className="text-ink-2 hover:text-ink-1 hover:bg-surface-4 dark:hover:bg-surface-4 text-xs font-normal px-3 h-8"
+                  className="text-ink-2 hover:text-ink-1 hover:bg-surface-4 dark:hover:bg-surface-4 text-xs font-normal px-3 h-10"
                 >
                   Cancel
                 </Button>

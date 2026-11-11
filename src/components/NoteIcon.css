@@ -80,7 +80,7 @@
   }
 }
 
-/* Playing state - red color when beat is currently playing */
+/* Playing state - white flash color when beat is currently playing */
 .note-icon-container.playing .note-icon {
   color: var(--ui-brass-flash, #fff) !important;
   animation: beat-flash 0.15s ease-out;
@@ -107,7 +107,7 @@
     transform: scale(1);
   }
 
-  /* Disable flash animation, but keep the red color */
+  /* Disable flash animation, but keep the white color */
   .note-icon-container.playing .note-icon {
     animation: none;
     transform: scale(1);
