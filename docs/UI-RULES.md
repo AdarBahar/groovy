@@ -25,6 +25,7 @@ The app uses one graphite ramp and one brass accent. The tokens are in `src/styl
 - Use brass only for a hit, a selected state, or the focus ring. Do not use it for decoration.
 - Do not use a gradient, a colored shadow, or a glow.
 - `text-ink-3` is the lightest text color. All three ink colors are 4.5:1 or more on all surfaces.
+- The embed page (`.embed`) is always white. The `.embed` block sets the light ink, surface, `--primary`, `--muted`, and `--ring` values, so it has the light look in both themes. If you add a token that the embed page uses, add its light value to `.embed` too.
 - Do not use `opacity-*` on text to make it muted. Use the muted text color.
 - Use 12px (`text-xs`) as the smallest text size. Do not use `text-[10px]`.
 - Icons need a contrast of 3:1. Use `text-ink-3` or darker.
@@ -32,7 +33,7 @@ The app uses one graphite ramp and one brass accent. The tokens are in `src/styl
 ## Type
 
 - The interface font is Poppins (`--font-sans`). The display font is Righteous (`--font-display`, class `font-display`).
-- Use the display font only for the brand name, the groove title, and the timer. Do not use it for the time signature or for small numbers.
+- Use the display font only for the brand name, the groove title, and the timer. A global rule gives the display font to `h1`. If an `h1` is not one of these items, add `font-sans` (see `ErrorBoundary.tsx`). Do not use it for the time signature or for small numbers.
 - The font links are in `index.html`. Add a new font there.
 - Use weights 400 and 500. Use sentence case for labels. Do not use uppercase labels with wide tracking.
 - Numbers use tabular figures (set on `body`).
@@ -47,14 +48,14 @@ The app uses one graphite ramp and one brass accent. The tokens are in `src/styl
 
 - Each icon-only button has an `aria-label`. A `title` alone is not sufficient.
 - Each slider, select, and text field has a name: a `<label htmlFor>` with an `id`, or an `aria-label`. For the shared `Slider`, use the `thumbAriaLabel` prop.
-- A toggle button that shows a selected state has `aria-pressed`. Show the state with more than color (for example, bold and underline).
+- A toggle button that shows a selected state has `aria-pressed`. Show the state with more than color, for example an underline. Do not use bold (weight 600) for this.
 - Do not put a heading inside a `<button>`.
 
 ## Dialogs, menus, and drawers
 
 - Use the shared Radix `Dialog` in `src/components/ui/dialog.tsx`. Do not make a custom modal.
 - If a dialog has no `DialogTrigger`, give it a return-focus target and focus it in `onCloseAutoFocus`. See `AboutModal.tsx`.
-- Each dialog, menu, and drawer closes on Escape.
+- Each dialog, menu, and drawer closes on Escape. When a custom menu closes on Escape, move the focus back to its trigger button. Ignore Escape when a dialog is open (see `MetronomeOptionsMenu.tsx`).
 - An off-screen drawer must not be in the Tab order. Make it `invisible` when it is closed.
 
 ## Layout
