@@ -42,8 +42,8 @@
 .metadata-editor input:focus-visible,
 .metadata-editor textarea:focus-visible {
   outline: none;
-  border-color: var(--ui-brass-text);
-  box-shadow: 0 0 0 2px var(--ui-line-strong);
+  border-color: var(--ring);
+  box-shadow: 0 0 0 2px var(--ring);
 }
 
 /* POC buttons in dark theme */
