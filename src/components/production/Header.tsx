@@ -80,38 +80,38 @@ export function Header({
   const [showMIDIModal, setShowMIDIModal] = useState(false);
 
   return (
-    <header className="flex items-center justify-between px-4 md:px-6 py-3 md:py-4 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
-      <div className="flex items-center gap-3 md:gap-6">
+    <header className="flex items-center justify-between h-14 md:h-16 px-4 md:px-6 bg-surface-0 border-b border-line">
+      <div className="flex items-center gap-3 md:gap-8">
         {/* Mobile hamburger menu button */}
         {onToggleSidebar && (
           <Button
             variant="ghost"
             size="icon"
             onClick={onToggleSidebar}
-            className="md:hidden text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white touch-target"
+            className="md:hidden size-10 text-ink-2 hover:text-ink-1 hover:bg-surface-3 dark:hover:bg-surface-3 transition-colors touch-target"
             aria-label="Toggle sidebar"
           >
-            <Menu className="w-6 h-6" />
+            <Menu className="size-[18px]" />
           </Button>
         )}
 
-        <Link to="/" className="flex items-center gap-2 no-underline">
-          <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-purple-700 rounded-lg flex items-center justify-center">
-            <span className="text-white font-bold text-sm">G</span>
+        <Link to="/" className="group flex items-center gap-2 no-underline">
+          <div className="w-7 h-7 bg-ink-1 rounded-md flex items-center justify-center">
+            <span className="text-surface-0 font-display text-base leading-none">G</span>
           </div>
-          <span className="text-slate-900 dark:text-white font-semibold text-lg hidden sm:inline">Groovy</span>
+          <span translate="no" className="text-ink-1 group-hover:text-brass-text transition-colors font-display text-xl leading-none hidden sm:inline">Groovy</span>
         </Link>
 
         {/* Desktop metronome controls - hidden on mobile */}
-        <div className="hidden lg:flex items-center gap-4 text-sm relative">
-          <span className="text-slate-500 dark:text-slate-400">Metronome:</span>
-          <div role="group" aria-label="Metronome" className="flex items-center gap-4">
+        <div className="hidden lg:flex items-center gap-3 text-sm relative">
+          <span className="text-ink-3">Metronome:</span>
+          <div role="group" aria-label="Metronome" className="flex items-center gap-1">
             {METRONOME_OPTIONS.map((option) => (
               <button
                 key={option}
                 onClick={() => onMetronomeChange?.(option)}
                 aria-pressed={metronome === option}
-                className={`py-2 -my-2 ${metronome === option ? 'text-slate-900 dark:text-white font-semibold underline underline-offset-4 decoration-2 decoration-purple-500' : 'text-slate-600 dark:text-slate-400'} hover:text-slate-900 dark:hover:text-white transition-colors uppercase`}
+                className={`h-9 px-2 rounded-md text-[13px] lowercase first-letter:uppercase ${metronome === option ? 'text-ink-1 font-medium underline underline-offset-8 decoration-2 decoration-brass-text' : 'text-ink-2'} hover:text-ink-1 hover:bg-surface-3 transition-colors`}
               >
                 {option === 'off' ? 'OFF' : option}
               </button>
@@ -122,12 +122,13 @@ export function Header({
             <>
               <button
                 onClick={() => setShowMetronomeOptions(!showMetronomeOptions)}
-                className={`ml-2 p-1 rounded transition-colors ${
+                className={`size-9 inline-flex items-center justify-center rounded-md transition-colors ${
                   showMetronomeOptions
-                    ? 'text-purple-500 bg-purple-100 dark:bg-purple-900/30'
-                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                    ? 'text-ink-1 bg-surface-3'
+                    : 'text-ink-3 hover:text-ink-1 hover:bg-surface-3'
                 }`}
                 title="Metronome Options"
+                aria-label="Metronome Options"
               >
                 <Settings className="w-4 h-4" />
               </button>
@@ -146,22 +147,22 @@ export function Header({
         </div>
       </div>
 
-      <div className="flex items-center gap-1 md:gap-2 lg:gap-4 xl:gap-3">
+      <div className="flex items-center gap-1">
         {/* Desktop navigation buttons - hidden on mobile */}
-        <div className="hidden md:flex items-center gap-2 lg:gap-4 xl:gap-3 flex-shrink-0">
+        <div className="hidden md:flex items-center gap-1 flex-shrink-0">
           {/* My Groovies Button */}
           <Button
             variant="ghost"
             size="sm"
             onClick={onOpenMyGrooves}
-            className="text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white relative flex-shrink-0"
+            className="text-ink-2 hover:text-ink-1 hover:bg-surface-3 dark:hover:bg-surface-3 h-9 gap-2 px-3 has-[>svg]:px-3 font-normal transition-colors relative flex-shrink-0"
             title="My Groovies"
             aria-label="My Groovies"
           >
-            <FolderOpen className="w-4 h-4 mr-1" />
+            <FolderOpen className="w-4 h-4" />
             <span className="hidden xl:inline">My Groovies</span>
             {savedGroovesCount > 0 && (
-              <span className="absolute -top-1 -right-1 w-4 h-4 text-xs bg-purple-600 text-white rounded-full flex items-center justify-center">
+              <span className="absolute top-0 right-0 min-w-4 h-4 px-1 text-xs leading-4 bg-surface-4 text-ink-1 rounded flex items-center justify-center">
                 {savedGroovesCount > 9 ? '9+' : savedGroovesCount}
               </span>
             )}
@@ -172,11 +173,11 @@ export function Header({
             variant="ghost"
             size="sm"
             onClick={onOpenGrooveLibrary}
-            className="text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white flex-shrink-0"
+            className="text-ink-2 hover:text-ink-1 hover:bg-surface-3 dark:hover:bg-surface-3 h-9 gap-2 px-3 has-[>svg]:px-3 font-normal transition-colors flex-shrink-0"
             title="Groove Library"
             aria-label="Groove Library"
           >
-            <Library className="w-4 h-4 mr-1" />
+            <Library className="w-4 h-4" />
             <span className="hidden xl:inline">Library</span>
           </Button>
 
@@ -187,13 +188,13 @@ export function Header({
             onClick={onCountInToggle}
             aria-label={`Count in - ${countInEnabled ? 'ON' : 'OFF'}`}
             title="Count in"
-            className={`hidden lg:flex items-center transition-colors ${
+            className={`hidden lg:flex items-center h-9 gap-2 px-3 has-[>svg]:px-3 font-normal transition-colors ${
               countInEnabled
-                ? 'text-white bg-purple-600 hover:bg-purple-700'
-                : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
+                ? 'text-ink-1 bg-surface-3 hover:bg-surface-4 dark:hover:bg-surface-4 shadow-[inset_0_-2px_0_var(--ui-brass-text)]'
+                : 'text-ink-2 hover:text-ink-1 hover:bg-surface-3 dark:hover:bg-surface-3'
             }`}
           >
-            <Clock className="w-4 h-4 mr-1" />
+            <Clock className="w-4 h-4" />
             <span className="hidden xl:inline">Count in - {countInEnabled ? 'ON' : 'OFF'}</span>
           </Button>
 
@@ -206,13 +207,13 @@ export function Header({
                 onClick={() => { if (!showSpeedUpModal) trackAutoSpeedUpConfigOpen(); setShowSpeedUpModal(!showSpeedUpModal); }}
                 aria-label="Auto Speed up"
                 title="Auto Speed up"
-                className={`flex items-center transition-colors ${
+                className={`flex items-center h-9 gap-2 px-3 has-[>svg]:px-3 font-normal transition-colors ${
                   showSpeedUpModal
-                    ? 'text-white bg-slate-700'
-                    : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
+                    ? 'text-ink-1 bg-surface-3'
+                    : 'text-ink-2 hover:text-ink-1 hover:bg-surface-3 dark:hover:bg-surface-3'
                 }`}
               >
-                <Zap className="w-4 h-4 mr-1" />
+                <Zap className="w-4 h-4" />
                 <span className="hidden xl:inline">Auto Speed up</span>
               </Button>
 
@@ -237,35 +238,35 @@ export function Header({
             }}
             aria-label="About"
             title="About"
-            className={`hidden lg:flex transition-colors ${
+            className={`hidden lg:flex h-9 gap-2 px-3 has-[>svg]:px-3 font-normal transition-colors ${
               showAboutModal
-                ? 'text-white bg-slate-700'
-                : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
+                ? 'text-ink-1 bg-surface-3'
+                : 'text-ink-2 hover:text-ink-1 hover:bg-surface-3 dark:hover:bg-surface-3'
             }`}
           >
-            <Info className="w-4 h-4 mr-1" />
+            <Info className="w-4 h-4" />
             <span className="hidden xl:inline">About</span>
           </Button>
 
           {/* MIDI Settings Button - Beta */}
           {midiConfig && onMIDIConfigChange && onMIDIConnectDevice && (
-            <div className="flex items-center gap-0 -ml-1 flex-shrink-0">
+            <div className="flex items-center gap-1 flex-shrink-0">
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => setShowMIDIModal(true)}
-                className={`transition-colors ${
-                  midiCurrentDevice
-                    ? 'text-green-600 dark:text-green-400'
-                    : 'text-red-600 dark:text-red-400'
-                }`}
+                className="text-ink-2 hover:text-ink-1 hover:bg-surface-3 dark:hover:bg-surface-3 h-9 gap-2 px-3 has-[>svg]:px-3 font-normal transition-colors"
                 title="MIDI Settings"
                 aria-label="MIDI Settings"
               >
-                <Cable className="w-4 h-4 mr-1" />
+                <Cable className="w-4 h-4" />
                 <span className="hidden xl:inline">MIDI</span>
+                <span
+                  aria-hidden="true"
+                  className={`size-1.5 rounded-full ${midiCurrentDevice ? 'bg-positive' : 'bg-negative'}`}
+                />
               </Button>
-              <span className="hidden xl:inline text-xs font-semibold px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300">
+              <span className="hidden xl:inline text-xs text-ink-3 mr-2">
                 Beta
               </span>
             </div>
@@ -277,10 +278,11 @@ export function Header({
           variant="ghost"
           size="icon"
           onClick={() => { trackThemeToggle(!isDark); toggleTheme(); }}
-          className="text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white touch-target"
+          className="size-9 max-md:size-10 text-ink-2 hover:text-ink-1 hover:bg-surface-3 dark:hover:bg-surface-3 transition-colors touch-target"
           title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+          aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
         >
-          {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+          {isDark ? <Sun className="size-[18px]" /> : <Moon className="size-[18px]" />}
         </Button>
 
         {/* Mobile more menu button */}
@@ -290,10 +292,10 @@ export function Header({
             size="icon"
             ref={moreOptionsButtonRef}
             onClick={() => setShowMobileMenu(!showMobileMenu)}
-            className="text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white touch-target"
+            className="size-10 text-ink-2 hover:text-ink-1 hover:bg-surface-3 dark:hover:bg-surface-3 transition-colors touch-target"
             aria-label="More options"
           >
-            <MoreVertical className="w-6 h-6" />
+            <MoreVertical className="size-[18px]" />
           </Button>
 
           <MobileMoreMenu

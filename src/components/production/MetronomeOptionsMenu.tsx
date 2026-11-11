@@ -44,17 +44,17 @@ export function MetronomeOptionsMenu({
     }`}>
       {/* Frequency Selection */}
       <div className="mb-5">
-        <label className={`text-sm mb-2 block font-medium ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
+        <div id="metronome-frequency-label" className={`text-sm mb-2 block font-medium ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
           Metronome
-        </label>
-        <div className="flex gap-2">
+        </div>
+        <div role="group" aria-labelledby="metronome-frequency-label" className="flex gap-2">
           {frequencyOptions.map((option) => (
             <button
               key={option.value}
               onClick={() => onFrequencyChange(option.value)}
               className={`flex-1 py-2 px-3 rounded text-sm font-medium transition-colors ${
                 config.frequency === option.value
-                  ? 'bg-purple-600 text-white'
+                  ? 'bg-purple-600 hover:bg-purple-700 text-white'
                   : isDark
                     ? 'bg-slate-700 text-slate-300 hover:bg-slate-600'
                     : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
@@ -68,11 +68,13 @@ export function MetronomeOptionsMenu({
 
       {/* Volume Slider */}
       <div className="mb-5">
-        <label className={`text-sm mb-2 block font-medium ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
-          Volume: <span className={`font-semibold ${isDark ? 'text-purple-400' : 'text-purple-600'}`}>{Math.round(config.volume)}%</span>
+        <label htmlFor="metronome-volume" className={`text-sm mb-2 block font-medium ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
+          Volume: <span className={`font-semibold tabular-nums ${isDark ? 'text-purple-400' : 'text-purple-600'}`}>{Math.round(config.volume)}%</span>
         </label>
         <input
           type="range"
+          id="metronome-volume"
+          name="metronomeVolume"
           aria-label="Metronome volume"
           min="0"
           max="100"
@@ -80,7 +82,7 @@ export function MetronomeOptionsMenu({
           onChange={(e) => onVolumeChange(Number(e.target.value))}
           className="w-full h-2 rounded-lg appearance-none cursor-pointer metronome-slider"
           style={{
-            background: `linear-gradient(to right, #a855f7 0%, #a855f7 ${config.volume}%, ${trackColor} ${config.volume}%, ${trackColor} 100%)`
+            background: `linear-gradient(to right, #c98a2b 0%, #c98a2b ${config.volume}%, ${trackColor} ${config.volume}%, ${trackColor} 100%)`
           }}
         />
       </div>
@@ -90,6 +92,7 @@ export function MetronomeOptionsMenu({
         <label className="flex items-center gap-3 cursor-pointer">
           <input
             type="checkbox"
+            name="metronomeSolo"
             checked={config.solo}
             onChange={(e) => onSoloChange(e.target.checked)}
             className="w-4 h-4 accent-purple-500 cursor-pointer"
@@ -100,6 +103,7 @@ export function MetronomeOptionsMenu({
         <label className="flex items-center gap-3 cursor-pointer">
           <input
             type="checkbox"
+            name="metronomeCountIn"
             checked={config.countIn}
             onChange={(e) => onCountInChange(e.target.checked)}
             className="w-4 h-4 accent-purple-500 cursor-pointer"
@@ -110,6 +114,7 @@ export function MetronomeOptionsMenu({
         <label className="flex items-center gap-3 cursor-pointer">
           <input
             type="checkbox"
+            name="metronomeOffsetClick"
             checked={config.offsetClick !== '1'}
             onChange={(e) => onOffsetClickChange(e.target.checked ? 'AND' : '1')}
             className="w-4 h-4 accent-purple-500 cursor-pointer"
@@ -122,7 +127,7 @@ export function MetronomeOptionsMenu({
       <div className="flex justify-center mt-5">
         <Button
           onClick={onClose}
-          className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-2 rounded text-sm font-medium uppercase"
+          className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-2 rounded-md text-sm font-medium"
         >
           Done
         </Button>

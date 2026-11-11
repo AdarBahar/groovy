@@ -12,19 +12,19 @@ export function BottomToolbar({ onShare, onSave, onDownload, onPrint }: BottomTo
   const hasActions = Boolean(onShare || onSave || onDownload || onPrint);
 
   return (
-    <div className="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-700 px-4 md:px-6 py-3 md:py-4">
+    <footer className="bg-surface-0 border-t border-line px-4 md:px-6 py-3">
       <div className={`flex ${hasActions ? 'flex-col-reverse sm:flex-row items-center justify-between gap-3 sm:gap-0' : 'items-center justify-center'}`}>
         {/* Copyright - hidden on very small screens */}
-        <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-slate-600 dark:text-slate-400 text-xs sm:text-sm">
-          <span>Groovy by Adar Bahar © 2026</span>
+        <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-ink-3 text-xs">
+          <span><span translate="no">Groovy</span> by <span translate="no">Adar Bahar</span> ©{'\u00A0'}2026</span>
           <a
             href="https://github.com/AdarBahar/groovy/"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 hover:text-slate-900 dark:hover:text-white transition-colors"
+            className="inline-flex items-center gap-2 underline underline-offset-4 decoration-line-strong hover:text-ink-1 transition-colors"
           >
-            <Github className="w-3.5 h-3.5" />
-            <span>AdarBahar/groovy</span>
+            <Github className="w-4 h-4" />
+            <span translate="no">AdarBahar/groovy</span>
           </a>
         </div>
 
@@ -35,43 +35,43 @@ export function BottomToolbar({ onShare, onSave, onDownload, onPrint }: BottomTo
             variant="ghost"
             size="sm"
             onClick={onDownload}
-            className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex flex-col items-center gap-1 h-auto py-2 px-3 sm:px-4 touch-target"
+            className="text-ink-2 hover:text-ink-1 hover:bg-surface-3 dark:hover:bg-surface-3 font-normal flex items-center gap-2 h-9 px-3 has-[>svg]:px-3 touch-target"
           >
-            <Download className="w-4 h-4 sm:w-5 sm:h-5" />
-            <span className="text-[10px] sm:text-xs uppercase">Download</span>
+            <Download className="w-4 h-4" />
+            <span className="text-sm">Download</span>
           </Button>
 
           <Button
             variant="ghost"
             size="sm"
             onClick={onPrint}
-            className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex flex-col items-center gap-1 h-auto py-2 px-3 sm:px-4 touch-target"
+            className="text-ink-2 hover:text-ink-1 hover:bg-surface-3 dark:hover:bg-surface-3 font-normal flex items-center gap-2 h-9 px-3 has-[>svg]:px-3 touch-target"
           >
-            <Printer className="w-4 h-4 sm:w-5 sm:h-5" />
-            <span className="text-[10px] sm:text-xs uppercase">Print</span>
+            <Printer className="w-4 h-4" />
+            <span className="text-sm">Print</span>
           </Button>
 
           <Button
             variant="ghost"
             size="sm"
             onClick={onShare}
-            className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex flex-col items-center gap-1 h-auto py-2 px-3 sm:px-4 touch-target"
+            className="text-ink-2 hover:text-ink-1 hover:bg-surface-3 dark:hover:bg-surface-3 font-normal flex items-center gap-2 h-9 px-3 has-[>svg]:px-3 touch-target"
           >
-            <Share2 className="w-4 h-4 sm:w-5 sm:h-5" />
-            <span className="text-[10px] sm:text-xs uppercase">Share</span>
+            <Share2 className="w-4 h-4" />
+            <span className="text-sm">Share</span>
           </Button>
 
           <Button
             size="sm"
             onClick={onSave}
-            className="bg-purple-600 hover:bg-purple-700 text-white flex items-center gap-2 h-auto py-2 sm:py-3 px-4 sm:px-6 ml-2 sm:ml-4 touch-target"
+            className="bg-ink-1 hover:bg-ink-1/90 text-surface-1 flex items-center gap-2 h-9 px-4 has-[>svg]:px-4 ml-2 touch-target"
           >
-            <Save className="w-4 h-4 sm:w-5 sm:h-5" />
-            <span className="uppercase font-semibold text-xs sm:text-sm">Save</span>
+            <Save className="w-4 h-4" />
+            <span className="text-sm">Save</span>
           </Button>
         </div>
         )}
       </div>
-    </div>
+    </footer>
   );
 }

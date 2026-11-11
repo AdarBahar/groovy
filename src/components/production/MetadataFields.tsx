@@ -142,9 +142,9 @@ export const MetadataFields = forwardRef<MetadataFieldsRef, MetadataFieldsProps>
   if (isNotesOnly) {
     return (
       <div className="space-y-1">
-        <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">{titleAuthorLine}</h1>
+        <h1 className="text-2xl sm:text-[28px] sm:leading-8 font-medium break-words text-ink-1">{titleAuthorLine}</h1>
         {displayComments && (
-          <p className="text-sm text-slate-500 dark:text-slate-400">{displayComments}</p>
+          <p className="text-sm break-words text-ink-2">{displayComments}</p>
         )}
       </div>
     );
@@ -153,53 +153,59 @@ export const MetadataFields = forwardRef<MetadataFieldsRef, MetadataFieldsProps>
   // State 3: Editing Mode
   if (isEditing) {
     return (
-      <div className="space-y-2 mt-1">
+      <div className="space-y-4">
         {/* Row 1: Title / Author */}
-        <div className="grid grid-cols-1 md:grid-cols-[minmax(0,52ch)_auto_minmax(0,52ch)] md:justify-start gap-2 items-start">
-          <div className="space-y-1.5 min-w-0 md:max-w-[52ch]">
-            <label className="text-xs text-slate-600 dark:text-slate-400 block">Title</label>
+        <div className="grid grid-cols-1 md:grid-cols-[minmax(0,52ch)_auto_minmax(0,52ch)] md:justify-start gap-3 items-start">
+          <div className="space-y-2 min-w-0 md:max-w-[52ch]">
+            <label htmlFor="groove-title" className="text-xs leading-4 font-normal text-ink-2 block">Title</label>
             <Input
               ref={titleInputRef}
+              id="groove-title"
+              name="title"
+              autoComplete="off"
               type="text"
               value={tempTitle}
               onChange={(e) => setTempTitle(sanitizeMetadataInput(e.target.value, TITLE_MAX_LENGTH))}
               onKeyDown={handleKeyDown}
               maxLength={TITLE_MAX_LENGTH}
               placeholder="My New Groove"
-              className={`w-full bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 text-base selectable ${
+              className={`w-full bg-surface-3 dark:bg-surface-3 text-ink-1 placeholder:text-ink-3 text-base selectable ${
                 isTitleAtLimit
-                  ? 'border-amber-500 dark:border-amber-400 ring-1 ring-amber-400/60'
-                  : 'border-slate-300 dark:border-slate-700'
+                  ? 'border-brass-text ring-1 ring-brass-text'
+                  : 'border-line-strong'
               }`}
             />
             {isTitleAtLimit && (
-              <p className="text-[11px] text-amber-700 dark:text-amber-300">
+              <p role="status" aria-live="polite" className="text-xs text-brass-text">
                 Max {TITLE_MAX_LENGTH} characters are allowed
               </p>
             )}
           </div>
 
-          <div className="hidden md:flex items-center justify-center pt-6 text-slate-400 dark:text-slate-500 text-sm">
+          <div className="hidden md:flex items-center justify-center pt-8 text-ink-3 text-sm">
             /
           </div>
 
-          <div className="space-y-1.5 min-w-0 md:max-w-[52ch]">
-            <label className="text-xs text-slate-600 dark:text-slate-400 block">Author</label>
+          <div className="space-y-2 min-w-0 md:max-w-[52ch]">
+            <label htmlFor="groove-author" className="text-xs leading-4 font-normal text-ink-2 block">Author</label>
             <Input
+              id="groove-author"
+              name="author"
+              autoComplete="off"
               type="text"
               value={tempAuthor}
               onChange={(e) => setTempAuthor(sanitizeMetadataInput(e.target.value, AUTHOR_MAX_LENGTH))}
               onKeyDown={handleKeyDown}
               maxLength={AUTHOR_MAX_LENGTH}
               placeholder="Drummer One"
-              className={`w-full bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 text-base selectable ${
+              className={`w-full bg-surface-3 dark:bg-surface-3 text-ink-1 placeholder:text-ink-3 text-base selectable ${
                 isAuthorAtLimit
-                  ? 'border-amber-500 dark:border-amber-400 ring-1 ring-amber-400/60'
-                  : 'border-slate-300 dark:border-slate-700'
+                  ? 'border-brass-text ring-1 ring-brass-text'
+                  : 'border-line-strong'
               }`}
             />
             {isAuthorAtLimit && (
-              <p className="text-[11px] text-amber-700 dark:text-amber-300">
+              <p role="status" aria-live="polite" className="text-xs text-brass-text">
                 Max {AUTHOR_MAX_LENGTH} characters are allowed
               </p>
             )}
@@ -207,23 +213,26 @@ export const MetadataFields = forwardRef<MetadataFieldsRef, MetadataFieldsProps>
         </div>
 
         {/* Row 2: Comments */}
-        <div className="space-y-1.5 md:max-w-[110ch]">
-          <label className="text-xs text-slate-600 dark:text-slate-400 block">Comments</label>
+        <div className="space-y-2 md:max-w-[110ch]">
+          <label htmlFor="groove-comments" className="text-xs leading-4 font-normal text-ink-2 block">Comments</label>
           <Input
+            id="groove-comments"
+            name="comments"
+            autoComplete="off"
             type="text"
             value={tempComments}
             onChange={(e) => setTempComments(sanitizeMetadataInput(e.target.value, COMMENT_MAX_LENGTH))}
             onKeyDown={handleKeyDown}
             maxLength={COMMENT_MAX_LENGTH}
-            placeholder="Add notes..."
-            className={`w-full bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 text-base selectable ${
+            placeholder="Add notes…"
+            className={`w-full bg-surface-3 dark:bg-surface-3 text-ink-1 placeholder:text-ink-3 text-base selectable ${
               isCommentAtLimit
-                ? 'border-amber-500 dark:border-amber-400 ring-1 ring-amber-400/60'
-                : 'border-slate-300 dark:border-slate-700'
+                ? 'border-brass-text ring-1 ring-brass-text'
+                : 'border-line-strong'
             }`}
           />
           {isCommentAtLimit && (
-            <p className="text-[11px] text-amber-700 dark:text-amber-300">
+            <p role="status" aria-live="polite" className="text-xs text-brass-text">
               Max {COMMENT_MAX_LENGTH} characters are allowed
             </p>
           )}
@@ -233,18 +242,18 @@ export const MetadataFields = forwardRef<MetadataFieldsRef, MetadataFieldsProps>
           <Button
             size="sm"
             onClick={handleSave}
-            className="bg-purple-600 hover:bg-purple-700 text-white text-xs uppercase px-3 py-1.5 h-auto flex items-center gap-1 touch-target"
+            className="bg-ink-1 hover:bg-ink-1/90 text-surface-1 text-sm h-9 px-4 has-[>svg]:px-4 flex items-center gap-2 touch-target"
           >
-            <Check className="w-3 h-3" />
+            <Check className="w-4 h-4" />
             Save
           </Button>
           <Button
             variant="ghost"
             size="sm"
             onClick={handleCancel}
-            className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white text-xs uppercase px-3 py-1.5 h-auto flex items-center gap-1 touch-target"
+            className="text-ink-2 hover:text-ink-1 hover:bg-surface-3 dark:hover:bg-surface-3 text-sm font-normal h-9 px-3 has-[>svg]:px-3 flex items-center gap-2 touch-target"
           >
-            <X className="w-3 h-3" />
+            <X className="w-4 h-4" />
             Cancel
           </Button>
         </div>
@@ -254,10 +263,10 @@ export const MetadataFields = forwardRef<MetadataFieldsRef, MetadataFieldsProps>
 
   // State 2: Display Mode (Edit Mode - Not Editing)
   return (
-    <div className="flex items-start gap-2.5">
-      <div className="space-y-1 flex-1 min-w-0 mt-2.5">
-        <div className="group max-w-full flex items-center gap-2 text-left text-slate-900 dark:text-white hover:text-purple-700 dark:hover:text-purple-300 transition-colors">
-          <h1 className="text-xl sm:text-2xl font-semibold break-words min-w-0">
+    <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+      <div className="space-y-1 flex-1 min-w-0">
+        <div className="group max-w-full flex items-center gap-3 text-left text-ink-1 transition-colors">
+          <h1 className="text-2xl sm:text-[28px] sm:leading-8 font-medium break-words min-w-0">
             <button
               type="button"
               onClick={handleEdit}
@@ -271,75 +280,80 @@ export const MetadataFields = forwardRef<MetadataFieldsRef, MetadataFieldsProps>
             type="button"
             onClick={handleEdit}
             aria-label="Edit groove details"
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 h-9 px-2 rounded-md text-ink-3 group-hover:text-ink-1 hover:bg-surface-3 transition-colors"
           >
-            <Edit2 className="w-4 h-4 flex-shrink-0 text-slate-600 dark:text-slate-400 group-hover:text-purple-700 dark:group-hover:text-purple-300" />
-            <span className="text-xs uppercase hidden sm:inline text-slate-600 dark:text-slate-400 group-hover:text-purple-700 dark:group-hover:text-purple-300">
+            <Edit2 className="w-4 h-4 flex-shrink-0" />
+            <span className="text-sm hidden sm:inline">
               Edit
             </span>
           </button>
         </div>
         {displayComments && (
-          <p className="text-xs text-slate-600 dark:text-slate-400 truncate">{displayComments}</p>
+          <p className="text-sm text-ink-2 truncate">{displayComments}</p>
         )}
       </div>
-      <div className="flex items-center gap-2 mt-0.5 flex-wrap justify-end">
+      <div className="flex items-center gap-1 flex-wrap max-sm:-ml-3 sm:justify-end">
         {onStickingSetupToggle && (
           <Button
             variant="ghost"
             size="sm"
             onClick={onStickingSetupToggle}
             aria-pressed={isStickingSetupActive}
-            className={`flex items-center gap-2 touch-target ${
+            className={`h-9 px-3 has-[>svg]:px-3 font-normal flex items-center gap-2 touch-target ${
               isStickingSetupActive
-                ? 'bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 border border-purple-300 dark:border-purple-600 hover:bg-purple-200 dark:hover:bg-purple-800/60'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                ? 'bg-surface-3 hover:bg-surface-4 dark:hover:bg-surface-4 text-ink-1 shadow-[inset_0_0_0_1px_var(--ui-line),inset_0_-2px_0_var(--ui-brass-text)]'
+                : 'text-ink-2 hover:text-ink-1 hover:bg-surface-3 dark:hover:bg-surface-3'
             }`}
             title="Toggle sticking setup"
+            aria-label="Toggle sticking setup"
           >
             <Hand className="w-4 h-4" />
-            <span className="text-xs uppercase hidden sm:inline">Sticking</span>
+            <span className="text-sm hidden sm:inline">Sticking</span>
           </Button>
         )}
         <Button
           variant="ghost"
           size="sm"
           onClick={onSaveGroove}
-          className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center gap-2 touch-target"
+          className="text-ink-2 hover:text-ink-1 hover:bg-surface-3 dark:hover:bg-surface-3 h-9 px-3 has-[>svg]:px-3 font-normal flex items-center gap-2 touch-target"
           title="Save Groove"
+          aria-label="Save Groove"
         >
           <Save className="w-4 h-4" />
-          <span className="text-xs uppercase hidden sm:inline">Save</span>
+          <span className="text-sm hidden sm:inline">Save</span>
         </Button>
         <Button
           variant="ghost"
           size="sm"
           onClick={onDownload}
-          className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center gap-2 touch-target"
+          className="text-ink-2 hover:text-ink-1 hover:bg-surface-3 dark:hover:bg-surface-3 h-9 px-3 has-[>svg]:px-3 font-normal flex items-center gap-2 touch-target"
           title="Download"
+          aria-label="Download"
         >
           <Download className="w-4 h-4" />
-          <span className="text-xs uppercase hidden lg:inline">Download</span>
+          <span className="text-sm hidden lg:inline">Download</span>
         </Button>
         <Button
           variant="ghost"
           size="sm"
           onClick={onPrint}
-          className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center gap-2 touch-target"
+          className="text-ink-2 hover:text-ink-1 hover:bg-surface-3 dark:hover:bg-surface-3 h-9 px-3 has-[>svg]:px-3 font-normal flex items-center gap-2 touch-target"
           title="Print"
+          aria-label="Print"
         >
           <Printer className="w-4 h-4" />
-          <span className="text-xs uppercase hidden lg:inline">Print</span>
+          <span className="text-sm hidden lg:inline">Print</span>
         </Button>
         <Button
           variant="ghost"
           size="sm"
           onClick={onShare}
-          className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center gap-2 touch-target"
+          className="text-ink-2 hover:text-ink-1 hover:bg-surface-3 dark:hover:bg-surface-3 h-9 px-3 has-[>svg]:px-3 font-normal flex items-center gap-2 touch-target"
           title="Share"
+          aria-label="Share"
         >
           <Share2 className="w-4 h-4" />
-          <span className="text-xs uppercase hidden lg:inline">Share</span>
+          <span className="text-sm hidden lg:inline">Share</span>
         </Button>
       </div>
     </div>

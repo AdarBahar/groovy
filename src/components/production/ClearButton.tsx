@@ -83,30 +83,30 @@ export function ClearButton({ onClear }: ClearButtonProps) {
         variant="ghost"
         size="sm"
         onClick={handleButtonClick}
-        className={`flex items-center gap-2 h-auto py-2 px-4 ${
+        className={`flex items-center gap-2 h-9 px-3 has-[>svg]:px-3 font-normal ${
           isOpen
-            ? 'text-slate-900 dark:text-white bg-slate-200 dark:bg-slate-700'
-            : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+            ? 'text-ink-1 bg-surface-3'
+            : 'text-ink-2 hover:text-ink-1 hover:bg-surface-3 dark:hover:bg-surface-3'
         }`}
       >
         <Trash2 className="w-4 h-4" />
-        <span className="text-xs uppercase">Clear</span>
+        <span className="text-sm">Clear</span>
       </Button>
 
       {isOpen && dropdownPosition && createPortal(
         <div
           ref={dropdownRef}
-          className="fixed bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-md px-3 py-2 shadow-lg flex items-center gap-3 whitespace-nowrap z-[100]"
+          className="fixed bg-surface-2 dark:bg-surface-3 border border-line-strong rounded-lg px-3 py-2 shadow-[0_8px_24px_rgba(0,0,0,0.06)] dark:shadow-none flex items-center gap-3 whitespace-nowrap z-[100]"
           style={{ top: dropdownPosition.top, left: dropdownPosition.left }}
         >
           {state === 'confirmation' ? (
             <>
-              <span className="text-slate-600 dark:text-slate-300 text-xs">Are you sure?</span>
+              <span className="text-ink-2 text-xs">Are you sure?</span>
               <div className="flex items-center gap-2">
                 <Button
                   size="sm"
                   onClick={handleConfirm}
-                  className="bg-purple-600 hover:bg-purple-700 text-white text-xs uppercase px-3 py-1 h-auto"
+                  className="bg-ink-1 hover:bg-ink-1/90 text-surface-1 text-xs px-3 h-8"
                 >
                   Yes
                 </Button>
@@ -114,14 +114,14 @@ export function ClearButton({ onClear }: ClearButtonProps) {
                   variant="ghost"
                   size="sm"
                   onClick={handleCancel}
-                  className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white text-xs uppercase px-3 py-1 h-auto"
+                  className="text-ink-2 hover:text-ink-1 hover:bg-surface-4 dark:hover:bg-surface-4 text-xs font-normal px-3 h-8"
                 >
                   Cancel
                 </Button>
               </div>
             </>
           ) : (
-            <span className="text-slate-600 dark:text-slate-300 text-xs">Clearing editor...</span>
+            <span role="status" aria-live="polite" className="text-ink-2 text-xs">Clearing editor…</span>
           )}
         </div>,
         document.body
