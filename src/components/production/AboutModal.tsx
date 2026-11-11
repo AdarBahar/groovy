@@ -91,7 +91,7 @@ export function AboutModal({ isOpen, onClose, returnFocusRef }: AboutModalProps)
                 href="https://www.mikeslessons.com/groove/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className={`${isDark ? 'text-purple-400 hover:text-purple-300' : 'text-purple-600 hover:text-purple-700'} underline`}
+                className={`${isDark ? 'text-brass-text hover:text-purple-300' : 'text-brass-text hover:text-purple-700'} underline`}
               >
                 GrooveScribe
               </a>{' '}
@@ -106,14 +106,14 @@ export function AboutModal({ isOpen, onClose, returnFocusRef }: AboutModalProps)
                 href="https://github.com/AdarBahar/groovy"
                 target="_blank"
                 rel="noopener noreferrer"
-                className={`${isDark ? 'text-purple-400 hover:text-purple-300' : 'text-purple-600 hover:text-purple-700'} underline`}
+                className={`${isDark ? 'text-brass-text hover:text-purple-300' : 'text-brass-text hover:text-purple-700'} underline`}
               >
                 GitHub Repository
               </a>
             </p>
           </div>
 
-          <div className={`pt-4 border-t ${isDark ? 'border-slate-700' : 'border-slate-200'} text-sm text-slate-400`}>
+          <div className={`pt-4 border-t ${isDark ? 'border-slate-700' : 'border-slate-200'} text-sm text-ink-3`}>
             <p>Version 1.0.0 • MIT License</p>
             <div className="mt-2 flex items-center gap-2">
               <input
@@ -140,13 +140,13 @@ export function AboutModal({ isOpen, onClose, returnFocusRef }: AboutModalProps)
               © 2026 Groovy. Created by{' '}
               <button
                 onClick={handleDebugToggle}
-                className={`${isDark ? 'text-purple-400 hover:text-purple-300' : 'text-purple-600 hover:text-purple-700'} underline cursor-pointer transition-colors`}
+                className={`${isDark ? 'text-brass-text hover:text-purple-300' : 'text-brass-text hover:text-purple-700'} underline cursor-pointer transition-colors`}
                 title={debugMode ? 'Click to disable debug mode' : 'Click to enable debug mode'}
               >
                 Adar Bahar
               </button>
               {debugMode && (
-                <span className="ml-2 text-xs px-2 py-1 rounded bg-purple-600 text-white">
+                <span className="ml-2 text-xs px-2 py-1 rounded bg-surface-4 text-ink-1">
                   Debug Mode ON
                 </span>
               )}

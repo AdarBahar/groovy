@@ -38,8 +38,8 @@ export function AutoSpeedUpModal({
   };
 
   // Colors based on theme
-  const trackColor = isDark ? '#334155' : '#cbd5e1';
-  const thumbBorderColor = isDark ? '#1e293b' : '#ffffff';
+  const trackColor = isDark ? "#2c2c2f" : "#e6e6e8";
+  const thumbBorderColor = isDark ? "#19191b" : "#ffffff";
 
   return (
     <div className={`absolute top-full right-0 mt-1 rounded-lg shadow-xl w-[calc(100vw-2rem)] sm:w-96 max-w-96 p-4 sm:p-6 border z-50 ${
@@ -47,14 +47,14 @@ export function AutoSpeedUpModal({
     }`}>
       {/* Title */}
       <h2 className={`text-lg font-semibold mb-6 ${isDark ? 'text-white' : 'text-slate-900'}`}>
-        Speed up by <span className={`font-bold text-xl ${isDark ? 'text-purple-400' : 'text-purple-600'}`}>{bpmSpeedUp}</span> BPM every{' '}
-        <span className={`font-bold text-xl ${isDark ? 'text-purple-400' : 'text-purple-600'}`}>{minutesInterval}</span> minute{minutesInterval !== 1 ? 's' : ''}
+        Speed up by <span className={`font-medium text-xl text-brass-text`}>{bpmSpeedUp}</span> BPM every{' '}
+        <span className={`font-medium text-xl text-brass-text`}>{minutesInterval}</span> minute{minutesInterval !== 1 ? 's' : ''}
       </h2>
 
       {/* Amount in BPM */}
       <div className="mb-6">
         <label className={`text-sm mb-3 block ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
-          BPM speed up: <span className={`font-semibold ${isDark ? 'text-purple-400' : 'text-purple-600'}`}>{bpmSpeedUp}</span>
+          BPM speed up: <span className={`font-semibold text-brass-text`}>{bpmSpeedUp}</span>
         </label>
         <div className="relative">
           <input
@@ -66,7 +66,7 @@ export function AutoSpeedUpModal({
             onChange={(e) => handleBpmChange(Number(e.target.value))}
             className="w-full h-2 rounded-lg appearance-none cursor-pointer auto-speed-slider"
             style={{
-              background: `linear-gradient(to right, #a855f7 0%, #a855f7 ${((bpmSpeedUp - 1) / 19) * 100}%, ${trackColor} ${((bpmSpeedUp - 1) / 19) * 100}%, ${trackColor} 100%)`
+              background: `linear-gradient(to right, var(--ui-brass) 0%, var(--ui-brass) ${((bpmSpeedUp - 1) / 19) * 100}%, ${trackColor} ${((bpmSpeedUp - 1) / 19) * 100}%, ${trackColor} 100%)`
             }}
           />
         </div>
@@ -75,7 +75,7 @@ export function AutoSpeedUpModal({
       {/* Interval in Minutes */}
       <div className="mb-6">
         <label className={`text-sm mb-3 block ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
-          Every (minutes): <span className={`font-semibold ${isDark ? 'text-purple-400' : 'text-purple-600'}`}>{minutesInterval}</span>
+          Every (minutes): <span className={`font-semibold text-brass-text`}>{minutesInterval}</span>
         </label>
         <div className="relative">
           <input
@@ -87,7 +87,7 @@ export function AutoSpeedUpModal({
             onChange={(e) => handleIntervalChange(Number(e.target.value))}
             className="w-full h-2 rounded-lg appearance-none cursor-pointer auto-speed-slider"
             style={{
-              background: `linear-gradient(to right, #a855f7 0%, #a855f7 ${((minutesInterval - 1) / 9) * 100}%, ${trackColor} ${((minutesInterval - 1) / 9) * 100}%, ${trackColor} 100%)`
+              background: `linear-gradient(to right, var(--ui-brass) 0%, var(--ui-brass) ${((minutesInterval - 1) / 9) * 100}%, ${trackColor} ${((minutesInterval - 1) / 9) * 100}%, ${trackColor} 100%)`
             }}
           />
         </div>
@@ -110,7 +110,7 @@ export function AutoSpeedUpModal({
       <div className="flex justify-center">
         <Button
           onClick={handleSaveAndClose}
-          className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-3 sm:py-2 rounded text-sm font-medium uppercase touch-target"
+          className="bg-primary text-primary-foreground hover:bg-primary/90 px-8 py-3 sm:py-2 rounded text-sm font-medium touch-target"
         >
           Done
         </Button>
@@ -122,7 +122,7 @@ export function AutoSpeedUpModal({
           width: 24px;
           height: 24px;
           border-radius: 50%;
-          background: #a855f7;
+          background: var(--ui-brass);
           cursor: pointer;
           border: 2px solid ${thumbBorderColor};
           box-shadow: 0 2px 4px rgba(0,0,0,0.3);
@@ -131,7 +131,7 @@ export function AutoSpeedUpModal({
           width: 24px;
           height: 24px;
           border-radius: 50%;
-          background: #a855f7;
+          background: var(--ui-brass);
           cursor: pointer;
           border: 2px solid ${thumbBorderColor};
           box-shadow: 0 2px 4px rgba(0,0,0,0.3);

@@ -101,7 +101,7 @@ export function MIDISettingsModal({
         <div className="space-y-4">
           {/* Device Selector */}
           <div className="space-y-2">
-            <label htmlFor="midi-device-select" className="text-sm font-medium text-slate-700 dark:text-slate-300">
+            <label htmlFor="midi-device-select" className="text-sm font-medium text-ink-2">
               MIDI Device
             </label>
             <select
@@ -114,7 +114,7 @@ export function MIDISettingsModal({
                   trackMIDIDeviceSelected(selectedDevice.name);
                 }
               }}
-              className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm"
+              className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-ink-1 text-sm"
             >
               <option value="">Select a device...</option>
               {devices.map((device) => (
@@ -130,7 +130,7 @@ export function MIDISettingsModal({
                 className={
                   isProblem
                     ? 'text-xs text-amber-700 dark:text-amber-400'
-                    : 'text-xs text-slate-500 dark:text-slate-400'
+                    : 'text-xs text-ink-3'
                 }
               >
                 {statusMessage}
@@ -152,7 +152,7 @@ export function MIDISettingsModal({
 
           {/* Drum Kit Selector */}
           <div className="space-y-2">
-            <label htmlFor="midi-kit-select" className="text-sm font-medium text-slate-700 dark:text-slate-300">
+            <label htmlFor="midi-kit-select" className="text-sm font-medium text-ink-2">
               Drum Kit Mapping
             </label>
             <select
@@ -163,7 +163,7 @@ export function MIDISettingsModal({
                 onConfigChange({ selectedKitName: e.target.value });
                 trackMIDIDrumKitSelected(e.target.value);
               }}
-              className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm"
+              className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-ink-1 text-sm"
             >
               {drumKitNames.map((kitName) => (
                 <option key={kitName} value={kitName}>
@@ -171,7 +171,7 @@ export function MIDISettingsModal({
                 </option>
               ))}
             </select>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
+            <p className="text-xs text-ink-3">
               Select the drum kit that matches your hardware
             </p>
           </div>
@@ -191,7 +191,7 @@ export function MIDISettingsModal({
             Close
           </Button>
           {selectedDeviceId && selectedDeviceId !== config.selectedDeviceId && (
-            <Button onClick={handleConnect} className="bg-purple-600 hover:bg-purple-700">
+            <Button onClick={handleConnect} className="bg-primary text-primary-foreground hover:bg-primary/90">
               Connect
             </Button>
           )}

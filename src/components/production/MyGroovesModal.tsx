@@ -83,7 +83,7 @@ export function MyGroovesModal({
 
         <div className="flex-1 overflow-y-auto py-2 -mx-6 px-6">
           {grooves.length === 0 ? (
-            <div className="text-center py-12 text-slate-500 dark:text-slate-400">
+            <div className="text-center py-12 text-ink-3">
               <FolderOpen className="w-12 h-12 mx-auto mb-4 opacity-50" />
               <p className="text-lg font-medium mb-2">No saved groovies yet</p>
               <p className="text-sm">
@@ -99,14 +99,14 @@ export function MyGroovesModal({
                   className="group flex items-center gap-3 p-3 sm:p-3 rounded-lg border border-slate-200 dark:border-slate-700 hover:border-purple-300 dark:hover:border-purple-600 hover:bg-purple-50 dark:hover:bg-purple-900/20 cursor-pointer transition-all touch-target"
                 >
                   <div className="flex-shrink-0 w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
-                    <Play className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                    <Play className="w-5 h-5 text-brass-text" />
                   </div>
                   
                   <div className="flex-1 min-w-0">
-                    <div className="font-medium text-slate-900 dark:text-white truncate">
+                    <div className="font-medium text-ink-1 truncate">
                       {groove.name}
                     </div>
-                    <div className="flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400">
+                    <div className="flex items-center gap-3 text-xs text-ink-3">
                       <span className="flex items-center gap-1">
                         <Music className="w-3 h-3" />
                         {groove.timeSignature} • {groove.tempo} BPM
@@ -125,7 +125,7 @@ export function MyGroovesModal({
                     className={`flex-shrink-0 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity touch-target ${
                       deletingId === groove.id
                         ? 'text-red-600 bg-red-100 dark:bg-red-900/30 opacity-100'
-                        : 'text-slate-400 hover:text-red-600'
+                        : 'text-ink-3 hover:text-red-600'
                     }`}
                     title={deletingId === groove.id ? 'Click again to confirm delete' : 'Delete groove'}
                   >
@@ -138,7 +138,7 @@ export function MyGroovesModal({
         </div>
 
         <div className="pt-4 border-t border-slate-200 dark:border-slate-700 flex items-center justify-between">
-          <p className="text-xs text-slate-400 dark:text-slate-500">
+          <p className="text-xs text-ink-3">
             Groovies are saved locally in your browser.
           </p>
           <Button variant="ghost" onClick={onClose}>

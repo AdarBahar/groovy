@@ -14,9 +14,9 @@ The app uses one graphite ramp and one brass accent. The tokens are in `src/styl
 | Raised (input, key, active row) | `bg-surface-3` | `#f4f4f5` | `#232325` |
 | Hover on raised | `bg-surface-4` | `#e9e9eb` | `#2c2c2f` |
 | Border | `border-line`, `border-line-strong` | ink at 10% and 20% | ink at 8% and 16% |
-| Main text | `text-ink-1` | `#171717` | `#ededed` |
-| Secondary text | `text-ink-2` | `#525252` | `#a1a1a6` |
-| Muted text and icons | `text-ink-3` | `#6b6b6b` | `#8e8e94` |
+| Main text | `text-ink-1` | `#171717` | `#fafafa` |
+| Secondary text | `text-ink-2` | `#3f3f3f` | `#d0d0d5` |
+| Muted text and icons | `text-ink-3` | `#595959` | `#b4b4ba` |
 | Accent fill (hits, active state) | `bg-brass` with `text-brass-ink` | `#dfa23f` | `#e2a94f` |
 | Accent text | `text-brass-text` | `#8a5700` | `#e2a94f` |
 | Danger | `red-500` / `red-600` | | `red-400` |
