@@ -399,7 +399,13 @@ export default function ProductionPage() {
   const { handleMeasureCopy, handleMeasurePaste } = useMeasureCopyPaste(groove, setGroove);
 
   return (
-    <div className="min-h-dvh flex flex-col bg-slate-100 dark:bg-slate-900 text-slate-900 dark:text-white">
+    <div className="min-h-dvh flex flex-col bg-surface-1 text-ink-1">
+      <a
+        href="#main-content"
+        className="sr-only focus-visible:not-sr-only focus-visible:fixed focus-visible:top-2 focus-visible:left-2 focus-visible:z-[200] focus-visible:px-4 focus-visible:py-2 focus-visible:rounded-md focus-visible:bg-surface-0 focus-visible:text-ink-1 focus-visible:ring-2 focus-visible:ring-ring"
+      >
+        Skip to main content
+      </a>
       <Header
         metronome={frequencyToMetronomeOption(metronomeConfig.frequency)}
         onMetronomeChange={handleMetronomeChange}
@@ -443,8 +449,8 @@ export default function ProductionPage() {
         />
 
         <div className="flex-1 flex flex-col overflow-hidden">
-          <main className="flex-1 overflow-auto">
-            <div className="p-3 sm:p-4 md:p-5 space-y-1">
+          <main id="main-content" className="flex-1 overflow-auto">
+            <div className="p-4 md:p-6 lg:px-8 space-y-6 max-w-[1600px]">
               {/* Playback controls */}
               <PlaybackControls
                 isPlaying={isPlaying}
@@ -467,7 +473,7 @@ export default function ProductionPage() {
               />
 
               {/* Metadata Details - Title, Author, Comments */}
-              <div className={isMetadataEditing ? 'mt-2' : 'mt-1'}>
+              <div className={isMetadataEditing ? 'pt-2' : ''}>
                 <MetadataFields
                   ref={metadataFieldsRef}
                   title={groove.title || ''}
@@ -489,9 +495,9 @@ export default function ProductionPage() {
               </div>
 
               {/* Main sequencer area - Sheet music + Grid */}
-              <div className="bg-white/50 dark:bg-slate-800/50 rounded-xl p-3 sm:p-4 md:p-5 border border-slate-200 dark:border-slate-700">
+              <div>
                 {/* Sheet Music Notation */}
-                <div className={`px-3 py-1.5 sm:px-4 sm:py-2 md:px-5 md:py-2.5 bg-slate-50 dark:bg-slate-900/50 rounded-lg border border-slate-200 dark:border-slate-600 ${!isNotesOnly ? 'mb-1 md:mb-2' : ''}`}>
+                <div className={!isNotesOnly ? 'mb-4' : ''}>
                   <SheetMusicDisplay
                     groove={groove}
                     visible={true}
@@ -527,10 +533,10 @@ export default function ProductionPage() {
               </div>
 
               {!isNotesOnly && (
-                <div className="flex items-center gap-2">
+                <div className="flex items-start gap-4">
                   <ClearButton onClear={handleClearAll} />
 
-                  <div className="ml-auto">
+                  <div className="flex-1 min-w-0 pt-1.5">
                     <KeyboardShortcuts inline />
                   </div>
                 </div>
