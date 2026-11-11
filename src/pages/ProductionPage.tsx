@@ -102,6 +102,7 @@ export default function ProductionPage() {
   const {
     state: groove,
     setState: setGroove,
+    replace: replaceGroove,
     undo,
     redo,
     canUndo,
@@ -144,7 +145,8 @@ export default function ProductionPage() {
   useMIDITrackingFeedback();
 
   // URL sync
-  useURLSync(groove, setGroove);
+  // A groove from the link is the starting point, so Undo does not go back to the default groove.
+  useURLSync(groove, replaceGroove);
 
   // My Grooves (localStorage persistence)
   const myGrooves = useMyGrooves();

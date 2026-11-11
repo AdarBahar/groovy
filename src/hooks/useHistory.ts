@@ -9,6 +9,8 @@ export interface HistoryState<T> {
 export interface UseHistoryReturn<T> {
   state: T;
   setState: (newState: T) => void;
+  /** Sets the present state without adding an undo step (for example, a groove loaded from a link). */
+  replace: (newState: T) => void;
   undo: () => void;
   redo: () => void;
   canUndo: boolean;
@@ -168,9 +170,14 @@ export function useHistory<T>(
     });
   }, [history.present]);
 
+  const replace = useCallback((newState: T) => {
+    setHistory((currentHistory) => ({ ...currentHistory, present: newState }));
+  }, []);
+
   return {
     state: history.present,
     setState,
+    replace,
     undo,
     redo,
     canUndo: history.past.length > 0,
