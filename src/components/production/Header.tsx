@@ -72,6 +72,7 @@ export function Header({
   const [showSpeedUpModal, setShowSpeedUpModal] = useState(false);
   const [showAboutModal, setShowAboutModal] = useState(false);
   const aboutButtonRef = useRef<HTMLButtonElement>(null);
+  const metronomeOptionsButtonRef = useRef<HTMLButtonElement>(null);
   const moreOptionsButtonRef = useRef<HTMLButtonElement>(null);
   // The control that opened the About dialog. Focus returns to it on close.
   const aboutReturnFocusRef = useRef<HTMLElement | null>(null);
@@ -111,7 +112,7 @@ export function Header({
                 key={option}
                 onClick={() => onMetronomeChange?.(option)}
                 aria-pressed={metronome === option}
-                className={`h-9 px-2 rounded-md text-[13px] lowercase first-letter:uppercase ${metronome === option ? 'text-ink-1 font-medium underline underline-offset-8 decoration-2 decoration-brass-text' : 'text-ink-2'} hover:text-ink-1 hover:bg-surface-3 transition-colors`}
+                className={`h-10 px-2 rounded-md text-[13px] lowercase first-letter:uppercase ${metronome === option ? 'text-ink-1 font-medium underline underline-offset-8 decoration-2 decoration-brass-text' : 'text-ink-2'} hover:text-ink-1 hover:bg-surface-3 transition-colors`}
               >
                 {option === 'off' ? 'OFF' : option}
               </button>
@@ -121,8 +122,10 @@ export function Header({
           {metronomeConfig && onMetronomeFrequencyChange && (
             <>
               <button
+                ref={metronomeOptionsButtonRef}
                 onClick={() => setShowMetronomeOptions(!showMetronomeOptions)}
-                className={`size-9 inline-flex items-center justify-center rounded-md transition-colors ${
+                aria-expanded={showMetronomeOptions}
+                className={`size-10 inline-flex items-center justify-center rounded-md transition-colors ${
                   showMetronomeOptions
                     ? 'text-ink-1 bg-surface-3'
                     : 'text-ink-3 hover:text-ink-1 hover:bg-surface-3'
@@ -141,6 +144,7 @@ export function Header({
                 onCountInChange={onMetronomeCountInChange || (() => {})}
                 onVolumeChange={onMetronomeVolumeChange || (() => {})}
                 onOffsetClickChange={onMetronomeOffsetClickChange || (() => {})}
+                returnFocusRef={metronomeOptionsButtonRef}
               />
             </>
           )}
@@ -155,7 +159,7 @@ export function Header({
             variant="ghost"
             size="sm"
             onClick={onOpenMyGrooves}
-            className="text-ink-2 hover:text-ink-1 hover:bg-surface-3 dark:hover:bg-surface-3 h-9 gap-2 px-3 has-[>svg]:px-3 font-normal transition-colors relative flex-shrink-0"
+            className="text-ink-2 hover:text-ink-1 hover:bg-surface-3 dark:hover:bg-surface-3 h-10 gap-2 px-3 has-[>svg]:px-3 font-normal transition-colors relative flex-shrink-0"
             title="My Groovies"
             aria-label="My Groovies"
           >
@@ -173,7 +177,7 @@ export function Header({
             variant="ghost"
             size="sm"
             onClick={onOpenGrooveLibrary}
-            className="text-ink-2 hover:text-ink-1 hover:bg-surface-3 dark:hover:bg-surface-3 h-9 gap-2 px-3 has-[>svg]:px-3 font-normal transition-colors flex-shrink-0"
+            className="text-ink-2 hover:text-ink-1 hover:bg-surface-3 dark:hover:bg-surface-3 h-10 gap-2 px-3 has-[>svg]:px-3 font-normal transition-colors flex-shrink-0"
             title="Groove Library"
             aria-label="Groove Library"
           >
@@ -188,7 +192,7 @@ export function Header({
             onClick={onCountInToggle}
             aria-label={`Count in - ${countInEnabled ? 'ON' : 'OFF'}`}
             title="Count in"
-            className={`hidden lg:flex items-center h-9 gap-2 px-3 has-[>svg]:px-3 font-normal transition-colors ${
+            className={`hidden lg:flex items-center h-10 gap-2 px-3 has-[>svg]:px-3 font-normal transition-colors ${
               countInEnabled
                 ? 'text-ink-1 bg-surface-3 hover:bg-surface-4 dark:hover:bg-surface-4 shadow-[inset_0_-2px_0_var(--ui-brass-text)]'
                 : 'text-ink-2 hover:text-ink-1 hover:bg-surface-3 dark:hover:bg-surface-3'
@@ -207,7 +211,7 @@ export function Header({
                 onClick={() => { if (!showSpeedUpModal) trackAutoSpeedUpConfigOpen(); setShowSpeedUpModal(!showSpeedUpModal); }}
                 aria-label="Auto Speed up"
                 title="Auto Speed up"
-                className={`flex items-center h-9 gap-2 px-3 has-[>svg]:px-3 font-normal transition-colors ${
+                className={`flex items-center h-10 gap-2 px-3 has-[>svg]:px-3 font-normal transition-colors ${
                   showSpeedUpModal
                     ? 'text-ink-1 bg-surface-3'
                     : 'text-ink-2 hover:text-ink-1 hover:bg-surface-3 dark:hover:bg-surface-3'
@@ -238,7 +242,7 @@ export function Header({
             }}
             aria-label="About"
             title="About"
-            className={`hidden lg:flex h-9 gap-2 px-3 has-[>svg]:px-3 font-normal transition-colors ${
+            className={`hidden lg:flex h-10 gap-2 px-3 has-[>svg]:px-3 font-normal transition-colors ${
               showAboutModal
                 ? 'text-ink-1 bg-surface-3'
                 : 'text-ink-2 hover:text-ink-1 hover:bg-surface-3 dark:hover:bg-surface-3'
@@ -255,7 +259,7 @@ export function Header({
                 variant="ghost"
                 size="sm"
                 onClick={() => setShowMIDIModal(true)}
-                className="text-ink-2 hover:text-ink-1 hover:bg-surface-3 dark:hover:bg-surface-3 h-9 gap-2 px-3 has-[>svg]:px-3 font-normal transition-colors"
+                className="text-ink-2 hover:text-ink-1 hover:bg-surface-3 dark:hover:bg-surface-3 h-10 gap-2 px-3 has-[>svg]:px-3 font-normal transition-colors"
                 title="MIDI Settings"
                 aria-label="MIDI Settings"
               >
@@ -278,7 +282,7 @@ export function Header({
           variant="ghost"
           size="icon"
           onClick={() => { trackThemeToggle(!isDark); toggleTheme(); }}
-          className="size-9 max-md:size-10 text-ink-2 hover:text-ink-1 hover:bg-surface-3 dark:hover:bg-surface-3 transition-colors touch-target"
+          className="size-10 text-ink-2 hover:text-ink-1 hover:bg-surface-3 dark:hover:bg-surface-3 transition-colors touch-target"
           title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
           aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
         >
