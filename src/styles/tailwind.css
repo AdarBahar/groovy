@@ -149,6 +149,12 @@
   --ui-ink-1: #171717;
   --ui-ink-2: #3f3f3f;
   --ui-ink-3: #595959;
+  /* These tokens keep the slider fill, the track, and the focus ring readable on the white surface. */
+  --primary: #171717;
+  --primary-foreground: #ffffff;
+  --muted: #e9e9eb;
+  --background: #ffffff;
+  --ring: #8a5700;
 }
 
 @theme {
