@@ -98,8 +98,8 @@ export function GrooveLibraryModal({
               onClick={() => handleStyleChange(style.id)}
               className={`flex-shrink-0 touch-target ${
                 activeStyleId === style.id
-                  ? 'bg-purple-600 hover:bg-purple-700 text-white'
-                  : 'text-slate-600 dark:text-slate-300'
+                  ? 'bg-brass hover:bg-brass-hover text-brass-ink'
+                  : 'text-ink-2'
               }`}
             >
               {style.name}
@@ -117,14 +117,14 @@ export function GrooveLibraryModal({
                 className="group flex items-center gap-3 p-3 rounded-lg border border-slate-200 dark:border-slate-700 hover:border-purple-300 dark:hover:border-purple-600 hover:bg-purple-50 dark:hover:bg-purple-900/20 cursor-pointer transition-all touch-target"
               >
                 <div className="flex-shrink-0 w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
-                  <Play className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                  <Play className="w-5 h-5 text-brass-text" />
                 </div>
                 
                 <div className="flex-1 min-w-0">
-                  <div className="font-medium text-slate-900 dark:text-white truncate">
+                  <div className="font-medium text-ink-1 truncate">
                     {groove.name}
                   </div>
-                  <div className="flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400">
+                  <div className="flex items-center gap-3 text-xs text-ink-3">
                     <span className="flex items-center gap-1">
                       <Music className="w-3 h-3" />
                       {getTimeSigFromUrl(groove.url)} • {getTempoFromUrl(groove.url)} BPM
@@ -139,7 +139,7 @@ export function GrooveLibraryModal({
                   className={`flex-shrink-0 text-xs gap-1 touch-target ${
                     copiedGroove === groove.name
                       ? 'text-green-600 bg-green-100 dark:bg-green-900/30'
-                      : 'text-slate-500 hover:text-purple-600 opacity-100 sm:opacity-0 sm:group-hover:opacity-100'
+                      : 'text-ink-3 hover:text-brass-text opacity-100 sm:opacity-0 sm:group-hover:opacity-100'
                   } transition-all`}
                   title="Save to My Groovies for editing"
                 >
@@ -152,7 +152,7 @@ export function GrooveLibraryModal({
         </div>
 
         <div className="pt-4 border-t border-slate-200 dark:border-slate-700 flex items-center justify-between">
-          <p className="text-xs text-slate-400 dark:text-slate-500">
+          <p className="text-xs text-ink-3">
             Click a groove to load it. Save a copy to edit it.
           </p>
           <Button variant="ghost" onClick={onClose}>

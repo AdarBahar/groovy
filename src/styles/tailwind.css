@@ -20,8 +20,8 @@
   --ui-line-strong: rgba(23, 23, 23, 0.2);
   --ui-tick: rgba(23, 23, 23, 0.55);
   --ui-ink-1: #171717; /* primary text */
-  --ui-ink-2: #525252; /* secondary text */
-  --ui-ink-3: #6b6b6b; /* muted text and icons */
+  --ui-ink-2: #3f3f3f; /* secondary text */
+  --ui-ink-3: #595959; /* muted text and icons */
   /* One accent: cymbal brass. It marks what sounds and what is selected. */
   --ui-brass: #dfa23f;
   --ui-brass-hover: #d1932e;
@@ -47,7 +47,7 @@
   --secondary: #f4f4f5;
   --secondary-foreground: #171717;
   --muted: #f4f4f5;
-  --muted-foreground: #6b6b6b;
+  --muted-foreground: #595959;
   --accent: #f4f4f5;
   --accent-foreground: #171717;
   --destructive: #c0392b;
@@ -91,9 +91,9 @@
   --ui-line: rgba(237, 237, 237, 0.08);
   --ui-line-strong: rgba(237, 237, 237, 0.16);
   --ui-tick: rgba(237, 237, 237, 0.5);
-  --ui-ink-1: #ededed;
-  --ui-ink-2: #a1a1a6;
-  --ui-ink-3: #8e8e94;
+  --ui-ink-1: #fafafa;
+  --ui-ink-2: #d0d0d5;
+  --ui-ink-3: #b4b4ba;
   --ui-brass: #e2a94f;
   --ui-brass-hover: #ecbd70;
   --ui-brass-ink: #1a1407;
@@ -107,17 +107,17 @@
   --ui-shadow-sm: none;
 
   --background: #141415;
-  --foreground: #ededed;
+  --foreground: #fafafa;
   --card: #19191b;
-  --card-foreground: #ededed;
+  --card-foreground: #fafafa;
   --popover: #19191b;
-  --popover-foreground: #ededed;
+  --popover-foreground: #fafafa;
   --primary: #ededed;
   --primary-foreground: #141415;
   --secondary: #232325;
   --secondary-foreground: #ededed;
   --muted: #232325;
-  --muted-foreground: #a1a1a6;
+  --muted-foreground: #b4b4ba;
   --accent: #2c2c2f;
   --accent-foreground: #ededed;
   --destructive: oklch(0.396 0.141 25.723);
@@ -162,10 +162,10 @@
   --color-slate-50: #fafafa;
   --color-slate-100: #f4f4f5;
   --color-slate-200: #e6e6e8;
-  --color-slate-300: #cfcfd3;
-  --color-slate-400: #a1a1a6;
-  --color-slate-500: #6e6e73;
-  --color-slate-600: #505054;
+  --color-slate-300: #d9d9dd;
+  --color-slate-400: #b4b4ba;
+  --color-slate-500: #5e5e63;
+  --color-slate-600: #404044;
   --color-slate-700: #2c2c2f;
   --color-slate-800: #19191b;
   --color-slate-900: #141415;

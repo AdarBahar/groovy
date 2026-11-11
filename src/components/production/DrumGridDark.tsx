@@ -404,7 +404,7 @@ export function DrumGridDark({
           className="fixed z-50 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg shadow-lg py-2 min-w-[200px]"
           style={{ left: `${grid.contextMenu.x}px`, top: `${grid.contextMenu.y}px` }}
         >
-          <div className="px-3 py-1 text-xs font-semibold text-slate-600 dark:text-slate-300 border-b border-slate-200 dark:border-slate-600 mb-1">
+          <div className="px-3 py-1 text-xs font-semibold text-ink-2 border-b border-slate-200 dark:border-slate-600 mb-1">
             {DRUM_ROWS[grid.contextMenu.rowIndex].name} - Select Sound
           </div>
           {DRUM_ROWS[grid.contextMenu.rowIndex].variations.map((variation, index) => {
@@ -421,7 +421,7 @@ export function DrumGridDark({
               <button
                 key={index}
                 className={`w-full px-3 py-2 text-left text-sm flex items-center justify-between hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors
-                  ${isSelected ? 'text-purple-600 dark:text-purple-400' : 'text-slate-700 dark:text-slate-200'}
+                  ${isSelected ? 'text-purple-600 dark:text-purple-400' : 'text-ink-2'}
                   ${isKeyboardHighlighted ? 'bg-slate-100 dark:bg-slate-600' : ''}
                 `}
                 onClick={() => handleKeyboardVariationSelect(index)}
@@ -432,7 +432,7 @@ export function DrumGridDark({
                   {variation.label}
                 </span>
                 {variation.shortcut && (
-                  <span className="text-xs text-slate-400">{variation.shortcut}</span>
+                  <span className="text-xs text-ink-3">{variation.shortcut}</span>
                 )}
               </button>
             );
