@@ -48,7 +48,7 @@
   height: auto;
 }
 
-/* Highlight currently playing notes in brass */
+/* Highlight currently playing notes in dark amber (#b45f06) */
 .sheet-music-container svg .abcjs-note.playing path,
 .sheet-music-container svg .abcjs-note.playing ellipse,
 .sheet-music-container svg .abcjs-note.playing circle {

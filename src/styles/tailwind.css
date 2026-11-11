@@ -149,7 +149,12 @@
   --ui-ink-1: #171717;
   --ui-ink-2: #3f3f3f;
   --ui-ink-3: #595959;
-  /* These tokens keep the slider fill, the track, and the focus ring readable on the white surface. */
+  /* The embed surface uses the light surface colors in both themes. */
+  --ui-surface-1: #fafafa;
+  --ui-surface-2: #ffffff;
+  --ui-surface-3: #f4f4f5;
+  --ui-surface-4: #e9e9eb;
+  /* With the ink and surface tokens above, the slider track (surface-4) and fill (ink-2) are readable on white. */
   --primary: #171717;
   --primary-foreground: #ffffff;
   --muted: #e9e9eb;
