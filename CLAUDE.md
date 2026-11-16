@@ -1,4 +1,3 @@
-<!-- GSD:project-start source:PROJECT.md -->
 ## Project
 
 **Groovy MIDI Performance Tracking**
@@ -13,9 +12,7 @@ Groovy is a drum tutorial web application that helps drummers learn by creating 
 - **Reliability**: No stale closures, no silent failures, no listener accumulation over multi-session use
 - **Timing Precision**: All timing calculations must be verified to ±5ms accuracy before shipping
 - **Browser Compatibility**: Must work on Chrome/Edge (Web MIDI API standard), graceful degradation on others
-<!-- GSD:project-end -->
 
-<!-- GSD:stack-start source:codebase/STACK.md -->
 ## Technology Stack
 
 ## Languages
@@ -84,9 +81,7 @@ Groovy is a drum tutorial web application that helps drummers learn by creating 
 - Web Audio API for playback
 - Web MIDI API for device input (optional, with keyboard fallback on localhost)
 - localStorage for groove storage
-<!-- GSD:stack-end -->
 
-<!-- GSD:conventions-start source:CONVENTIONS.md -->
 ## Conventions
 
 ## Naming Patterns
@@ -172,9 +167,7 @@ Groovy is a drum tutorial web application that helps drummers learn by creating 
 - Zod schemas for runtime validation: `SavedGrooveSchema`, `MIDI_CONFIG` validation in storage functions
 - Type guards for discriminated unions: `voice === null` checks before using voice
 - Exhaustive type checks: TypeScript's `noFallthroughCasesInSwitch` ensures all switch cases covered
-<!-- GSD:conventions-end -->
 
-<!-- GSD:architecture-start source:ARCHITECTURE.md -->
 ## Architecture
 
 ## System Overview
@@ -311,32 +304,3 @@ Groovy is a drum tutorial web application that helps drummers learn by creating 
 - **Zod validation failures:** Log validation error with field details. Use sensible defaults.
 - **Web Audio context errors:** Log `processorerror` events. Allow recovery via context resume.
 ## Cross-Cutting Concerns
-<!-- GSD:architecture-end -->
-
-<!-- GSD:skills-start source:skills/ -->
-## Project Skills
-
-No project skills found. Add skills to any of: `.claude/skills/`, `.agents/skills/`, `.cursor/skills/`, `.github/skills/`, or `.codex/skills/` with a `SKILL.md` index file.
-<!-- GSD:skills-end -->
-
-<!-- GSD:workflow-start source:GSD defaults -->
-## GSD Workflow Enforcement
-
-Before using Edit, Write, or other file-changing tools, start work through a GSD command so planning artifacts and execution context stay in sync.
-
-Use these entry points:
-- `/gsd-quick` for small fixes, doc updates, and ad-hoc tasks
-- `/gsd-debug` for investigation and bug fixing
-- `/gsd-execute-phase` for planned phase work
-
-Do not make direct repo edits outside a GSD workflow unless the user explicitly asks to bypass it.
-<!-- GSD:workflow-end -->
-
-
-
-<!-- GSD:profile-start -->
-## Developer Profile
-
-> Profile not yet configured. Run `/gsd-profile-user` to generate your developer profile.
-> This section is managed by `generate-claude-profile` -- do not edit manually.
-<!-- GSD:profile-end -->
