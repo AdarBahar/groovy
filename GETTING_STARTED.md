@@ -1,12 +1,12 @@
 # Getting Started with Groovy
 
-## ✅ Project Setup Complete!
+##  Project Setup Complete!
 
 Your new Groovy project is ready to go with clean architecture and separated concerns.
 
 ---
 
-## 📁 What's Been Created
+##  What's Been Created
 
 ### Repository
 - **GitHub**: https://github.com/AdarBahar/groovy
@@ -17,7 +17,7 @@ Your new Groovy project is ready to go with clean architecture and separated con
 ```
 groovy/
 ├── src/
-│   ├── core/                   # ✅ Framework-agnostic core logic
+│   ├── core/                   #  Framework-agnostic core logic
 │   │   ├── GrooveEngine.ts    # Playback engine
 │   │   ├── DrumSynth.ts       # Audio synthesis
 │   │   └── index.ts           # Public API
@@ -36,7 +36,7 @@ groovy/
 
 ---
 
-## 🚀 Quick Start
+##  Quick Start
 
 ### 1. Development Server (Already Running!)
 ```bash
@@ -48,7 +48,7 @@ npm run dev
 ```bash
 npm run type-check
 ```
-✅ **Status**: Passing (no errors)
+ **Status**: Passing (no errors)
 
 ### 3. Build for Production
 ```bash
@@ -57,24 +57,24 @@ npm run build
 
 ---
 
-## ✅ What's Working
+##  What's Working
 
 ### Core Engine
-- ✅ `GrooveEngine` - Complete playback engine with event-based API
-- ✅ `DrumSynth` - Audio sample loading and playback
-- ✅ TypeScript types and interfaces
-- ✅ Zero UI dependencies in core
+-  `GrooveEngine` - Complete playback engine with event-based API
+-  `DrumSynth` - Audio sample loading and playback
+-  TypeScript types and interfaces
+-  Zero UI dependencies in core
 
 ### Development Setup
-- ✅ Vite + React + TypeScript configured
-- ✅ TypeScript strict mode enabled
-- ✅ ESLint configured
-- ✅ Git repository initialized
-- ✅ Pushed to GitHub
+-  Vite + React + TypeScript configured
+-  TypeScript strict mode enabled
+-  ESLint configured
+-  Git repository initialized
+-  Pushed to GitHub
 
 ---
 
-## 🎯 Next Steps
+##  Next Steps
 
 ### Phase 1: React Adapter (Immediate)
 Create the React hook to bridge core and UI:
@@ -84,8 +84,7 @@ Create the React hook to bridge core and UI:
 touch src/hooks/useGrooveEngine.ts
 ```
 
-Copy the hook implementation from the POC:
-- Location: `<poc-project>/src/hooks/useGrooveEngine.ts`
+Write the hook that connects the core engine to React.
 
 ### Phase 2: Basic UI Components
 1. **DrumGrid** - Interactive drum pattern editor
@@ -93,11 +92,8 @@ Copy the hook implementation from the POC:
 3. **TempoControl** - Tempo and swing sliders
 4. **PresetSelector** - Pattern presets
 
-### Phase 3: Copy Drum Samples
-```bash
-# Copy sounds from POC
-cp -r <poc-project>/public/sounds public/
-```
+### Phase 3: Drum Samples
+The drum samples are in `public/sounds/`. Add more samples there as MP3 files.
 
 ### Phase 4: Test & Iterate
 - Test playback functionality
@@ -107,18 +103,18 @@ cp -r <poc-project>/public/sounds public/
 
 ---
 
-## 📚 Key Files to Know
+##  Key Files to Know
 
 ### Core Logic (Framework-Agnostic)
 - **`src/core/GrooveEngine.ts`** - Main playback engine
   - Event-based API
   - Timing and scheduling
   - Loop management
-  
+
 - **`src/core/DrumSynth.ts`** - Audio synthesis
   - Sample loading
   - Web Audio API integration
-  
+
 - **`src/core/index.ts`** - Public API exports
   - Clean interface for consumers
 
@@ -133,7 +129,7 @@ cp -r <poc-project>/public/sounds public/
 
 ---
 
-## 🔍 Architecture Principles
+##  Architecture Principles
 
 ### 1. Separation of Concerns
 - **Core** (`src/core/`) = Business logic (framework-agnostic)
@@ -152,7 +148,7 @@ cp -r <poc-project>/public/sounds public/
 
 ---
 
-## 🧪 Testing the Core (Without UI)
+##  Testing the Core (Without UI)
 
 You can test the core engine in the browser console:
 
@@ -186,26 +182,22 @@ await engine.play(groove);
 
 ---
 
-## 📖 Documentation
+##  Documentation
 
 - **README.md** - Project overview and roadmap
 - **GETTING_STARTED.md** - This file
-- **POC Reference**: `<poc-project>/`
-  - `ARCHITECTURE.md` - Detailed architecture
-  - `SEPARATION_OF_CONCERNS.md` - Design principles
-  - `REFACTORING_SUMMARY.md` - What changed and why
 
 ---
 
-## 🎉 You're All Set!
+##  You're All Set!
 
 The project is initialized with:
-- ✅ Clean architecture
-- ✅ Separated core logic
-- ✅ TypeScript configured
-- ✅ Dev server running
-- ✅ Git repository set up
-- ✅ Pushed to GitHub
+-  Clean architecture
+-  Separated core logic
+-  TypeScript configured
+-  Dev server running
+-  Git repository set up
+-  Pushed to GitHub
 
 **Next**: Start building the React adapter and UI components!
 

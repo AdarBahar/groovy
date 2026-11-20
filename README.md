@@ -110,7 +110,6 @@ groovy/
 │   ├── sounds/        Drum samples (MP3)
 │   └── images/        Open Graph image
 ├── docs/              User guide, UI rules, and reference notes
-├── newUI/             Separate Figma-based package (not part of the app build)
 ├── DEPLOYMENT.md      Deployment steps
 └── vite.config.ts     Build configuration and base path
 ```
@@ -166,5 +165,4 @@ Groovy is released under the [MIT License](LICENSE).
 
 ## Credits
 
-- **poc-project**: the original proof of concept. The drum samples in `public/sounds/` were copied from this project.
 - **GrooveScribe**: the original implementation, which is a legacy codebase.
