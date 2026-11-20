@@ -97,8 +97,7 @@ groovy/
 │   ├── midi/          MIDI input, filters, and timing analysis
 │   ├── hooks/         React hooks that connect the core to the UI
 │   ├── components/    Editor components (production/ subfolder)
-│   ├── pages/         ProductionPage (editor), EmbedPage, NewUIPage
-│   ├── newUI/         Components for the /newUI route
+│   ├── pages/         ProductionPage (editor), EmbedPage
 │   ├── contexts/      Theme context
 │   ├── services/      URL shortener client
 │   ├── utils/         Storage helpers, analytics, logger
@@ -165,4 +164,5 @@ Groovy is released under the [MIT License](LICENSE).
 
 ## Credits
 
+- **Drum samples**: the samples in `public/sounds/` come from the original proof of concept of this project.
 - **GrooveScribe**: the original implementation, which is a legacy codebase.
