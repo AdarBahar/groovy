@@ -28,3 +28,6 @@ tsconfig.tsbuildinfo
 # Local-only build helper and its output (not part of the repo)
 /local-build-zip.sh
 # (dist zips land in dist/, which is already ignored)
+
+# Local working notes (not part of the repository)
+.codeagent/
