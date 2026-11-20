@@ -1,142 +1,78 @@
-# Groovy 🥁
+# Groovy
 
-Modern drum notation editor and player with clean separation of core logic and UI.
+I built Groovy to create, play, and share drum patterns in a browser. It includes notation, practice tools, and audio and MIDI export.
 
-## Features
+**[Try Groovy](https://www.bahar.co.il/groovy/)**
 
-- **Interactive Drum Grid** - Click to add/remove notes with drag-to-paint support
-- **Sheet Music Display** - Real-time ABC notation rendering with playback cursor
-- **Mobile Support** - Fully responsive design with touch-friendly controls
-- **Export Options** - PDF, PNG, SVG, MIDI, MP3, and JSON formats
-- **Sharing** - URL-based sharing, social media, QR codes, and embed codes
-- **Groove Library** - 25+ preset patterns across Rock, Funk, Jazz, Latin, World, and Practice styles
-- **My Grooves** - Save and manage your custom patterns locally
-- **Metronome** - Built-in metronome with count-in and frequency options
-- **Auto Speed-Up** - Practice mode with automatic tempo increases
-- **Undo/Redo** - Full history with keyboard shortcuts (Ctrl+Z, Ctrl+Shift+Z)
-- **Bulk Operations** - Apply patterns to voice rows with one click
+![The Groovy editor with a drum groove and its sheet music](docs/images/groovy-editor.png)
 
-## Architecture Principles
+## Key features
 
-This project is built with **strict separation of concerns**:
+- **Drum grid editor.** Click or drag to add and remove notes. Edit several measures in one groove.
+- **Sheet music.** The notation updates as you edit. A cursor follows the playback position.
+- **Playback.** Set the tempo and swing. Use the metronome with count-in, or turn on auto speed-up to raise the tempo during practice.
+- **Articulations.** Add accents, ghost notes, flams, drags, and buzz rolls.
+- **Editing tools.** Undo and redo with Ctrl+Z and Ctrl+Shift+Z (Cmd on macOS). Apply a pattern to a whole voice row with bulk operations.
+- **Library.** Start from 18 preset grooves in six styles.
+- **Save.** Save your grooves in the browser.
+- **Export.** Export as PDF, PNG, SVG, MIDI, MP3, or JSON.
+- **Share.** Share a link, post to social media, send by email, show a QR code, or embed a groove on another page.
+- **MIDI input (beta).** Connect a MIDI drum kit in Chrome or Edge. The app shows your timing against the metronome.
 
-- **Core Logic** (`src/core/`) - Framework-agnostic engine for drum playback, timing, and audio
-- **UI Layer** (`src/components/`, `src/App.tsx`) - React-based user interface
-- **Adapter Layer** (`src/hooks/`) - Bridges core logic and React
+## Getting started
 
-The core engine has **ZERO dependencies** on React or any UI framework, making it:
-- ✅ Easy to test without UI
-- ✅ Reusable with any framework (React, Vue, Svelte, vanilla JS)
-- ✅ Future-proof (UI can be completely replaced)
-
-## Project Structure
-
-```
-groovy/
-├── src/
-│   ├── core/                   # ✅ CORE LOGIC (Framework-agnostic)
-│   │   ├── GrooveEngine.ts    # Main playback engine
-│   │   ├── DrumSynth.ts       # Audio synthesis
-│   │   └── index.ts           # Public API
-│   │
-│   ├── hooks/                  # ⚛️ REACT ADAPTERS (to be added)
-│   │   └── useGrooveEngine.ts # React hook wrapper
-│   │
-│   ├── components/             # ⚛️ UI COMPONENTS (to be added)
-│   │   └── ...                # React components
-│   │
-│   ├── types.ts               # Shared TypeScript types
-│   ├── App.tsx                # Main React app
-│   └── main.tsx               # React entry point
-│
-└── public/
-    └── sounds/                # Drum samples (to be added)
-```
-
-## Getting Started
-
-### Installation
+You need Node.js (LTS) and npm.
 
 ```bash
 npm install
-```
-
-### Development
-
-```bash
 npm run dev
 ```
 
 Open [http://localhost:5173](http://localhost:5173) in your browser.
 
-### Build
+Copy `.env.example` to `.env.local` if you need the optional `VITE_` variables. The file describes each variable.
 
-```bash
-# Development build
-npm run build
+| Command | Purpose |
+|---------|---------|
+| `npm run dev` | Start the development server on port 5173 |
+| `npm run build` | Type-check the code and build to `dist/` |
+| `npm run build:prod` | Build with the production base path (`/groovy/`) |
+| `npm run preview:prod` | Serve the production build at [http://localhost:4173/groovy/](http://localhost:4173/groovy/) |
+| `npm run type-check` | Run the TypeScript compiler without writing files |
+| `npm test` | Run the test suite once with Vitest |
+| `npm run lint` | Run ESLint |
 
-# Production build (for deployment)
-npm run build:prod
-```
+## Technology and architecture
 
-### Preview Production Build
+### Stack
 
-```bash
-npm run preview:prod
-```
+- **React 18.3** and **React Router 7** for the user interface
+- **TypeScript 5.6** in strict mode
+- **Vite 6** for the build, and **Tailwind CSS 4** for styling
+- **Radix UI** primitives for accessible components
+- **Web Audio API** for drum synthesis and playback
+- **Web MIDI API** for device input
+- **abcjs 6** for notation rendering
+- **Zod** for validation and **DOMPurify** for SVG sanitizing
+- **jsPDF**, **midi-writer-js**, **@breezystack/lamejs**, and **qrcode** for export and sharing
+- **Vitest** and **Testing Library** for tests
 
-Open [http://localhost:4173/groovy/](http://localhost:4173/groovy/) in your browser.
+### Layers
 
-### Type Check
+The code is split into layers:
 
-```bash
-npm run type-check
-```
+- `src/core/` contains the playback engine, audio, storage, the URL codec, and the exporters. This folder has no React imports. You can use the engine without React.
+- `src/midi/` contains MIDI input, the velocity and double-trigger filters, and timing analysis.
+- `src/hooks/` contains the React hooks that connect the core modules to the user interface.
+- `src/components/` and `src/pages/` contain the user interface.
 
-## Deployment
-
-The app is configured to deploy to `/groovy/` subdirectory by default.
-
-**Production URL**: https://www.bahar.co.il/groovy/
-
-### Quick Deploy
-
-```bash
-# 1. Merge your change to main on GitHub (the tool deploys origin/main)
-
-# 2. Deploy with the inmotion-deploy service "groovy"
-cd ~/Code/deployment/inmotion
-python3 inmotionDeploy.py groovy --dry-run   # builds origin/main in a temporary folder, shows the changes
-python3 inmotionDeploy.py groovy             # asks for a yes, backs up, copies, checks
-# No build by hand. See DEPLOYMENT.md for detailed instructions
-```
-
-### Change Deployment Path
-
-To deploy to a different subdirectory or root:
-
-1. Edit `vite.config.ts`
-2. Change `PRODUCTION_BASE_PATH` constant
-3. Rebuild with `npm run build:prod`
-
-See `CHANGE_BASE_PATH.md` for detailed instructions.
-
-**Documentation:**
-- `DEPLOYMENT.md` - Full deployment guide
-- `CHANGE_BASE_PATH.md` - How to change deployment path
-- `ROUTER_FIX_UPDATE.md` - Latest deployment update
-
-## Core Engine API
-
-The core engine is completely independent of React:
+The engine emits typed events. The user interface subscribes to them:
 
 ```typescript
 import { GrooveEngine } from './core';
 
-// Create engine
 const engine = new GrooveEngine();
 
-// Subscribe to events
 engine.on('positionChange', (position) => {
   console.log('Current position:', position);
 });
@@ -145,87 +81,90 @@ engine.on('playbackStateChange', (isPlaying) => {
   console.log('Playing:', isPlaying);
 });
 
-// Start playback
-await engine.play(groove, true);
-
-// Stop playback
+await engine.play(groove, true);   // Start a loop
+engine.updateGroove(newGroove);    // Apply changes on the next loop
+await engine.playPreview('kick');  // Play one drum sound
 engine.stop();
-
-// Update groove during playback (applies on next loop)
-engine.updateGroove(newGroove);
-
-// Preview a drum sound
-await engine.playPreview('kick');
-
-// Clean up
-engine.dispose();
+engine.dispose();                  // Release resources when you finish
 ```
 
-## Development Roadmap
+### Project structure
 
-### Phase 1: Core Features ✅
-- [x] Core engine architecture
-- [x] Audio synthesis
-- [x] Playback timing
-- [x] Swing calculation
-- [x] React adapter hook
-- [x] Basic UI components
+```
+groovy/
+├── src/
+│   ├── core/          Playback engine, audio, storage, URL codec, exporters
+│   ├── midi/          MIDI input, filters, and timing analysis
+│   ├── hooks/         React hooks that connect the core to the UI
+│   ├── components/    Editor components (production/ subfolder)
+│   ├── pages/         ProductionPage (editor), EmbedPage, NewUIPage
+│   ├── newUI/         Components for the /newUI route
+│   ├── contexts/      Theme context
+│   ├── services/      URL shortener client
+│   ├── utils/         Storage helpers, analytics, logger
+│   ├── data/          Preset library (libraryGrooves.json)
+│   ├── types.ts       Shared types
+│   ├── App.tsx        Routes and embed mode
+│   └── main.tsx       Entry point
+├── public/
+│   ├── sounds/        Drum samples (MP3)
+│   └── images/        Open Graph image
+├── docs/              User guide, UI rules, and reference notes
+├── newUI/             Separate Figma-based package (not part of the app build)
+├── DEPLOYMENT.md      Deployment steps
+└── vite.config.ts     Build configuration and base path
+```
 
-### Phase 2: Essential Features ✅
-- [x] Interactive drum grid
-- [x] Tempo and swing controls
-- [x] Preset patterns
-- [x] Visual playback indicator
-- [x] Sound preview
+## Development and deployment
 
-### Phase 3: Advanced Features ✅
-- [x] More drum voices (toms, cymbals, percussion)
-- [x] Multi-measure support
-- [x] Velocity control (ghost notes, accents)
-- [x] Articulations (accents, ghost notes, flams, drags, buzz)
-- [x] Undo/redo
+### Tests and checks
 
-### Phase 4: Notation & Export ✅
-- [x] ABC notation rendering
-- [x] Sheet music display
-- [x] MIDI export
-- [ ] MIDI import
-- [x] Audio export (MP3)
+Run `npm test` for the unit tests. Run `npm run type-check` and `npm run lint` before you open a pull request.
 
-### Phase 5: Collaboration & Storage ✅
-- [x] Save/load grooves (localStorage)
-- [ ] Cloud storage
-- [ ] User accounts
-- [x] Groove library (25+ presets)
-- [x] Sharing (URL, social, embed, QR)
+### Base path
 
-### Phase 6: Mobile & Polish ✅
-- [x] Responsive mobile design
-- [x] Touch-friendly controls (44px targets)
-- [x] Security hardening (CSP, SVG sanitization, input validation)
+The app deploys to `/groovy/` by default. The base path is set by the `VITE_BASE_PATH` variable. The default is in `vite.config.ts`. For a local preview, use `npm run preview:prod`.
 
-## Tech Stack
+### Deployment
 
-- **React 18** - UI framework
-- **TypeScript** - Type safety
-- **Vite** - Build tool
-- **Web Audio API** - Audio synthesis and playback
+The production site runs at [https://www.bahar.co.il/groovy/](https://www.bahar.co.il/groovy/). The steps to deploy are in [DEPLOYMENT.md](DEPLOYMENT.md). The file `public/.htaccess` sets the Content-Security-Policy and other response headers for the Apache server.
 
-## Design Philosophy
+### Documentation
 
-1. **Separation of Concerns** - Core logic is completely independent of UI
-2. **Event-Based Communication** - Core emits events, UI listens
-3. **Framework Agnostic** - Core can work with any framework
-4. **Test-Driven** - Core logic can be tested without UI
-5. **Future-Proof** - UI can be replaced without touching core
+- [GETTING_STARTED.md](GETTING_STARTED.md): setup notes for a new machine
+- [DEPLOYMENT.md](DEPLOYMENT.md): deployment steps
+- [docs/USER_GUIDE.md](docs/USER_GUIDE.md): how to use the editor
+- [docs/UI-RULES.md](docs/UI-RULES.md): rules for the user interface
+- [MIDI_SPEC_AUDIT.md](MIDI_SPEC_AUDIT.md): audit of the MIDI timing specification
+
+## Roadmap
+
+### Done
+
+- Core engine, audio synthesis, and playback timing
+- Swing, tempo, and metronome controls
+- Grid editor with multiple measures, drum voices, and articulations
+- Undo and redo
+- Sheet music with ABC notation
+- Export to MIDI, MP3, PDF, PNG, SVG, and JSON
+- Save grooves in the browser
+- Preset library and bulk operations
+- Sharing by link, social media, email, QR code, and embed
+- Responsive layout with touch targets of at least 44 px
+- Security headers and SVG sanitizing
+
+### Open
+
+- MIDI import
+- Cloud storage
+- User accounts
+- Note-by-note accuracy tracking and mistake detection during playback
 
 ## License
 
-MIT
+Groovy is released under the [MIT License](LICENSE).
 
-## Related Projects
+## Credits
 
-- **groove-poc** - Original proof-of-concept that validated the architecture
-- **GrooveScribe** - Original implementation (legacy codebase)
-
-
+- **groove-poc**: the original proof of concept. The drum samples in `public/sounds/` were copied from this project.
+- **GrooveScribe**: the original implementation, which is a legacy codebase.
