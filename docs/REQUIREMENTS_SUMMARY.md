@@ -249,7 +249,7 @@ Track these metrics for each action:
 
 ---
 
-**Document Location**: `/Users/adar.bahar/Code/groovy/docs/REQUIREMENTS_ACTIONS.md`
+**Document Location**: `docs/REQUIREMENTS_ACTIONS.md`
 
 **Last Updated**: January 9, 2026
 
