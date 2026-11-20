@@ -1,110 +1,53 @@
 # Deployment Guide
 
-## Production Deployment to www.bahar.co.il/groovy/
+This guide explains how to build Groovy for production and how to host the built files. The steps apply to any static web host.
 
-Production runs on the deploy-tool hosting host. The folder on the server is the `groovy` folder in the public web root of the host.
+## Base path
 
-Deploy with the `deploy-tool` tool. The tool is in the repo `AdarBahar/deploy-tool`. Clone it to a folder of your choice. This guide calls that folder `<deploy-tool-folder>`. The service name is `groovy`. The tool deploys the latest `main` from GitHub. It builds the site itself, in a temporary folder. Your working folder, your branch, and your uncommitted work are not used.
+The app runs under the `/groovy/` path by default. Vite reads the base path from `vite.config.ts`. You can change it with the `VITE_BASE_PATH` variable. Use the same path on your host.
 
-**Note:** To deploy to a different subdirectory, see the base path notes in README.md
+## 1. Build
 
----
-
-## Quick Start
-
-### 1. Build for Production
 ```bash
 npm run build:prod
 ```
 
-This will:
-- Run TypeScript type checking
-- Build optimized production bundle
-- Set base path to `/groovy/`
-- Output to `dist/` directory
-- Copy `public/.htaccess` into `dist/`
+This command:
+- Runs the TypeScript type check
+- Builds the production bundle with the base path `/groovy/`
+- Writes the output to `dist/`
+- Copies `public/.htaccess` into `dist/`
 
-This local build is for your tests only. The deploy tool does not use it: it builds `origin/main` again in a temporary folder.
+## 2. Test the build locally
 
-### 2. Verify Build Locally
 ```bash
 npm run preview:prod
 ```
 
-Open http://localhost:4173/groovy/ to test the production build locally.
+Open [http://localhost:4173/groovy/](http://localhost:4173/groovy/) in your browser.
 
-### 3. Deploy to Server
+## 3. Host the files
 
-Read the section [Deploy with deploy-tool](#deploy-with-deploy-tool) and follow its steps.
+Copy the contents of `dist/` to the folder that serves the base path. For example, if the site runs at `https://example.com/groovy/`, copy the files to the `groovy` folder in the web root.
 
----
+Deploy files from a clean build. Do not edit the files on the host by hand.
 
-## Deploy with deploy-tool
+## Server rules
 
-The tool takes `origin/main` from GitHub, builds it, and copies the content of `dist/` to the server folder. Run each step in order.
+The app uses client-side routing. The server must return `index.html` for each path under `/groovy/`.
 
-1. Merge your change to `main` on GitHub. The tool deploys only what GitHub has. Do not build by hand.
-2. Change to the tool folder: `cd <deploy-tool-folder>`.
-3. Show the changes. Change nothing: `python3 deploy-tool.py groovy --dry-run`.
-4. Deploy: `python3 deploy-tool.py groovy`. Answer `y` when the tool asks.
-   If the shell has no terminal (for example, an agent or a script runs the tool), the tool cannot ask and stops before it changes a file. Read the dry-run list first. Then run `python3 deploy-tool.py groovy --yes`.
-5. Test the page: https://www.bahar.co.il/groovy/ and the playback controls.
+### Apache
 
-What the tool does:
-- It fetches `origin` and exports the latest `main` into a temporary folder. It runs `npm ci` and `npm run build:prod` there, and it deletes the folder after the run. The three `VITE_URL_SHORTENER_*` values come from `.env.local` (the tool reads only the names in its config).
-- It backs up the whole server folder to the Mac before it changes a file.
-- It copies `dist/` to the server. It does not copy `stats.html` or `*.zip` files.
-- It deletes the server files that are not in `dist/` (`delete_extra` is `true`). Read the dry-run list before you answer `y`.
-- It tests https://www.bahar.co.il/groovy/. The answer must be `200`.
+`public/.htaccess` contains the Apache rules. It sets:
+- The rewrite to `index.html` for React Router
+- The Content-Security-Policy header for the app
+- Compression and cache headers for static files
 
-If the dry-run lists more than 100 changes, the tool stops. Add `--allow-large` only after you read the list.
-
-To test a pushed branch, run `python3 deploy-tool.py groovy --dry-run --ref <branch>`. The tool refuses a branch that exists only on your Mac. After a change of the build, a dry run of the same commit must say `unchanged`. If it lists changes, the build in the tool differs from the build in your working folder.
-
----
-
-## Build Output
-
-After running `npm run build:prod`, the `dist/` folder will contain:
-
-```
-dist/
-├── index.html              # Main HTML file
-├── .htaccess               # Apache rules (copied from public/.htaccess)
-├── assets/
-│   ├── index-[hash].js    # Main JavaScript bundle
-│   ├── react-vendor-[hash].js  # React libraries (cached separately)
-│   ├── index-[hash].css   # Styles
-│   └── ...
-└── sounds/                 # Drum samples (30 files)
-    ├── Kick.mp3
-    ├── Snare Normal.mp3
-    ├── Hi Hat Normal.mp3
-    └── ...
-```
-
-**Total size**: ~2-3 MB (mostly drum samples)
-
-The build also writes `dist/stats.html`. The bundle analyzer creates it. The deploy tool does not copy it.
-
----
-
-## Server Configuration
-
-### Apache (.htaccess)
-
-The Apache rules live in `public/.htaccess`. Vite copies the file to `dist/`, and the deploy tool sends it to the server. Change the rules in the repo, not on the server.
-
-The file sets:
-- The SPA rewrite to `index.html` (for React Router).
-- The Content-Security-Policy for the `/groovy/` path. It allows the Vite bundle, the analytics script, Amplitude, Google Fonts, cdnjs, and the URL shortener.
-- Compression and cache headers for the static files.
-
-Do not edit the server copy by hand. The next deploy replaces it. The tool makes a backup first.
+Change these rules in the repository. Do not change the server copy by hand.
 
 ### Nginx
 
-Not used on deploy-tool. If you host the app on Nginx, add to your server block:
+Add this block to the server configuration:
 
 ```nginx
 location /groovy/ {
@@ -119,70 +62,33 @@ location /groovy/ {
 }
 ```
 
----
+## Checklist
 
-## Deployment Checklist
+Before you deploy:
 
-Before deploying:
-- [ ] Run `npm run type-check` (no errors)
-- [ ] Run `npm run lint` (no errors)
-- [ ] Run `npm run build:prod` (successful build)
-- [ ] Run `npm run preview:prod` (test locally at http://localhost:4173/groovy/)
-- [ ] Test all routes: `/groovy/` and `/groovy/poc`
-- [ ] Test playback functionality
-- [ ] Verify drum samples load correctly
-- [ ] Check browser console for errors
-- [ ] Run `python3 deploy-tool.py groovy --dry-run` and read the list of changes
+- [ ] `npm run type-check` passes
+- [ ] `npm run lint` passes
+- [ ] `npm test` passes
+- [ ] `npm run build:prod` succeeds
+- [ ] `npm run preview:prod` loads the app at http://localhost:4173/groovy/
+- [ ] Playback works and the drum samples load
+- [ ] The browser console shows no errors
 
-After deploying:
-- [ ] Visit https://www.bahar.co.il/groovy/
-- [ ] Test production UI page
-- [ ] Visit https://www.bahar.co.il/groovy/poc
-- [ ] Test POC page functionality
-- [ ] Test playback and all controls
-- [ ] Check browser console for errors
-- [ ] Test on mobile devices
+After you deploy:
 
----
+- [ ] The production URL loads
+- [ ] Playback works
+- [ ] The browser console shows no errors
+- [ ] The page works on a phone
 
 ## Troubleshooting
 
-### Issue: Blank page or 404 errors
-**Solution**: Ensure `.htaccess` redirects all routes to `index.html`. Check that `public/.htaccess` is in `dist/`.
+**Blank page or 404 errors for scripts and styles.** Check that `base` is `/groovy/` in `vite.config.ts`, then rebuild.
 
-### Issue: Assets not loading (404 on JS/CSS files)
-**Solution**: Verify `base: '/groovy/'` is set in `vite.config.ts` and rebuild
+**A route returns 404.** The server rewrite is missing. Check that `.htaccess` is in the host folder, or add the Nginx rule above.
 
-### Issue: Sounds not playing
-**Solution**: 
-- Check that `sounds/` folder is on the server (run the deploy again)
-- Verify MIME types are correct (`.mp3` should be `audio/mpeg`)
-- Check browser console for 404 errors
+**Sounds do not play.** Check that the `sounds/` folder is on the host. Check that `.mp3` files are served as `audio/mpeg`. Check the browser console for 404 errors.
 
-### Issue: React Router routes don't work
-**Solution**: Server must redirect all routes to `index.html` (see server config above)
+## Automated deployment
 
-### Issue: The tool stops with "copy failed (exit 255)"
-**Solution**: The host closes a fast second ssh connection. The tool retries after 60 s. Wait for the retry. If all tries fail, read `logs/deploy.log` in the tool folder.
-
----
-
-## Rollback
-
-Restore the last backup with the tool:
-
-```bash
-cd <deploy-tool-folder>
-python3 deploy-tool.py groovy --rollback --dry-run   # show the changes
-python3 deploy-tool.py groovy --rollback             # restore the latest backup
-```
-
-The rollback first saves the current server state as a new backup. To restore an older backup, run `python3 deploy-tool.py groovy --list` and give the time stamp.
-
-To roll back the code instead, deploy a previous commit that is on GitHub: `python3 deploy-tool.py groovy --ref <commit>`.
-
----
-
-## Future: Automated Deployment
-
-Automated deployment is not set up. The tool runs by hand from the Mac.
+The repository has a GitHub Pages workflow in `.github/workflows/deploy.yml`. It runs only when you start it by hand from the Actions tab. A push does not start it.
