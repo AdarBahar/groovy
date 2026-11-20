@@ -2,11 +2,11 @@
 
 ## Production Deployment to www.bahar.co.il/groovy/
 
-Production runs on the deploy-tool hosting host. The folder on the server is `/home/server-user/public_html/groovy/`.
+Production runs on the deploy-tool hosting host. The folder on the server is the `groovy` folder in the public web root of the host.
 
-Deploy with the `deploy-tool` tool. The tool is in the repo `AdarBahar/deploy-tool`. Its clone is on the Mac at `~/Code/deployment/deploy-tool`. The service name is `groovy`. The tool deploys the latest `main` from GitHub. It builds the site itself, in a temporary folder. Your working folder, your branch, and your uncommitted work are not used.
+Deploy with the `deploy-tool` tool. The tool is in the repo `AdarBahar/deploy-tool`. Clone it to a folder of your choice. This guide calls that folder `<deploy-tool-folder>`. The service name is `groovy`. The tool deploys the latest `main` from GitHub. It builds the site itself, in a temporary folder. Your working folder, your branch, and your uncommitted work are not used.
 
-**Note:** To deploy to a different subdirectory, see `CHANGE_BASE_PATH.md`
+**Note:** To deploy to a different subdirectory, see the base path notes in README.md
 
 ---
 
@@ -44,7 +44,7 @@ Read the section [Deploy with deploy-tool](#deploy-with-deploy-tool) and follow 
 The tool takes `origin/main` from GitHub, builds it, and copies the content of `dist/` to the server folder. Run each step in order.
 
 1. Merge your change to `main` on GitHub. The tool deploys only what GitHub has. Do not build by hand.
-2. Change to the tool folder: `cd ~/Code/deployment/deploy-tool`.
+2. Change to the tool folder: `cd <deploy-tool-folder>`.
 3. Show the changes. Change nothing: `python3 deploy-tool.py groovy --dry-run`.
 4. Deploy: `python3 deploy-tool.py groovy`. Answer `y` when the tool asks.
    If the shell has no terminal (for example, an agent or a script runs the tool), the tool cannot ask and stops before it changes a file. Read the dry-run list first. Then run `python3 deploy-tool.py groovy --yes`.
@@ -172,7 +172,7 @@ After deploying:
 Restore the last backup with the tool:
 
 ```bash
-cd ~/Code/deployment/deploy-tool
+cd <deploy-tool-folder>
 python3 deploy-tool.py groovy --rollback --dry-run   # show the changes
 python3 deploy-tool.py groovy --rollback             # restore the latest backup
 ```

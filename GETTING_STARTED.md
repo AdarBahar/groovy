@@ -10,7 +10,7 @@ Your new Groovy project is ready to go with clean architecture and separated con
 
 ### Repository
 - **GitHub**: https://github.com/AdarBahar/groovy
-- **Local**: `/Users/<user>/Code/groovy`
+- **Local**: `<path-to-clone>`
 - **Branch**: `main`
 
 ### Project Structure
@@ -85,7 +85,7 @@ touch src/hooks/useGrooveEngine.ts
 ```
 
 Copy the hook implementation from the POC:
-- Location: `~/Code/legacy-projects/poc-project/src/hooks/useGrooveEngine.ts`
+- Location: `<poc-project>/src/hooks/useGrooveEngine.ts`
 
 ### Phase 2: Basic UI Components
 1. **DrumGrid** - Interactive drum pattern editor
@@ -96,7 +96,7 @@ Copy the hook implementation from the POC:
 ### Phase 3: Copy Drum Samples
 ```bash
 # Copy sounds from POC
-cp -r ~/Code/legacy-projects/poc-project/public/sounds public/
+cp -r <poc-project>/public/sounds public/
 ```
 
 ### Phase 4: Test & Iterate
@@ -190,7 +190,7 @@ await engine.play(groove);
 
 - **README.md** - Project overview and roadmap
 - **GETTING_STARTED.md** - This file
-- **POC Reference**: `~/Code/legacy-projects/poc-project/`
+- **POC Reference**: `<poc-project>/`
   - `ARCHITECTURE.md` - Detailed architecture
   - `SEPARATION_OF_CONCERNS.md` - Design principles
   - `REFACTORING_SUMMARY.md` - What changed and why
