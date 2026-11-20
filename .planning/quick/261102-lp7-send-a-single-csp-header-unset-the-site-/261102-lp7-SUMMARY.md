@@ -47,4 +47,4 @@ completed: 2026-11-02
 None.
 
 ## User Setup Required
-Deploy via the inmotion-deploy service; then run the live check above.
+Deploy the build; then run the live check above.
