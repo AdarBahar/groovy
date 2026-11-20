@@ -48,7 +48,6 @@ Groovy is a drum tutorial web application that helps drummers learn by creating 
 - @breezystack/lamejs 1.2.7 - MP3 encoding (dynamically imported)
 - abcjs 6.6.0 - ABC notation rendering
 - zod 4.3.5 - Schema validation and parsing
-- lz-string 1.5.0 - LZ compression for URL encoding
 - dompurify 3.3.1 - HTML sanitization
 - lucide-react 0.562.0 - Icon library
 ## Key Dependencies
@@ -59,7 +58,6 @@ Groovy is a drum tutorial web application that helps drummers learn by creating 
 - Radix UI - Accessible component primitives
 - zod - Type-safe validation for data structures
 - dompurify - HTML sanitization in ExportUtils
-- lz-string - URL compression for groove data encoding
 - Web Audio API (built-in) - Audio playback and synthesis
 - Web MIDI API (built-in) - MIDI device input
 ## Configuration

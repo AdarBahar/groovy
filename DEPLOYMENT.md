@@ -2,11 +2,11 @@
 
 ## Production Deployment to www.bahar.co.il/groovy/
 
-Production runs on the InMotion cPanel host. The folder on the server is `/home/baharc5/public_html/groovy/`.
+Production runs on the InMotion cPanel host. The folder on the server is the `groovy` folder in the public web root of the host.
 
-Deploy with the `inmotion-deploy` tool. The tool is in the repo `AdarBahar/inmotion-deploy`. Its clone is on the Mac at `~/Code/deployment/inmotion`. The service name is `groovy`. The tool deploys the latest `main` from GitHub. It builds the site itself, in a temporary folder. Your working folder, your branch, and your uncommitted work are not used.
+Deploy with the `inmotion-deploy` tool. The tool is in the repo `AdarBahar/inmotion-deploy`. Clone it to a folder of your choice. This guide calls that folder `<inmotion-deploy-folder>`. The service name is `groovy`. The tool deploys the latest `main` from GitHub. It builds the site itself, in a temporary folder. Your working folder, your branch, and your uncommitted work are not used.
 
-**Note:** To deploy to a different subdirectory, see `CHANGE_BASE_PATH.md`
+**Note:** To deploy to a different subdirectory, see the base path notes in README.md
 
 ---
 
@@ -44,7 +44,7 @@ Read the section [Deploy with inmotion-deploy](#deploy-with-inmotion-deploy) and
 The tool takes `origin/main` from GitHub, builds it, and copies the content of `dist/` to the server folder. Run each step in order.
 
 1. Merge your change to `main` on GitHub. The tool deploys only what GitHub has. Do not build by hand.
-2. Change to the tool folder: `cd ~/Code/deployment/inmotion`.
+2. Change to the tool folder: `cd <inmotion-deploy-folder>`.
 3. Show the changes. Change nothing: `python3 inmotionDeploy.py groovy --dry-run`.
 4. Deploy: `python3 inmotionDeploy.py groovy`. Answer `y` when the tool asks.
    If the shell has no terminal (for example, an agent or a script runs the tool), the tool cannot ask and stops before it changes a file. Read the dry-run list first. Then run `python3 inmotionDeploy.py groovy --yes`.
@@ -172,7 +172,7 @@ After deploying:
 Restore the last backup with the tool:
 
 ```bash
-cd ~/Code/deployment/inmotion
+cd <inmotion-deploy-folder>
 python3 inmotionDeploy.py groovy --rollback --dry-run   # show the changes
 python3 inmotionDeploy.py groovy --rollback             # restore the latest backup
 ```
